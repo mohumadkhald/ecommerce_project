@@ -15,4 +15,5 @@ public class AddItemRequest {
     private int quantity;
 
     private Integer price;
+    private Long userId;
 }

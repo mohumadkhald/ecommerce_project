@@ -1,19 +1,20 @@
 package com.projects.ecommerce.service;
 
 import com.projects.ecommerce.exception.CartItemException;
+import com.projects.ecommerce.exception.ProductException;
 import com.projects.ecommerce.exception.UserException;
 import com.projects.ecommerce.model.Cart;
 import com.projects.ecommerce.model.CartItem;
 import com.projects.ecommerce.model.Product;
+import com.projects.ecommerce.requests.AddItemRequest;
 
 public interface CartItemService {
-    public CartItem createCartItem(CartItem cartItem);
+    CartItem createCartItem(AddItemRequest cartItem) throws ProductException, UserException;
 
-    public CartItem updateCart(Long userID, Long id, CartItem cartItem) throws CartItemException, UserException;
+    CartItem updateCart(Long userID, Long id, CartItem cartItem) throws CartItemException, UserException;
 
-    public CartItem isCartItemExist(Cart cart, Product product, String size, Long userId);
+    void removeCartItem(Long userId, Long cartItemId) throws CartItemException, UserException;
 
-    public void removeCartItem(Long userId, Long cartItemId) throws CartItemException, UserException;
 
-    public CartItem findCartItemById(Long cartItemId)throws CartItemException;
+    CartItem findCartItemById(Long userId, Long cartItemId) throws CartItemException;
 }

@@ -23,7 +23,7 @@ public class PurchaseOrderServiceImplement implements PurchaseOrderService{
     @Override
     public PurchaseOrder createOrder(User user, Address shippingAddress) {
 
-        Cart cart = cartService.getUserCart(user); // Assuming there's a method to get the user's cart
+        Cart cart = cartService.findUserCart(user.getId()); // Assuming there's a method to get the user's cart
         if (cart == null || cart.getCartItems().isEmpty()) {
             throw new IllegalArgumentException("User's cart is empty. Cannot create an order.");
         }
