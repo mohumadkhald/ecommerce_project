@@ -25,19 +25,42 @@ public interface ProductRepo extends JpaRepository<Product, Long> {
             "case when :sort = 'price_high' then p.discountedPrice end desc"
     )
 
-//    public List<Product> filterProducts(@Param("category") String category,
-//                                        @Param("minPrice") Integer minPrice, @Param("minPrice") Integer maxPrice,
-//                                        @Param("minDiscounted") Integer minDiscounted,
-//                                        @Param("sort") String sort);
+
     public List<Product> filterProducts(
             @Param("category") String category,
             @Param("minPrice") Integer minPrice,
             @Param("maxPrice") Integer maxPrice,
             @Param("minDiscount") Integer minDiscount,
             @Param("sort") String sort);
-    @Query("SELECT p FROM Product p JOIN p.category c WHERE c.name = :categoryName")
-    Page<Product> findByCategoryName(@Param("categoryName") String categoryName, Pageable pageable);
 
+    // page and size only
+//    @Query("SELECT p FROM Product p JOIN p.category c WHERE c.name = :categoryName")
+//    Page<Product> findByCategoryName(@Param("categoryName") String categoryName, Pageable pageable);
+
+
+
+
+
+
+//    @Query("SELECT p FROM Product p JOIN p.category c WHERE c.name = :categoryName " +
+//            "AND (:color IS NULL OR p.color = :color) " +
+//            "AND (:minPrice IS NULL OR p.price >= :minPrice) " +
+//            "AND (:maxPrice IS NULL OR p.price <= :maxPrice)")
+//    Page<Product> findByCategoryNameAndFilters(@Param("categoryName") String categoryName,
+//                                               @Param("color") String color,
+//                                               @Param("minPrice") Double minPrice,
+//                                               @Param("maxPrice") Double maxPrice,
+//                                               Pageable pageable);
+
+    @Query("SELECT p FROM Product p JOIN p.category c WHERE c.name = :categoryName " +
+            "AND (:color IS NULL OR p.color = :color) " +
+            "AND (:minPrice IS NULL OR p.price >= :minPrice) " +
+            "AND (:maxPrice IS NULL OR p.price <= :maxPrice)")
+    Page<Product> findByCategoryNameAndFilters(@Param("categoryName") String categoryName,
+                                               @Param("color") String color,
+                                               @Param("minPrice") Double minPrice,
+                                               @Param("maxPrice") Double maxPrice,
+                                               Pageable pageable);
 
 
 }

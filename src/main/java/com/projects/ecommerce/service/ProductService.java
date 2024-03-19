@@ -4,7 +4,9 @@ import com.projects.ecommerce.exception.ProductException;
 import com.projects.ecommerce.model.Category;
 import com.projects.ecommerce.model.Product;
 import com.projects.ecommerce.requests.CreateProductRequest;
-import org.springframework.data.domain.Page;import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
@@ -22,5 +24,8 @@ public interface ProductService {
 
     List<Product> getAllProducts();
 
-    Page<Product> getProductsByCategoryName(String categoryName, int page, int pageSize);
+    Page<Product> getProductsByCategoryNameAndFilters(String categoryName, String color, Double minPrice, Double maxPrice, int page, int pageSize, Sort sort);
+
+//    Page<Product> getProductsByCategoryName(String categoryName, int page, int pageSize);
+
 }

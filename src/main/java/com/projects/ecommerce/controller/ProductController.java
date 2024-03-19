@@ -6,6 +6,7 @@ import com.projects.ecommerce.requests.CreateProductRequest;
 import com.projects.ecommerce.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -70,15 +71,26 @@ public class ProductController {
 
 
 
-
     @GetMapping("/bycategory/{categoryName}")
-    public ResponseEntity<Page<Product>> getProductsByCategoryName(
+    public ResponseEntity<Page<Product>> getProductsByCategoryNameAndFilters(
             @PathVariable String categoryName,
+            @RequestParam(required = false) String color,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int pageSize) {
-        Page<Product> products = productService.getProductsByCategoryName(categoryName, page, pageSize);
+            @RequestParam(defaultValue = "20") int pageSize,
+            @RequestParam(defaultValue = "desc") String sortDirection) {
+
+        Sort sort = Sort.by("createdAt").descending();
+        if (!sortDirection.equals("desc")) {
+            sort = Sort.by("createdAt").ascending();
+        }
+
+        Page<Product> products = productService.getProductsByCategoryNameAndFilters(categoryName, color, minPrice, maxPrice, page, pageSize, sort);
         return ResponseEntity.ok(products);
     }
 
-
 }
+
+
+
