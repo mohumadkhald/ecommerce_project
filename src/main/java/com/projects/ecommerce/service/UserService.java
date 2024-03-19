@@ -14,4 +14,6 @@ public interface UserService {
 
     public User findUserById(Long id) throws UserException;
     public User findUserProfileByJwt(String jwt) throws UserException;
+
+    Long findUserIdByJwt(String jwt) throws UserException;
 }

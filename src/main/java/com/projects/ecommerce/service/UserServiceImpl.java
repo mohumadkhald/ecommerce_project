@@ -41,4 +41,17 @@ public class UserServiceImpl implements UserService {
         // You need to provide the logic to retrieve the user's profile based on the JWT token
         return user; // Placeholder return value
     }
+
+    @Override
+    public Long findUserIdByJwt(String jwt) throws UserException {
+        String email = jwtProvider.getEmailFromToken(jwt);
+        User user = userrepo.findByEmail(email);
+
+        if (user == null) {
+            throw new UserException("User not found");
+        }
+
+        return user.getId();
+    }
+
 }

@@ -5,6 +5,7 @@ import com.projects.ecommerce.model.Cart;
 import com.projects.ecommerce.model.CartItem;
 import com.projects.ecommerce.model.Product;
 import com.projects.ecommerce.model.User;
+import com.projects.ecommerce.requests.CartRequestDTO;
 import com.projects.ecommerce.service.CartService;
 import com.projects.ecommerce.service.UserService;
 import lombok.AllArgsConstructor;
@@ -24,23 +25,12 @@ public class CartController {
     private CartService cartService;
     private UserService userService;
 
-    @PostMapping("/create/{userId}")
-    public ResponseEntity<Cart> createCart(@PathVariable Long userId, @RequestBody Set<Long> cartItemIds) throws UserException {
-        // Retrieve the user by userId
-        User user = userService.findUserById(userId);
-        if (user == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        // Retrieve the cart items by their IDs
-        Set<CartItem> cartItems = cartService.findCartItemsByIds(cartItemIds);
-
-        // Create the cart with the user and cart items
-        Cart createdCart = cartService.createCart(user, cartItems);
-
+    @PostMapping("/create")
+    public ResponseEntity<Cart> createCart(@RequestBody CartRequestDTO cartRequestDTO,
+                                           @RequestHeader("Authorization") String jwtToken) throws UserException {
+        Cart createdCart = cartService.createCart(cartRequestDTO, jwtToken);
         return new ResponseEntity<>(createdCart, HttpStatus.CREATED);
     }
-
     @GetMapping("/{userId}")
     public ResponseEntity<Cart> getUserCart(@PathVariable Long userId) {
         Cart userCart = cartService.findUserCart(userId);

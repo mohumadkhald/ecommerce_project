@@ -1,5 +1,6 @@
 package com.projects.ecommerce.service;
 
+import com.projects.ecommerce.config.JwtProvider;
 import com.projects.ecommerce.exception.CartItemException;
 import com.projects.ecommerce.exception.ProductException;
 import com.projects.ecommerce.exception.UserException;
@@ -19,16 +20,26 @@ public class CartItemServiceImpl implements CartItemService {
     private CartItemRepo cartItemRepo;
     private ProductService productService;
     private UserService userService;
+    private JwtProvider jwtProvider;
 
     @Override
-    public CartItem createCartItem(AddItemRequest addItemRequest) throws ProductException, UserException {
+    public CartItem createCartItem(AddItemRequest addItemRequest, String jwtToken) throws ProductException, UserException {
+        // Get user ID from JWT
+        Long userId = userService.findUserIdByJwt(jwtToken);
+
         // Retrieve the user by their ID
-        User user = userService.findUserById(addItemRequest.getUserId());
+        User user = userService.findUserById(userId);
         if (user == null) {
             // Handle the case where user does not exist
             throw new UserException("User not found");
         }
 
+        // Get the cart associated with the user (assuming a user has one cart)
+        Cart cart = user.getCart();
+        if (cart == null) {
+            // Handle the case where the cart for the user does not exist
+            throw new UserException("Cart not found for the user");
+        }
 
         // Create a new cart item
         CartItem cartItem = new CartItem();
@@ -38,14 +49,23 @@ public class CartItemServiceImpl implements CartItemService {
         cartItem.setSize(addItemRequest.getSize());
         cartItem.setQuantity(addItemRequest.getQuantity());
         cartItem.setPrice(addItemRequest.getPrice());
-        cartItem.setUserId(addItemRequest.getUserId());
 
-        // Associate the cart with the cart item
-        cartItem.setCart(cartItem.getCart());
-
+        // Set user ID
+        cartItem.setUserId(userId);
+        Cart cart1 = new Cart();
+        cart1.setId(userId);
+        // Set the cart associated with the user
+        cartItem.setCart(cart1);
         // Save the cart item in the repository
         return cartItemRepo.save(cartItem);
     }
+
+
+
+
+
+
+
     @Override
     public CartItem updateCart(Long userId, Long id, CartItem cartItem) throws CartItemException, UserException {
         // Fetch the user's cart item by ID

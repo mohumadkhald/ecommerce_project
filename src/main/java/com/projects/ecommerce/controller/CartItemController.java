@@ -19,10 +19,15 @@ public class CartItemController {
 
     private CartItemService cartItemService;
 
-    @PostMapping("/")
-    public ResponseEntity<CartItem> createCartItem(@RequestBody AddItemRequest addItemRequest) throws ProductException, UserException {
-        CartItem createdCartItem = cartItemService.createCartItem(addItemRequest);
-        return new ResponseEntity<>(createdCartItem, HttpStatus.CREATED);
+    @PostMapping("/cart-items")
+    public ResponseEntity<CartItem> createCartItem(@RequestBody AddItemRequest addItemRequest, @RequestHeader("Authorization") String jwtToken) {
+        try {
+            CartItem cartItem = cartItemService.createCartItem(addItemRequest, jwtToken);
+            return new ResponseEntity<>(cartItem, HttpStatus.CREATED);
+        } catch (ProductException | UserException e) {
+            // Handle exceptions
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 
     @PutMapping("/{userId}/{id}")

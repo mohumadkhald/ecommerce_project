@@ -46,4 +46,7 @@ public class User {
 
     private LocalDateTime createdAt;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Cart cart; // One user has one cart
+
 }

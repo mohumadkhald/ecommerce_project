@@ -9,7 +9,8 @@ import com.projects.ecommerce.model.Product;
 import com.projects.ecommerce.requests.AddItemRequest;
 
 public interface CartItemService {
-    CartItem createCartItem(AddItemRequest cartItem) throws ProductException, UserException;
+
+    CartItem createCartItem(AddItemRequest addItemRequest, String jwtToken) throws ProductException, UserException;
 
     CartItem updateCart(Long userID, Long id, CartItem cartItem) throws CartItemException, UserException;
 

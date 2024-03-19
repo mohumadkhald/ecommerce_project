@@ -1,10 +1,12 @@
 package com.projects.ecommerce.service;
 
+import com.projects.ecommerce.exception.UserException;
 import com.projects.ecommerce.model.Cart;
 import com.projects.ecommerce.model.CartItem;
 import com.projects.ecommerce.model.Product;
 import com.projects.ecommerce.model.User;
 import com.projects.ecommerce.repo.CartRepo;
+import com.projects.ecommerce.requests.CartRequestDTO;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,29 +18,9 @@ import java.util.Set;
 public class CartServiceImpl implements CartService {
 
     private CartRepo cartRepo;
+    private UserService userService;
 
-    @Override
-    public Cart createCart(User user, Set<CartItem> cartItems) {
-        // Create a new cart
-        Cart cart = new Cart();
 
-        // Associate the user with the cart
-        cart.setUser(user);
-
-        // Set the cart items and associate them with the cart
-        cart.setCartItems(cartItems);
-
-        // Associate each cart item with the cart
-        for (CartItem cartItem : cartItems) {
-            cartItem.setCart(cart);
-        }
-
-        // Calculate total price, total item, total discounted price, and discount here
-        // Assuming you have logic to calculate these values based on the cart items
-
-        // Save the cart
-        return cartRepo.save(cart);
-    }
 
 
     @Override
@@ -64,5 +46,30 @@ public class CartServiceImpl implements CartService {
         // Assuming cartRepository has a method to find products by user ID
         List<Product> productsInCart = cartRepo.findProductsByUserId(userId);
         return productsInCart;
+    }
+
+    @Override
+    public Cart createCart(CartRequestDTO cartRequestDTO, String jwtToken) throws UserException {
+        // Extract user ID from JWT token
+        Long userId = userService.findUserIdByJwt(jwtToken);
+
+        // Retrieve the user by userId
+        User user = userService.findUserById(userId);
+
+        if (user == null) {
+            throw new UserException("User not found");
+        }
+
+        // Create a new cart
+        Cart cart = new Cart();
+
+        // Set the user for the cart
+        cart.setUser(user);
+
+        cart.setId(userId);
+        // Optionally, add cart items to the cart from cartRequestDTO
+
+        // Save the cart
+        return cartRepo.save(cart);
     }
 }
