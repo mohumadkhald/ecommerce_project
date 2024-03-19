@@ -22,5 +22,5 @@ public interface ProductService {
 
     List<Product> getAllProducts();
 
-    List<Product> getProductsByCategoryName(String categoryName);
+    Page<Product> getProductsByCategoryName(String categoryName, int page, int pageSize);
 }

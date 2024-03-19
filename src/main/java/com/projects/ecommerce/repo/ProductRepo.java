@@ -2,6 +2,8 @@ package com.projects.ecommerce.repo;
 
 import com.projects.ecommerce.model.Category;
 import com.projects.ecommerce.model.Product;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -34,7 +36,7 @@ public interface ProductRepo extends JpaRepository<Product, Long> {
             @Param("minDiscount") Integer minDiscount,
             @Param("sort") String sort);
     @Query("SELECT p FROM Product p JOIN p.category c WHERE c.name = :categoryName")
-    List<Product> findByCategoryName(@Param("categoryName") String categoryName);
+    Page<Product> findByCategoryName(@Param("categoryName") String categoryName, Pageable pageable);
 
 
 

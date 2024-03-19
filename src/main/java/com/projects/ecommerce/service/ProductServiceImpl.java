@@ -7,6 +7,9 @@ import com.projects.ecommerce.repo.CategoryRepo;
 import com.projects.ecommerce.repo.ProductRepo;
 import com.projects.ecommerce.requests.CreateProductRequest;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -109,9 +112,9 @@ public class ProductServiceImpl implements ProductService {
 
 
 
-    @Override
-    public List<Product> getProductsByCategoryName(String categoryName) {
-        return productRepo.findByCategoryName(categoryName);
-    }
 
+    public Page<Product> getProductsByCategoryName(String categoryName, int page, int pageSize) {
+        PageRequest pageRequest = PageRequest.of(page, pageSize);
+        return productRepo.findByCategoryName(categoryName, pageRequest);
+    }
 }
