@@ -1,0 +1,214 @@
+package com.projects.ecommerce.Auth.service;
+
+import com.projects.ecommerce.Auth.dto.AuthResponse;
+import com.projects.ecommerce.Auth.dto.LoginRequestDto;
+import com.projects.ecommerce.Auth.dto.RegisterRequestDto;
+
+import com.projects.ecommerce.Auth.expetion.AuthenticationnException;
+import com.projects.ecommerce.Config.JwtService;
+import com.projects.ecommerce.token.Token;
+import com.projects.ecommerce.token.TokenRepo;
+import com.projects.ecommerce.token.TokenType;
+import com.projects.ecommerce.traits.ApiTrait;
+import com.projects.ecommerce.user.*;
+import com.projects.ecommerce.user.EmailAlreadyExistsException;
+import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.Objects;
+import java.util.UUID;
+
+@AllArgsConstructor
+@Service
+public class AuthServiseImpl implements AuthService {
+
+    /*
+    |--------------------------------------------------------------------------
+    | Inject Classes
+    |--------------------------------------------------------------------------
+    |
+    | Get Number of Followers And Following and Get Friends
+    |
+    */
+    private final UserRepo userRepo;
+    private final JwtService jwtService;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final TokenRepo tokenRepo;
+    private EmailService emailService;
+    private final ApiTrait apiTrait;
+    /*
+    |--------------------------------------------------------------------------
+    | Implement Register
+    |--------------------------------------------------------------------------
+    |
+    | In her you can Controller the data you want to enter to db
+    |
+    */
+    @Override
+    public AuthResponse register(RegisterRequestDto request) {
+        var user = User.builder()
+                .firstname(request.getFirstname())
+                .lastname(request.getLastname())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .role(Role.USER)
+                .gender(request.getGender())
+                .phone(request.getPhone())
+                .build();
+
+        // Create EmailVerification entity
+        EmailVerification emailVerification = new EmailVerification();
+        emailVerification.setUser(user);
+        emailVerification.setVerificationToken(UUID.randomUUID().toString());
+        emailVerification.setVerificationTokenExpiry(LocalDateTime.now().plusHours(24)); // Set expiry time (1 day)
+        user.setEmailVerification(emailVerification);
+
+        // account status for user
+        AccountStatus accountStatus = new AccountStatus();
+        accountStatus.setUser(user);
+        accountStatus.setAccountNonExpired(true);
+        accountStatus.setAccountNonLocked(true);
+        accountStatus.setCredentialsNonExpired(true);
+        user.setAccountStatus(accountStatus);
+
+        if (userRepo.existsByEmail(request.getEmail())) {
+            throw new EmailAlreadyExistsException("Email already exists");
+        }
+
+        var savedUser = userRepo.save(user);
+        int expirationDay = getExpirationDay(false);
+        var jwtToken = jwtService.generateToken(savedUser, expirationDay); // Generate token for savedUser
+        savedUserToken(savedUser, jwtToken, false);
+        emailService.sendVerificationEmail(savedUser.getEmail(), savedUser.getEmailVerification().getVerificationToken()); // Send verification email using EmailVerification entity
+        return AuthResponse.builder().token(jwtToken).message("Register Success Have A Nice Time").build();
+    }
+
+    @Override
+    public ResponseEntity<?> resendVerificationEmail(String email) throws Exception {
+        User user = userRepo.findByEmail(email);
+
+//        if (user.getEmailVerified()) {
+//            throw new Exception("User is already verified");
+//        }
+
+        // Update verification token and expiry time using EmailVerification entity
+        EmailVerification emailVerification = user.getEmailVerification();
+        emailVerification.setVerificationToken(UUID.randomUUID().toString());
+        emailVerification.setVerificationTokenExpiry(LocalDateTime.now().plusHours(24)); // Set expiry time (1 day)
+        user.setEmailVerification(emailVerification);
+
+        userRepo.save(user);
+        emailService.sendVerificationEmail(user.getEmail(), user.getEmailVerification().getVerificationToken()); // Send verification email using EmailVerification entity
+        return  ApiTrait.successMessage("Email Send Success", HttpStatus.ACCEPTED);
+    }
+
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Implement Log in
+    |--------------------------------------------------------------------------
+    |
+    | Take Data you need from auth and have all information to check any think you need
+    |
+    */
+    public AuthResponse login(LoginRequestDto request) throws Exception {
+        try {
+
+
+            // Authenticate user
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+
+            // Retrieve user details
+            var user = userRepo.findByEmail(request.getEmail());
+
+            int expirationDay = getExpirationDay(request.isRemember());
+
+            // Generate JWT token
+            var jwtToken = jwtService.generateToken(user, expirationDay);
+            savedUserToken(user, jwtToken, request.isRemember());
+
+            if (!user.getEmailVerification().isEmailVerified())
+            {
+                return AuthResponse.builder().token(jwtToken).message("Login Success Email " + user.getEmail() + " Not Verify").build();
+            }
+            // Return the token along with the user details
+            return AuthResponse.builder().token(jwtToken).message("Login Success").build();
+        } catch (AuthenticationException e) {
+
+            String errorMessage = getString(e);
+            throw new AuthenticationnException(errorMessage) {
+
+            };
+        }
+    }
+
+    // error message when error in login
+    private static String getString(AuthenticationException e) {
+        String errorMessage = e.getMessage();
+        if (Objects.equals(errorMessage, "UserDetailsService returned null, which is an interface contract violation")) {
+            errorMessage = "You Are Not Register Yet";
+        } else if (Objects.equals(errorMessage, "User credentials have expired")) {
+            errorMessage = "User credentials have expired Please Reset Your Password";
+        } else if (Objects.equals(errorMessage, "User account has expired")) {
+            errorMessage = "User account has expired Please Contact Support Service";
+        } else if (Objects.equals(errorMessage, "User account is locked")) {
+            errorMessage = "User account is locked Please Contact Support Service";
+        } else if (Objects.equals(errorMessage, "Bad credentials")) {
+            errorMessage = "Invalid Credentials";
+        }
+        return errorMessage;
+    }
+
+
+    // Saved any token when user register or login
+    private void savedUserToken(User user, String jwtToken, boolean status) {
+        var myToken = Token.builder()
+                .user(user)
+                .token(jwtToken)
+                .rememberMe(status)
+                .tokenType(TokenType.BEARER)
+                .expired(false)
+                .revoked(false)
+                .build();
+        tokenRepo.save(myToken);
+    }
+
+    // set expiry date for token
+    private static int getExpirationDay(boolean request) {
+        int expirationDay;
+        if (request)
+        {
+            expirationDay = 1000 * 60 * 60 * 24 * 7; // check Remember Me token Valid 7 Days or when logout
+        } else {
+            expirationDay = 1000 * 60 * 60 * 24; // If Not check RememberMe token valid 24 Hour or when logout
+        }
+        return expirationDay;
+    }
+
+
+    // if you need make only for user one token call this method on login
+    private void revokeAllUserToken(User user)
+    {
+        var validTokensForUser = tokenRepo.findAllValidTokenByUser(user.getId());
+        if (validTokensForUser.isEmpty())
+            return;
+        validTokensForUser.forEach(t -> {
+            t.setExpired(true);
+            t.setRevoked(true);
+        });
+        tokenRepo.saveAll(validTokensForUser);
+    }
+
+
+
+}
