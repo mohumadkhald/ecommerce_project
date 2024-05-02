@@ -1,7 +1,7 @@
 package com.projects.ecommerce.Config;
 
 
-import com.projects.ecommerce.token.TokenRepo;
+import com.projects.ecommerce.Auth.token.TokenRepo;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

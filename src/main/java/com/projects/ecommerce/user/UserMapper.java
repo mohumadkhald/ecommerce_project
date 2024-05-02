@@ -3,6 +3,10 @@ package com.projects.ecommerce.user;
 import com.projects.ecommerce.Auth.dto.RegisterRequestDto;
 
 import com.projects.ecommerce.user.dto.UserResponseDto;
+import com.projects.ecommerce.user.model.AccountStatus;
+import com.projects.ecommerce.user.model.EmailVerification;
+import com.projects.ecommerce.user.model.Role;
+import com.projects.ecommerce.user.model.User;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

@@ -5,8 +5,12 @@ import com.projects.ecommerce.Auth.dto.AuthResponse;
 import com.projects.ecommerce.Auth.dto.LoginRequestDto;
 import com.projects.ecommerce.Auth.dto.RegisterRequestDto;
 import com.projects.ecommerce.Auth.service.AuthService;
-import com.projects.ecommerce.token.TokenRepo;
-import com.projects.ecommerce.user.*;
+import com.projects.ecommerce.Auth.token.TokenRepo;
+import com.projects.ecommerce.user.model.EmailVerification;
+import com.projects.ecommerce.user.model.User;
+import com.projects.ecommerce.user.repository.EmailVerificationRepo;
+import com.projects.ecommerce.user.repository.UserRepo;
+import com.projects.ecommerce.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -78,6 +82,7 @@ public class AuthController {
         validTokensForUser.forEach(t -> {
             t.setExpired(true);
             t.setRevoked(true);
+            t.setExpirationDate(LocalDateTime.now());
         });
         tokenRepo.saveAll(validTokensForUser);
     }

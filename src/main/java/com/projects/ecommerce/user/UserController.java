@@ -2,6 +2,9 @@ package com.projects.ecommerce.user;
 
 import com.projects.ecommerce.Auth.dto.RegisterRequestDto;
 import com.projects.ecommerce.user.dto.UserResponseDto;
+import com.projects.ecommerce.user.model.User;
+import com.projects.ecommerce.user.repository.UserRepo;
+import com.projects.ecommerce.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;

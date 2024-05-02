@@ -6,12 +6,16 @@ import com.projects.ecommerce.Auth.dto.RegisterRequestDto;
 
 import com.projects.ecommerce.Auth.expetion.AuthenticationnException;
 import com.projects.ecommerce.Config.JwtService;
-import com.projects.ecommerce.token.Token;
-import com.projects.ecommerce.token.TokenRepo;
-import com.projects.ecommerce.token.TokenType;
+import com.projects.ecommerce.Auth.token.Token;
+import com.projects.ecommerce.Auth.token.TokenRepo;
+import com.projects.ecommerce.Auth.token.TokenType;
 import com.projects.ecommerce.traits.ApiTrait;
-import com.projects.ecommerce.user.*;
 import com.projects.ecommerce.user.EmailAlreadyExistsException;
+import com.projects.ecommerce.user.model.AccountStatus;
+import com.projects.ecommerce.user.model.EmailVerification;
+import com.projects.ecommerce.user.model.Role;
+import com.projects.ecommerce.user.model.User;
+import com.projects.ecommerce.user.repository.UserRepo;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -169,20 +173,6 @@ public class AuthServiseImpl implements AuthService {
         return errorMessage;
     }
 
-
-    // Saved any token when user register or login
-    private void savedUserToken(User user, String jwtToken, boolean status) {
-        var myToken = Token.builder()
-                .user(user)
-                .token(jwtToken)
-                .rememberMe(status)
-                .tokenType(TokenType.BEARER)
-                .expired(false)
-                .revoked(false)
-                .build();
-        tokenRepo.save(myToken);
-    }
-
     // set expiry date for token
     private static int getExpirationDay(boolean request) {
         int expirationDay;
@@ -194,6 +184,26 @@ public class AuthServiseImpl implements AuthService {
         }
         return expirationDay;
     }
+
+    // Saved any token when user register or login
+    private void savedUserToken(User user, String jwtToken, boolean status) {
+        int expirationDay = getExpirationDay(status); // Get expiration day based on status
+        LocalDateTime expirationDateTime = LocalDateTime.now().plusDays(expirationDay / (24 * 60 * 60 * 1000));
+
+        var myToken = Token.builder()
+                .user(user)
+                .token(jwtToken)
+                .rememberMe(status)
+                .tokenType(TokenType.BEARER)
+                .expired(false)
+                .revoked(false)
+                .expirationDate(expirationDateTime)
+                .build();
+        tokenRepo.save(myToken);
+    }
+
+
+
 
 
     // if you need make only for user one token call this method on login

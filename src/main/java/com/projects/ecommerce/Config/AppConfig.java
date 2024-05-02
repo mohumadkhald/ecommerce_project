@@ -1,6 +1,6 @@
 package com.projects.ecommerce.Config;
 
-import com.projects.ecommerce.user.UserRepo;
+import com.projects.ecommerce.user.repository.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

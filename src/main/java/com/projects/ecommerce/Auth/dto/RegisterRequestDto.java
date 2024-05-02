@@ -1,5 +1,7 @@
 package com.projects.ecommerce.Auth.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.projects.ecommerce.user.dto.AddressDto;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -8,6 +10,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.Set;
 
 @Data
 @Builder
