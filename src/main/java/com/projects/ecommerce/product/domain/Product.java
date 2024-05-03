@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 
 @Entity
 @Table(name = "products")
@@ -15,7 +16,7 @@ import java.io.Serializable;
 @Data
 @Builder
 public final class Product extends AbstractMappedEntity implements Serializable {
-	
+
 	@Serial
 	private static final long serialVersionUID = 1L;
 	
@@ -30,31 +31,26 @@ public final class Product extends AbstractMappedEntity implements Serializable 
 	@Column(name = "image_url")
 	private String imageUrl;
 	
-	@Column(unique = true)
-	private String sku;
-	
-	@Column(name = "price_unit", columnDefinition = "decimal")
-	private Double priceUnit;
-	
-	@Column(name = "quantity")
-	private Integer quantity;
+//	@Column(unique = true)
+//	private String sku;
+
+	@Column(name = "all-quantity")
+	private Integer allQuantity;
 
 	private int discountedPrice;
 
 	private int discountPercent;
 
-	private String color;
+	@Column(columnDefinition = "decimal")
+	private Double price;
 
-	private int price;
-
-	@ManyToOne
-	@JoinColumn(name = "size_id")
-	private Size size;
 
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "category_id")
 	private Category category;
-	
+
+	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<ProductVariation> variations;
 }
 
 

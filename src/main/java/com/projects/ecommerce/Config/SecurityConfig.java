@@ -36,7 +36,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/admin/mo")
                         .hasAuthority("ADMIN")
-                        .requestMatchers("/ws/**","/public/images/**", "/api/auth/register", "/api/auth/login", "/api/auth/send-reset", "/api/auth/reset", "/api/auth/verify-email")
+                        .requestMatchers("/public/images/**", "/api/auth/register", "/api/auth/login", "/api/auth/send-reset", "/api/auth/reset", "/api/auth/verify-email")
                         .permitAll()
                         .anyRequest()
                         .authenticated())

@@ -91,7 +91,7 @@ public class AuthServiseImpl implements AuthService {
         int expirationDay = getExpirationDay(false);
         var jwtToken = jwtService.generateToken(savedUser, expirationDay); // Generate token for savedUser
         savedUserToken(savedUser, jwtToken, false);
-        emailService.sendVerificationEmail(savedUser.getEmail(), savedUser.getEmailVerification().getVerificationToken()); // Send verification email using EmailVerification entity
+//        emailService.sendVerificationEmail(savedUser.getEmail(), savedUser.getEmailVerification().getVerificationToken()); // Send verification email using EmailVerification entity
         return AuthResponse.builder().token(jwtToken).message("Register Success Have A Nice Time").build();
     }
 

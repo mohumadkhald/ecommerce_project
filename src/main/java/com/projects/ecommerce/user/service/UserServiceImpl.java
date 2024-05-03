@@ -3,7 +3,10 @@ package com.projects.ecommerce.user.service;
 import com.projects.ecommerce.Auth.dto.RegisterRequestDto;
 import com.projects.ecommerce.Config.JwtService;
 import com.projects.ecommerce.traits.ApiTrait;
+import com.projects.ecommerce.user.EmailAlreadyExistsException;
 import com.projects.ecommerce.user.UserMapper;
+
+import com.projects.ecommerce.user.UserNotFoundException;
 import com.projects.ecommerce.user.repository.UserRepo;
 import com.projects.ecommerce.user.dto.UserResponseDto;
 import com.projects.ecommerce.user.model.User;
@@ -62,7 +65,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User findById(Integer id) {
         return userRepo.findById(id)
-                .orElseThrow(() -> new com.projects.ecommerce.user.UserNotFoundException("User not found with id: " + id));
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
     }
 
 
@@ -84,7 +87,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponseDto registerUser(RegisterRequestDto dto) {
         if (userRepo.existsByEmail(dto.getEmail())) {
-            throw new com.projects.ecommerce.user.EmailAlreadyExistsException("Email already exists");
+            throw new EmailAlreadyExistsException("Email already exists");
         }
         var user = userMapper.toUser(dto);
         userRepo.save(user);
@@ -116,7 +119,7 @@ public class UserServiceImpl implements UserService {
     private UserResponseDto findUserById(Integer id) {
         Optional<User> userOptional = userRepo.findById(id);
         if (userOptional.isEmpty()) {
-            throw new com.projects.ecommerce.user.UserNotFoundException("User not found with id: " + id);
+            throw new UserNotFoundException("User not found with id: " + id);
         }
         return userOptional.map(userMapper::toUserResponseDto).orElse(null);
     }
@@ -147,7 +150,7 @@ public class UserServiceImpl implements UserService {
         if (user != null) {
             return userMapper.toUserResponseDto(user);
         }
-        throw new com.projects.ecommerce.user.UserNotFoundException("The user not found " + email);
+        throw new UserNotFoundException("The user not found " + email);
     }
 
     /*|--------------------------------------------------------------------------
@@ -236,7 +239,7 @@ public class UserServiceImpl implements UserService {
         try {
             // Retrieve the user by id
             User user = userRepo.findById(id)
-                    .orElseThrow(() -> new com.projects.ecommerce.user.UserNotFoundException("User not found with id: " + id));
+                    .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
 
             // Check if the email is being updated
             if (!user.getEmail().equals(dto.getEmail())) {
@@ -244,7 +247,7 @@ public class UserServiceImpl implements UserService {
                 User existingUserByEmail = userRepo.findByEmail(dto.getEmail());
                 if (existingUserByEmail != null && !existingUserByEmail.getId().equals(id)) {
                     // If the new email already exists and belongs to a different user, throw an exception
-                    throw new com.projects.ecommerce.user.EmailAlreadyExistsException("Email Already Exists: " + dto.getEmail());
+                    throw new EmailAlreadyExistsException("Email Already Exists: " + dto.getEmail());
                 }
             }
 
@@ -260,10 +263,10 @@ public class UserServiceImpl implements UserService {
 
             // Return success response
             return ApiTrait.successMessage("User updated successfully", HttpStatus.OK);
-        } catch (com.projects.ecommerce.user.UserNotFoundException e) {
+        } catch (UserNotFoundException e) {
             // Return error response for user not found
-            throw  new com.projects.ecommerce.user.UserNotFoundException("The User Not Found" + id);
-        } catch (com.projects.ecommerce.user.EmailAlreadyExistsException e) {
+            throw  new UserNotFoundException("The User Not Found" + id);
+        } catch (EmailAlreadyExistsException e) {
             // Return error response for email already exists
             return ApiTrait.errorMessage(null, e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
