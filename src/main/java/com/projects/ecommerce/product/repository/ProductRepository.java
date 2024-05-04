@@ -3,6 +3,7 @@ package com.projects.ecommerce.product.repository;
 
 import com.projects.ecommerce.product.domain.Color;
 import com.projects.ecommerce.product.domain.Product;
+import com.projects.ecommerce.product.domain.Size;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -40,12 +41,15 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
             "WHERE c.categoryTitle = :categoryName " +
             "AND (:color IS NULL OR pv.color = :color) " +
             "AND (:minPrice IS NULL OR p.price >= :minPrice) " +
-            "AND (:maxPrice IS NULL OR p.price <= :maxPrice)")
+            "AND (:maxPrice IS NULL OR p.price <= :maxPrice) " +
+            "AND (:size IS NULL OR pv.size = :size)")
     Page<Product> findByCategoryNameAndFilters(@Param("categoryName") String categoryName,
                                                @Param("color") Color color,
                                                @Param("minPrice") Double minPrice,
                                                @Param("maxPrice") Double maxPrice,
+                                               @Param("size") Size size,
                                                Pageable pageable);
+
 
 
 

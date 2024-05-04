@@ -19,6 +19,7 @@ public interface ProductMappingHelper {
 				.productTitle(product.getProductTitle())
 				.imageUrl(product.getImageUrl())
 				.price(product.getPrice())
+				.discountPercent(product.getDiscountPercent())
 				.categoryDto(
 						CategoryDto.builder()
 								.categoryId(product.getCategory().getCategoryId())
@@ -51,6 +52,7 @@ public interface ProductMappingHelper {
 				.productTitle(productDto.getProductTitle())
 				.imageUrl(productDto.getImageUrl())
 				.price(productDto.getPrice())
+				.discountPercent(productDto.getDiscountPercent())
 				.category(
 						Category.builder()
 								.categoryId(productDto.getCategoryDto().getCategoryId())
@@ -101,6 +103,7 @@ public interface ProductMappingHelper {
 					.productTitle(productDto.getProductTitle())
 					.imageUrl(productDto.getImageUrl())
 					.price(productDto.getPrice())
+					.discountPercent(productDto.getDiscountPercent())
 					.allQuantity(productDto.getQuantity())
 					.category(
 							Category.builder()
@@ -127,6 +130,8 @@ public interface ProductMappingHelper {
 			return product;
 		}
 	}
+
+
 
 }
 

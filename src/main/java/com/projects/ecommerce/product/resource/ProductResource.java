@@ -1,7 +1,7 @@
 package com.projects.ecommerce.product.resource;
 
 
-import com.projects.ecommerce.product.domain.Color;
+import com.projects.ecommerce.product.domain.Size;
 import com.projects.ecommerce.product.dto.ProductDto;
 import com.projects.ecommerce.product.dto.ProductRequestDto;
 import com.projects.ecommerce.product.service.ProductService;
@@ -100,13 +100,6 @@ public class ProductResource {
 		log.info("*** ProductDto, resource; update product with productId *");
 		return ResponseEntity.ok(this.productService.update(Integer.parseInt(productId), productDto));
 	}
-	
-	@DeleteMapping("/{productId}")
-	public ResponseEntity<Boolean> deleteById(@PathVariable("productId") final String productId) {
-		log.info("*** Boolean, resource; delete product by id *");
-		this.productService.deleteById(Integer.parseInt(productId));
-		return ResponseEntity.ok(true);
-	}
 
 	@GetMapping("/product-category/{categoryName}")
 	public ResponseEntity<Page<ProductDto>> getProductsByCategoryNameAndFilters(
@@ -114,6 +107,7 @@ public class ProductResource {
 			@RequestParam(required = false) String color,
 			@RequestParam(required = false) Double minPrice,
 			@RequestParam(required = false) Double maxPrice,
+			@RequestParam(required = false) String size, // Change parameter type to String
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int pageSize,
 			@RequestParam(defaultValue = "desc") String sortDirection) {
@@ -122,11 +116,13 @@ public class ProductResource {
 		if (!sortDirection.equals("desc")) {
 			sort = Sort.by("createdAt").ascending();
 		}
-		Color colorObject = Color.valueOf(color); // Assuming Color is an enum with values like RED, BLUE, etc.
-		Page<ProductDto> products = productService.getProductsByCategoryNameAndFilters(categoryName, String.valueOf(colorObject), minPrice, maxPrice, page, pageSize, sort);
+		Page<ProductDto> products = productService.getProductsByCategoryNameAndFilters(categoryName, color, minPrice, maxPrice, size != null ? size.toUpperCase() : null, page, pageSize, sort); // Convert size to uppercase
 		return ResponseEntity.ok(products);
 	}
-	
+
+
+
+
 }
 
 
