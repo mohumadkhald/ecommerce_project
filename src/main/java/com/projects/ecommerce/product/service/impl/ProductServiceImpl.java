@@ -4,6 +4,7 @@ package com.projects.ecommerce.product.service.impl;
 import com.projects.ecommerce.product.domain.Color;
 import com.projects.ecommerce.product.domain.Product;
 import com.projects.ecommerce.product.domain.ProductVariation;
+import com.projects.ecommerce.product.domain.Size;
 import com.projects.ecommerce.product.dto.ProductDto;
 import com.projects.ecommerce.product.dto.ProductRequestDto;
 import com.projects.ecommerce.product.exception.wrapper.ProductNotFoundException;
@@ -146,12 +147,22 @@ public class ProductServiceImpl implements ProductService {
 
 
 	@Override
-	public Page<ProductDto> getProductsByCategoryNameAndFilters(String categoryName, String color, Double minPrice, Double maxPrice, int page, int pageSize, Sort sort) {
+	public Page<ProductDto> getProductsByCategoryNameAndFilters(String categoryName, String color, Double minPrice, Double maxPrice, String size, int page, int pageSize, Sort sort) {
 		Pageable pageable = PageRequest.of(page, pageSize, sort);
-		Color colorObject = Color.valueOf(color); // Assuming Color is an enum with values like RED, BLUE, etc.
-		Page<Product> productPage = productRepository.findByCategoryNameAndFilters(categoryName, colorObject, minPrice, maxPrice, pageable);
+
+		Page<Product> productPage;
+		if (color == null) {
+			productPage = productRepository.findByCategoryNameAndFilters(categoryName, null, minPrice, maxPrice, size != null ? Size.valueOf(size.toUpperCase()) : null, pageable); // Convert size to uppercase
+		} else {
+			productPage = productRepository.findByCategoryNameAndFilters(categoryName, Color.valueOf(color), minPrice, maxPrice, size != null ? Size.valueOf(size.toUpperCase()) : null, pageable); // Convert size to uppercase
+		}
+
 		return productPage.map(ProductMappingHelper::map);
 	}
+
+
+
+
 
 }
 
