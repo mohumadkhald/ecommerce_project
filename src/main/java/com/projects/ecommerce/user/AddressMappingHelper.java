@@ -28,7 +28,16 @@ public interface AddressMappingHelper {
 						.build())
 				.build();
 	}
-	
+
+	public static AddressRequestDto map1(final Address address) {
+		return AddressRequestDto.builder()
+				.addressId(address.getAddressId())
+				.fullAddress(address.getFullAddress())
+				.postalCode(address.getPostalCode())
+				.city(address.getCity())
+				.userId(address.getUser().getId())
+				.build();
+	}
 	public static Address map(final AddressRequestDto addressDto) {
 		return Address.builder()
 				.addressId(addressDto.getAddressId())
@@ -53,7 +62,7 @@ public interface AddressMappingHelper {
 								.build())
 				.build();
 	}
-	
+
 	
 }
 

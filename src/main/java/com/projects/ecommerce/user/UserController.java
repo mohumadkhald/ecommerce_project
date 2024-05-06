@@ -1,11 +1,13 @@
 package com.projects.ecommerce.user;
 
 import com.projects.ecommerce.Auth.dto.RegisterRequestDto;
+import com.projects.ecommerce.user.dto.UserDto;
 import com.projects.ecommerce.user.dto.UserResponseDto;
 import com.projects.ecommerce.user.model.User;
 import com.projects.ecommerce.user.repository.UserRepo;
 import com.projects.ecommerce.user.service.UserService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -87,6 +89,14 @@ public class UserController {
     }
 
 
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserDto> findById(
+            @PathVariable("userId")
+            @NotBlank(message = "Input must not blank")
+            @Valid final String userId) {
+        return ResponseEntity.ok(this.userService.findById(Integer.parseInt(userId.strip())));
+    }
 
     /*
     |--------------------------------------------------------------------------

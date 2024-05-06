@@ -1,15 +1,20 @@
 package com.projects.ecommerce.user.service;
 
 import com.projects.ecommerce.Auth.dto.RegisterRequestDto;
+import com.projects.ecommerce.user.UserNotFoundException;
+import com.projects.ecommerce.user.dto.UserDto;
 import com.projects.ecommerce.user.dto.UserResponseDto;
-import com.projects.ecommerce.user.model.User;
+import com.projects.ecommerce.user.model.Address;
 import org.springframework.http.ResponseEntity;
+
+import java.util.Set;
 
 public interface UserService {
 
     Integer findUserIdByJwt(String jwt);
 
-    User findById(Integer id);
+
+    UserDto findById(Integer id);
 
     // Method Create User
     UserResponseDto registerUser(RegisterRequestDto dto);
@@ -26,8 +31,6 @@ public interface UserService {
     ResponseEntity<?> getAllUsers();
 
     ResponseEntity<?> updateUser(Integer id, RegisterRequestDto dto);
-
-
 
 
 }

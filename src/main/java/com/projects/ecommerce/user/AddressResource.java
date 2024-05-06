@@ -4,6 +4,8 @@ package com.projects.ecommerce.user;
 import com.projects.ecommerce.user.dto.AddressDto;
 import com.projects.ecommerce.user.dto.AddressRequestDto;
 import com.projects.ecommerce.user.dto.DtoCollectionResponse;
+import com.projects.ecommerce.user.model.Address;
+import com.projects.ecommerce.user.repository.AddressRepository;
 import com.projects.ecommerce.user.service.AddressService;
 import com.projects.ecommerce.user.service.UserService;
 import jakarta.validation.Valid;
@@ -11,8 +13,11 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Set;
 
 @RestController
 @RequestMapping(value = {"/api/address"})
@@ -21,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 public class AddressResource {
 	
 	private final AddressService addressService;
+	private final AddressRepository addressRepository;
 	private final UserService userService;
 	
 	@GetMapping
@@ -37,9 +43,16 @@ public class AddressResource {
 		log.info("*** AddressDto, resource; fetch address by id *");
 		return ResponseEntity.ok(this.addressService.findById(Integer.parseInt(addressId.strip())));
 	}
-	
+
+	@GetMapping("/{userId}/addresses")
+	public ResponseEntity<DtoCollectionResponse<AddressRequestDto>> getUserAddresses(@PathVariable Integer userId) {
+			// Call the service method to get addresses for the user
+		return ResponseEntity.ok(new DtoCollectionResponse<>(this.addressService.getUserAddresses(userId)));
+
+	}
+
 	@PostMapping
-	public ResponseEntity<AddressDto> save(
+	public ResponseEntity<AddressRequestDto> save(
 			@RequestHeader("Authorization") String jwtToken,
 			@RequestBody 
 			@NotNull(message = "Input must not NULL")

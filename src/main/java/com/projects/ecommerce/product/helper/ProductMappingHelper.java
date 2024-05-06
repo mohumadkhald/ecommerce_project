@@ -4,9 +4,10 @@ package com.projects.ecommerce.product.helper;
 import com.projects.ecommerce.product.domain.Category;
 import com.projects.ecommerce.product.domain.Product;
 import com.projects.ecommerce.product.domain.ProductVariation;
-import com.projects.ecommerce.product.dto.CategoryDto;
+import com.projects.ecommerce.product.domain.SubCategory;
 import com.projects.ecommerce.product.dto.ProductDto;
 import com.projects.ecommerce.product.dto.ProductRequestDto;
+import com.projects.ecommerce.product.dto.SubCategoryDto;
 import com.projects.ecommerce.product.service.impl.ProductServiceImpl;
 
 import java.util.*;
@@ -20,12 +21,12 @@ public interface ProductMappingHelper {
 				.imageUrl(product.getImageUrl())
 				.price(product.getPrice())
 				.discountPercent(product.getDiscountPercent())
-				.categoryDto(
-						CategoryDto.builder()
-								.categoryId(product.getCategory().getCategoryId())
-								.categoryTitle(product.getCategory().getCategoryTitle())
+				.subCategoryDto(
+						SubCategoryDto.builder()
+								.id(product.getSubCategory().getSubId())
+								.name(product.getSubCategory().getName())
+								.categoryId(product.getSubCategory().getCategory().getCategoryId())
 								.build());
-
 		// Extract color and size from all variations
 		Map<String, List<String>> colorsAndSizes = new HashMap<>();
 		List<ProductVariation> variations = product.getVariations();
@@ -53,10 +54,12 @@ public interface ProductMappingHelper {
 				.imageUrl(productDto.getImageUrl())
 				.price(productDto.getPrice())
 				.discountPercent(productDto.getDiscountPercent())
-				.category(
-						Category.builder()
-								.categoryId(productDto.getCategoryDto().getCategoryId())
-								.categoryTitle(productDto.getCategoryDto().getCategoryTitle())
+				.subCategory(
+						SubCategory.builder()
+								.subId(productDto.getSubCategoryDto().getId())
+								.name(productDto.getSubCategoryDto().getName())
+								.category(Category.builder()
+										.build())
 								.build())
 				.build();
 
@@ -105,9 +108,10 @@ public interface ProductMappingHelper {
 					.price(productDto.getPrice())
 					.discountPercent(productDto.getDiscountPercent())
 					.allQuantity(productDto.getQuantity())
-					.category(
-							Category.builder()
-									.categoryId(productDto.getCategoryId())
+					.subCategory(
+							SubCategory.builder()
+									.subId(productDto.getSubCategoryId())
+									.category(Category.builder().build())
 									.build())
 					.build();
 

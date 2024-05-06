@@ -4,13 +4,16 @@ import com.projects.ecommerce.user.AddressMappingHelper;
 import com.projects.ecommerce.user.dto.AddressDto;
 import com.projects.ecommerce.user.dto.AddressRequestDto;
 import com.projects.ecommerce.user.expetion.AddressNotFoundException;
+import com.projects.ecommerce.user.model.Address;
 import com.projects.ecommerce.user.repository.AddressRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,10 +43,10 @@ public class AddressServiceImpl implements AddressService {
 	}
 	
 	@Override
-	public AddressDto save(final AddressRequestDto addressRequestDto) {
+	public AddressRequestDto save(final AddressRequestDto addressRequestDto) {
 		log.info("*** AddressDto, service; save address *");
 
-		return AddressMappingHelper.map(this.addressRepository.save(AddressMappingHelper.map(addressRequestDto)));
+		return AddressMappingHelper.map1(this.addressRepository.save(AddressMappingHelper.map(addressRequestDto)));
 	}
 
 
@@ -68,9 +71,18 @@ public class AddressServiceImpl implements AddressService {
 		log.info("*** Void, service; delete address by id *");
 		this.addressRepository.deleteById(addressId);
 	}
-	
-	
-	
+
+	@Override
+	public Collection<AddressRequestDto> getUserAddresses(Integer userId) {
+
+		return this.addressRepository.getUserAddresses(userId)
+				.stream()
+				.map(AddressMappingHelper::map1)
+				.distinct()
+				.toList();
+	}
+
+
 }
 
 

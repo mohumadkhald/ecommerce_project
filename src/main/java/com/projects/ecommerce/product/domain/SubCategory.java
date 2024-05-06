@@ -1,20 +1,19 @@
 package com.projects.ecommerce.product.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
+
+
 
 @Entity
 @Table(name = "sub_categories")
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true, exclude = {"subCategories", "products"})
+@EqualsAndHashCode(callSuper = true, exclude = {"products"})
 @Data
 @Builder
 public final class SubCategory extends AbstractMappedEntity implements Serializable {
@@ -24,18 +23,19 @@ public final class SubCategory extends AbstractMappedEntity implements Serializa
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id", unique = true, nullable = false, updatable = false)
-	private Integer id;
+	@Column(name = "sub_id", unique = true, nullable = false, updatable = false)
+	private Integer subId;
 
-	@Column(nullable = false)
+	@Column(unique = true, nullable = false, updatable = false)
 	private String name;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "category_id", nullable = false)
 	private Category category;
 
+	@OneToMany(mappedBy = "subCategory", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	private Set<Product> products;
 }
-
 
 
 

@@ -1,5 +1,4 @@
-package com.projects.socialapp.controller;//package com.projects.socialapp.controller;
-//
+package com.projects.ecommerce.utilts.controller;//
 //import org.springframework.core.io.ClassPathResource;
 //import org.springframework.core.io.Resource;
 //import org.springframework.http.MediaType;

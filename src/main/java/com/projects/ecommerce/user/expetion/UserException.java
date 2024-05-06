@@ -1,7 +1,8 @@
 package com.projects.ecommerce.user.expetion;
 
 import com.projects.ecommerce.Auth.expetion.AuthenticationnException;
-import com.projects.ecommerce.traits.ApiTrait;
+import com.projects.ecommerce.utilts.traits.ApiTrait;
+import com.projects.ecommerce.user.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -22,15 +23,15 @@ public class UserException {
     }
 
 
-    @ExceptionHandler(com.projects.ecommerce.user.EmailAlreadyExistsException.class)
-    public ResponseEntity<?> handleEmailAlreadyExistsException(com.projects.ecommerce.user.EmailAlreadyExistsException ex, WebRequest request) {
+    @ExceptionHandler(AlreadyExistsException.class)
+    public ResponseEntity<?> handleAlreadyExistsException(AlreadyExistsException ex, WebRequest request) {
         HashMap<String, String> error = new HashMap<>();
-        error.put("email", "Email Already Exists"); // Assuming "email" is the field causing the error
+        error.put(ex.getField(), ex.getField() + " Already Exists"); // Assuming "email" is the field causing the error
         return  ApiTrait.errorMessage(error, ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(com.projects.ecommerce.user.UserNotFoundException.class)
-    public ResponseEntity<?> handleUserNotFoundException(com.projects.ecommerce.user.UserNotFoundException ex, WebRequest request) {
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<?> handleUserNotFoundException(UserNotFoundException ex, WebRequest request) {
         HashMap<String, String> error = new HashMap<>();
         error.put("user", "User Not Found"); // Assuming "user" is the field causing the error
         return  ApiTrait.errorMessage(error, ex.getMessage(), HttpStatus.NOT_FOUND);

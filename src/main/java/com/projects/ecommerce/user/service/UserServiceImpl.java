@@ -2,11 +2,13 @@ package com.projects.ecommerce.user.service;
 
 import com.projects.ecommerce.Auth.dto.RegisterRequestDto;
 import com.projects.ecommerce.Config.JwtService;
-import com.projects.ecommerce.traits.ApiTrait;
-import com.projects.ecommerce.user.EmailAlreadyExistsException;
+import com.projects.ecommerce.utilts.traits.ApiTrait;
 import com.projects.ecommerce.user.UserMapper;
 
+import com.projects.ecommerce.user.UserMappingHelper;
 import com.projects.ecommerce.user.UserNotFoundException;
+import com.projects.ecommerce.user.dto.UserDto;
+import com.projects.ecommerce.user.expetion.AlreadyExistsException;
 import com.projects.ecommerce.user.repository.UserRepo;
 import com.projects.ecommerce.user.dto.UserResponseDto;
 import com.projects.ecommerce.user.model.User;
@@ -62,12 +64,13 @@ public class UserServiceImpl implements UserService {
         return user.getId();
     }
 
-    @Override
-    public User findById(Integer id) {
-        return userRepo.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
-    }
 
+    @Override
+    public UserDto findById(final Integer userId) {
+        return this.userRepo.findById(userId)
+                .map(UserMappingHelper::map)
+                .orElseThrow(() -> new UserNotFoundException(String.format("User with id: %d not found", userId)));
+    }
 
     /*|--------------------------------------------------------------------------
                                     | End Implement
@@ -87,7 +90,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponseDto registerUser(RegisterRequestDto dto) {
         if (userRepo.existsByEmail(dto.getEmail())) {
-            throw new EmailAlreadyExistsException("Email already exists");
+            throw new AlreadyExistsException("Email", "already exists");
         }
         var user = userMapper.toUser(dto);
         userRepo.save(user);
@@ -247,7 +250,7 @@ public class UserServiceImpl implements UserService {
                 User existingUserByEmail = userRepo.findByEmail(dto.getEmail());
                 if (existingUserByEmail != null && !existingUserByEmail.getId().equals(id)) {
                     // If the new email already exists and belongs to a different user, throw an exception
-                    throw new EmailAlreadyExistsException("Email Already Exists: " + dto.getEmail());
+                    throw new AlreadyExistsException("Email", "Already Exists: " + dto.getEmail());
                 }
             }
 
@@ -266,7 +269,7 @@ public class UserServiceImpl implements UserService {
         } catch (UserNotFoundException e) {
             // Return error response for user not found
             throw  new UserNotFoundException("The User Not Found" + id);
-        } catch (EmailAlreadyExistsException e) {
+        } catch (AlreadyExistsException e) {
             // Return error response for email already exists
             return ApiTrait.errorMessage(null, e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {

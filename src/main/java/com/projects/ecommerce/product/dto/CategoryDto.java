@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Set;
 
@@ -17,13 +18,15 @@ import java.util.Set;
 @Builder
 public class CategoryDto implements Serializable {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	private Integer categoryId;
 	private String categoryTitle;
 
 	@JsonInclude(Include.NON_NULL)
-	private Set<ProductDto> productDtos;
+	private Set<SubCategoryDto> subCategoryDtos;
+
 
 }
 

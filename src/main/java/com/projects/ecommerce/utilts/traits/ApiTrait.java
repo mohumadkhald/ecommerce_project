@@ -1,4 +1,4 @@
-package com.projects.ecommerce.traits;
+package com.projects.ecommerce.utilts.traits;
 
 import com.projects.ecommerce.user.dto.UserResponseDto;
 import org.springframework.http.HttpStatus;

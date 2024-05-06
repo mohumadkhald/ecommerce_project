@@ -9,8 +9,8 @@ import com.projects.ecommerce.Config.JwtService;
 import com.projects.ecommerce.Auth.token.Token;
 import com.projects.ecommerce.Auth.token.TokenRepo;
 import com.projects.ecommerce.Auth.token.TokenType;
-import com.projects.ecommerce.traits.ApiTrait;
-import com.projects.ecommerce.user.EmailAlreadyExistsException;
+import com.projects.ecommerce.utilts.traits.ApiTrait;
+import com.projects.ecommerce.user.expetion.AlreadyExistsException;
 import com.projects.ecommerce.user.model.AccountStatus;
 import com.projects.ecommerce.user.model.EmailVerification;
 import com.projects.ecommerce.user.model.Role;
@@ -84,7 +84,7 @@ public class AuthServiseImpl implements AuthService {
         user.setAccountStatus(accountStatus);
 
         if (userRepo.existsByEmail(request.getEmail())) {
-            throw new EmailAlreadyExistsException("Email already exists");
+            throw new AlreadyExistsException("email", "already exists");
         }
 
         var savedUser = userRepo.save(user);
@@ -99,9 +99,9 @@ public class AuthServiseImpl implements AuthService {
     public ResponseEntity<?> resendVerificationEmail(String email) throws Exception {
         User user = userRepo.findByEmail(email);
 
-//        if (user.getEmailVerified()) {
-//            throw new Exception("User is already verified");
-//        }
+        if (user.getEmailVerification().isEmailVerified()) {
+            return  ApiTrait.successMessage("Email Already Verify", HttpStatus.FOUND);
+        }
 
         // Update verification token and expiry time using EmailVerification entity
         EmailVerification emailVerification = user.getEmailVerification();
@@ -112,6 +112,7 @@ public class AuthServiseImpl implements AuthService {
         userRepo.save(user);
         emailService.sendVerificationEmail(user.getEmail(), user.getEmailVerification().getVerificationToken()); // Send verification email using EmailVerification entity
         return  ApiTrait.successMessage("Email Send Success", HttpStatus.ACCEPTED);
+
     }
 
 

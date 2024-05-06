@@ -12,6 +12,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 @EnableJpaRepositories
 public interface ProductRepository extends JpaRepository<Product, Integer> {
@@ -36,14 +38,14 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 //                                               Pageable pageable);
 
     @Query("SELECT DISTINCT p FROM Product p " +
-            "JOIN p.category c " +
+            "JOIN p.subCategory c " +
             "JOIN p.variations pv " +
-            "WHERE c.categoryTitle = :categoryName " +
+            "WHERE c.name = :subCategoryName " +
             "AND (:color IS NULL OR pv.color = :color) " +
             "AND (:minPrice IS NULL OR p.price >= :minPrice) " +
             "AND (:maxPrice IS NULL OR p.price <= :maxPrice) " +
             "AND (:size IS NULL OR pv.size = :size)")
-    Page<Product> findByCategoryNameAndFilters(@Param("categoryName") String categoryName,
+    Page<Product> findByCategoryNameAndFilters(@Param("subCategoryName") String subCategoryName,
                                                @Param("color") Color color,
                                                @Param("minPrice") Double minPrice,
                                                @Param("maxPrice") Double maxPrice,
@@ -51,6 +53,7 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
                                                Pageable pageable);
 
 
+    Product findByProductTitle(String productTitle);
 
-
+    Optional<Product> findById(Integer productId);
 }

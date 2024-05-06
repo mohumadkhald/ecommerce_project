@@ -12,7 +12,7 @@ import java.util.Set;
 @Table(name = "categories")
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true, exclude = {"products"})
+@EqualsAndHashCode(callSuper = true, exclude = {"subCategories"})
 @Data
 @Builder
 public final class Category extends AbstractMappedEntity implements Serializable {
@@ -25,16 +25,12 @@ public final class Category extends AbstractMappedEntity implements Serializable
 	@Column(name = "category_id", unique = true, nullable = false, updatable = false)
 	private Integer categoryId;
 
-	@Column(name = "category_title")
+	@Column(name = "category_title", unique = true, nullable = false)
 	private String categoryTitle;
 
-
-	@JsonIgnore
 	@OneToMany(mappedBy = "category", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	private Set<Product> products;
-
+	private Set<SubCategory> subCategories;
 }
-
 
 
 

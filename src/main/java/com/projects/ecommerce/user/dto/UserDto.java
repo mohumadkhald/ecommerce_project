@@ -29,10 +29,16 @@ public class UserDto implements Serializable {
 	private String email;
 	
 	private String phone;
-	
+
+	private boolean emailVerified;
+
+	@JsonProperty("address")
 	@JsonInclude(value = Include.NON_NULL)
 	private Set<AddressDto> addressDtos;
 
+	@JsonProperty("credential")
+	@JsonInclude(value = Include.NON_NULL)
+	private CredentialDto credentialDto;
 	
 }
 

@@ -49,7 +49,10 @@ public class ProductRequestDto implements Serializable {
 
 	@PositiveOrZero(message = "Discount percent must be a positive number or zero")
 	private int discountPercent;
-	private Integer categoryId;
+
+	@NotNull(message = "SubCategory cannot be null")
+	private Integer subCategoryId;
+
 }
 
 

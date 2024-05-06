@@ -1,4 +1,4 @@
-package com.projects.ecommerce.controller;
+package com.projects.ecommerce.utilts.controller;
 
 import com.projects.ecommerce.utilts.FileStorageService;
 import lombok.AllArgsConstructor;

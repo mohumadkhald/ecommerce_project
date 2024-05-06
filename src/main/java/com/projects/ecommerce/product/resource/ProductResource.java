@@ -1,9 +1,9 @@
 package com.projects.ecommerce.product.resource;
 
 
-import com.projects.ecommerce.product.domain.Size;
 import com.projects.ecommerce.product.dto.ProductDto;
 import com.projects.ecommerce.product.dto.ProductRequestDto;
+import com.projects.ecommerce.product.dto.Spec;
 import com.projects.ecommerce.product.service.ProductService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -17,9 +17,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 @RestController
@@ -96,14 +94,14 @@ public class ProductResource {
 			@Valid final String productId,
 			@RequestBody 
 			@NotNull(message = "Input must not be NULL!") 
-			@Valid final ProductDto productDto) {
+			@Valid final ProductRequestDto productDto) {
 		log.info("*** ProductDto, resource; update product with productId *");
 		return ResponseEntity.ok(this.productService.update(Integer.parseInt(productId), productDto));
 	}
 
-	@GetMapping("/product-category/{categoryName}")
+	@GetMapping("/product-category/{subCategoryName}")
 	public ResponseEntity<Page<ProductDto>> getProductsByCategoryNameAndFilters(
-			@PathVariable String categoryName,
+			@PathVariable String subCategoryName,
 			@RequestParam(required = false) String color,
 			@RequestParam(required = false) Double minPrice,
 			@RequestParam(required = false) Double maxPrice,
@@ -116,13 +114,67 @@ public class ProductResource {
 		if (!sortDirection.equals("desc")) {
 			sort = Sort.by("createdAt").ascending();
 		}
-		Page<ProductDto> products = productService.getProductsByCategoryNameAndFilters(categoryName, color, minPrice, maxPrice, size != null ? size.toUpperCase() : null, page, pageSize, sort); // Convert size to uppercase
+		Page<ProductDto> products = productService.getProductsByCategoryNameAndFilters(subCategoryName, color, minPrice, maxPrice, size != null ? size.toUpperCase() : null, page, pageSize, sort); // Convert size to uppercase
 		return ResponseEntity.ok(products);
+	}
+
+	@GetMapping("/stock")
+	public ResponseEntity<Map<String, Map<String, Map<String, Integer>>>> getProductVariations(
+			@RequestParam String productName) {
+
+		Map<String, Map<String, Map<String, Integer>>> variationsMap = productService.getProductVariations(productName);
+		return ResponseEntity.ok(variationsMap);
 	}
 
 
 
 
+
+	@PutMapping("/{productId}/stock")
+	public ResponseEntity<String> updateProductVariation(
+			@PathVariable Integer productId,
+			@RequestBody Spec spec) {
+
+		productService.updateProductVariation(productId, spec);
+
+		return ResponseEntity.ok("Product variations updated successfully.");
+	}
+
+	@PostMapping("/{productId}/stock")
+	public ResponseEntity<String> updateProductVariations(
+			@PathVariable Integer productId,
+			@RequestParam(required = false) boolean increase,
+			@RequestBody List<Spec> specs) {
+
+
+		productService.updateProductStocks(productId, specs, increase);
+
+		return ResponseEntity.ok("Product variations updated successfully.");
+	}
+
+	@PostMapping("/{productId}/stocks")
+	public ResponseEntity<String> updateProductStock(
+			@PathVariable Integer productId,
+			@RequestParam(required = false) boolean decrease,
+			@RequestBody List<Spec> specs) {
+
+		productService.updateProductStocks(productId, specs, decrease);
+
+		String message = decrease ? "Product variations decreased successfully." : "Product variations increased successfully.";
+		return ResponseEntity.ok(message);
+	}
+
+//	@PostMapping("/{productId}/stock/decrease")
+//	public ResponseEntity<String> updateProductVariationsDecrease(
+//			@PathVariable Integer productId,
+//			@RequestParam(required = false) boolean decrease,
+//			@RequestBody List<Spec> specs) {
+//
+//
+//		productService.updateProductStocksDecrease(productId, specs, decrease);
+//
+//		return ResponseEntity.ok("Product variations updated successfully.");
+//	}
 }
 
 

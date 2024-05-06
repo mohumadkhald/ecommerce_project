@@ -6,6 +6,7 @@ import com.projects.ecommerce.Auth.dto.LoginRequestDto;
 import com.projects.ecommerce.Auth.dto.RegisterRequestDto;
 import com.projects.ecommerce.Auth.service.AuthService;
 import com.projects.ecommerce.Auth.token.TokenRepo;
+import com.projects.ecommerce.user.dto.UserDto;
 import com.projects.ecommerce.user.model.EmailVerification;
 import com.projects.ecommerce.user.model.User;
 import com.projects.ecommerce.user.repository.EmailVerificationRepo;
@@ -122,7 +123,7 @@ public class AuthController {
     @PostMapping("resend-verify")
     public ResponseEntity<?> sendEmailVerify(@RequestHeader ("Authorization") String token) throws Exception {
         int userID = userService.findUserIdByJwt(token);
-        User user = userService.findById(userID);
+        UserDto user = userService.findById(userID);
         return authService.resendVerificationEmail(user.getEmail());
     }
 

@@ -1,4 +1,4 @@
-package com.projects.socialapp.controller;
+package com.projects.ecommerce.utilts.controller;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.http.ResponseEntity;

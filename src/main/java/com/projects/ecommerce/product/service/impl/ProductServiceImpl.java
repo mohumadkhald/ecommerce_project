@@ -1,16 +1,16 @@
 package com.projects.ecommerce.product.service.impl;
 
 
-import com.projects.ecommerce.product.domain.Color;
-import com.projects.ecommerce.product.domain.Product;
-import com.projects.ecommerce.product.domain.ProductVariation;
-import com.projects.ecommerce.product.domain.Size;
+import com.projects.ecommerce.product.domain.*;
 import com.projects.ecommerce.product.dto.ProductDto;
 import com.projects.ecommerce.product.dto.ProductRequestDto;
+import com.projects.ecommerce.product.dto.Spec;
+import com.projects.ecommerce.product.exception.wrapper.CategoryNotFoundException;
 import com.projects.ecommerce.product.exception.wrapper.ProductNotFoundException;
 import com.projects.ecommerce.product.helper.ProductMappingHelper;
 import com.projects.ecommerce.product.repository.ProductRepository;
 import com.projects.ecommerce.product.service.ProductService;
+import com.projects.ecommerce.user.expetion.AlreadyExistsException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -130,12 +130,49 @@ public class ProductServiceImpl implements ProductService {
 		return ProductMappingHelper.map(this.productRepository
 				.save(ProductMappingHelper.map(productDto)));
 	}
-	
+
 	@Override
-	public ProductDto update(final Integer productId, final ProductDto productDto) {
+	public ProductDto update(final Integer productId, final ProductRequestDto productDto) {
 		log.info("*** ProductDto, service; update product with productId *");
-		return ProductMappingHelper.map(this.productRepository
-				.save(ProductMappingHelper.map(this.findById(productId))));
+		try {
+			// Retrieve the category by id
+			Product product = productRepository.findById(productId)
+					.orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
+
+			// Check if the category title is being updated
+			if (!product.getProductTitle().equals(productDto.getProductTitle())) {
+				// If the category title is being updated, check if the new title already exists
+				Product existingProductByTitle = productRepository.findByProductTitle(productDto.getProductTitle());
+				if (existingProductByTitle != null && !existingProductByTitle.getProductId().equals(productId)) {
+					// If the new title already exists and belongs to a different category, throw an exception
+					throw new AlreadyExistsException("Product", "Already Exists: " + productDto.getProductTitle());
+				}
+			}
+
+//			 Map and save the updated category
+			product.setProductTitle(productDto.getProductTitle());
+			product.setPrice(productDto.getPrice());
+			product.setImageUrl(productDto.getImageUrl());
+			product.setDiscountPercent(productDto.getDiscountPercent());
+			product.setSubCategory(
+					SubCategory.builder()
+							.subId(productDto.getSubCategoryId())
+							.category(Category.builder().build())
+							.build()
+			);
+			productRepository.save(product);
+			return ProductMappingHelper.map(product);
+
+		} catch (CategoryNotFoundException e) {
+			log.error("CategoryNotFoundException: {}", e.getMessage());
+			throw new CategoryNotFoundException("Category not Found: " + productDto.getProductTitle());
+		} catch (AlreadyExistsException e) {
+			log.error("AlreadyExistsException: {}", e.getMessage());
+			throw new AlreadyExistsException("Product", "Already Exists: " + productDto.getProductTitle());
+		} catch (Exception e) {
+			log.error("An error occurred while updating the product with id {}: {}", productId, e.getMessage());
+			throw new RuntimeException("Failed to update product", e); // Wrap and re-throw the exception
+		}
 	}
 	
 	@Override
@@ -159,6 +196,156 @@ public class ProductServiceImpl implements ProductService {
 
 		return productPage.map(ProductMappingHelper::map);
 	}
+
+
+	@Override
+	public Map<String, Map<String, Map<String, Integer>>> getProductVariations(String productName) {
+		Product product = productRepository.findByProductTitle(productName);
+		Map<String, Map<String, Integer>> variationsMap = new HashMap<>();
+
+		// Iterate through product variations to populate the map
+		for (ProductVariation variation : product.getVariations()) {
+			String color = variation.getColor().toString();
+			String size = variation.getSize().toString();
+			Integer quantity = variation.getQuantity();
+
+			variationsMap.putIfAbsent(color, new HashMap<>());
+			variationsMap.get(color).put(size, quantity);
+		}
+
+		return Collections.singletonMap(productName, variationsMap);
+	}
+
+
+	@Override
+	@Transactional
+	public void updateProductVariation(Integer productId, Spec spec) {
+		Product product = productRepository.findById(productId)
+				.orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
+
+		// Find the existing variation by size and color or create a new one if not found
+		Optional<ProductVariation> existingVariation = product.getVariations().stream()
+				.filter(variation -> variation.getSize().equals(Size.valueOf(spec.size())) && variation.getColor().equals(Color.valueOf(spec.color())))
+				.findFirst();
+
+		if (existingVariation.isPresent()) {
+			// Update existing variation
+			ProductVariation variationToUpdate = existingVariation.get();
+			variationToUpdate.setQuantity(spec.quantity());
+		} else {
+			// Create new variation
+			newProductVariation(product, spec, 0);
+		}
+
+		productRepository.save(product);
+		int totalQuantity = product.getVariations().stream()
+				.mapToInt(ProductVariation::getQuantity)
+				.sum();
+		product.setAllQuantity(totalQuantity);
+	}
+
+
+	@Override
+	@Transactional
+	public void updateProductStocks(Integer productId, List<Spec> specs, boolean increaseQuantity) {
+		Product product = productRepository.findById(productId)
+				.orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
+
+		// Iterate through the provided specs
+		for (Spec spec : specs) {
+			// Find the existing variation by size and color or create a new one if not found
+			Optional<ProductVariation> existingVariation = product.getVariations().stream()
+					.filter(variation -> variation.getSize().equals(Size.valueOf(spec.size())) && variation.getColor().equals(Color.valueOf(spec.color())))
+					.findFirst();
+
+			if (existingVariation.isPresent()) {
+				// Update existing variation
+				ProductVariation variationToUpdate = existingVariation.get();
+				int currentQuantity = variationToUpdate.getQuantity();
+				variationToUpdate.setQuantity(increaseQuantity ? currentQuantity + spec.quantity() : spec.quantity());
+			} else {
+				// Create new variation
+				newProductVariation(product, spec, spec.quantity());
+			}
+		}
+
+		productRepository.save(product);
+		int totalQuantity = product.getVariations().stream()
+				.mapToInt(ProductVariation::getQuantity)
+				.sum();
+		product.setAllQuantity(totalQuantity);
+	}
+
+
+
+	private void newProductVariation(Product product, Spec spec, Integer increaseQuantity) {
+		ProductVariation newVariation = new ProductVariation();
+		newVariation.setSize(Size.valueOf(spec.size()));
+		newVariation.setColor(Color.valueOf(spec.color()));
+		newVariation.setQuantity(spec.quantity() + increaseQuantity);
+		newVariation.setProduct(product);
+		product.getVariations().add(newVariation);
+	}
+
+	@Override
+	public Product findProductById(Integer productId) {
+		return productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	@Override
+	@Transactional
+	public void updateProductStock(Integer productId, List<Spec> specs, Integer quantityToSubtract) {
+		Product product = productRepository.findById(productId)
+				.orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
+
+		// Iterate through the provided specs
+		for (Spec spec : specs) {
+			// Find the existing variation by size and color or create a new one if not found
+			Optional<ProductVariation> existingVariation = product.getVariations().stream()
+					.filter(variation -> variation.getSize().equals(Size.valueOf(spec.size())) && variation.getColor().equals(Color.valueOf(spec.color())))
+					.findFirst();
+
+			if (existingVariation.isPresent()) {
+				// Update existing variation
+				ProductVariation variationToUpdate = existingVariation.get();
+				int currentQuantity = variationToUpdate.getQuantity();
+				int newQuantity = currentQuantity - quantityToSubtract;
+				variationToUpdate.setQuantity(Math.max(newQuantity, 0)); // Ensure not to decrease below zero
+			} else {
+				// Create new variation
+				// Assuming the quantity to subtract will always be negative
+				newProductVariation(product, spec, quantityToSubtract);
+			}
+		}
+
+		productRepository.save(product);
+		int totalQuantity = product.getVariations().stream()
+				.mapToInt(ProductVariation::getQuantity)
+				.sum();
+		product.setAllQuantity(totalQuantity);
+	}
+
+
+
+
+
+
+
+
 
 
 
