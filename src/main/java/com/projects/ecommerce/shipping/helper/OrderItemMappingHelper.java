@@ -4,11 +4,13 @@ package com.projects.ecommerce.shipping.helper;
 import com.projects.ecommerce.product.domain.Color;
 import com.projects.ecommerce.product.domain.Product;
 import com.projects.ecommerce.product.domain.Size;
+import com.projects.ecommerce.product.dto.ProductDto;
+import com.projects.ecommerce.product.dto.ProductRequestDto;
 import com.projects.ecommerce.shipping.domain.ItemVariation;
 import com.projects.ecommerce.shipping.domain.OrderItem;
 import com.projects.ecommerce.shipping.dto.OrderItemDto;
 import com.projects.ecommerce.shipping.dto.OrderItemsDto;
-import com.projects.ecommerce.shipping.dto.ProductDto;
+import com.projects.ecommerce.shipping.dto.ProductsItemDto;
 import com.projects.ecommerce.shipping.service.impl.OrderItemServiceImpl;
 
 import java.util.*;
@@ -20,7 +22,8 @@ public interface OrderItemMappingHelper {
 		OrderItemsDto.OrderItemsDtoBuilder orderItemDtoBuilder = OrderItemsDto.builder()
 //				.productId(orderItem.getProductId())
 				.product(
-						ProductDto.builder()
+						ProductsItemDto.builder()
+								.productTitle(orderItem.getProduct().getProductTitle())
 								.build()
 				)
 				.orderId(orderItem.getOrderId())
@@ -58,14 +61,19 @@ public interface OrderItemMappingHelper {
 		orderItemDtoBuilder.colorsAndSizesWithQuantity(colorsAndSizesWithQuantity);
 		orderItemDtoBuilder.cartId(orderItem.getCartId());
 		orderItemDtoBuilder.orderId(orderItem.getOrderId());
-		orderItemDtoBuilder.product(ProductDto.builder().productId(orderItem.getProductId()).build());
+		orderItemDtoBuilder.product(ProductsItemDto.builder().productId(orderItem.getProduct().getProductId())
+						.productTitle(orderItem.getProduct().getProductTitle())
+						.discountPercent(orderItem.getProduct().getDiscountPercent())
+						.imageUrl(orderItem.getProduct().getImageUrl())
+						.price(orderItem.getProduct().getPrice())
+				.build());
 		return orderItemDtoBuilder.build();
 	}
 
 	public static OrderItem map(final OrderItemDto itemOrderDto, List<OrderItem> itemOrderList) {
 		// Check if an item order with the same product ID already exists
 		Optional<OrderItem> existingItemOrder = itemOrderList.stream()
-				.filter(io -> io.getProductId().equals(itemOrderDto.getProductId()))
+				.filter(io -> io.getProduct().getProductId().equals(itemOrderDto.getProductId()))
 				.findFirst();
 
 		if (existingItemOrder.isPresent()) {
@@ -81,7 +89,11 @@ public interface OrderItemMappingHelper {
 		} else {
 			// If the item order does not exist, create a new one
 			OrderItem itemOrder = OrderItem.builder()
-					.productId(itemOrderDto.getProductId())
+					.product(
+							Product.builder()
+									.productId(itemOrderDto.getProductId())
+									.build()
+					)
 					.orderId(itemOrderDto.getOrderId())
 					.orderedQuantity(itemOrderDto.getOrderedQuantity())
 					.totalPrice(itemOrderDto.getTotalPrice())

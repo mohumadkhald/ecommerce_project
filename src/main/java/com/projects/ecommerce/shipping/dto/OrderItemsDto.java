@@ -2,6 +2,9 @@ package com.projects.ecommerce.shipping.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.projects.ecommerce.product.domain.Product;
+import com.projects.ecommerce.product.dto.ProductDto;
+import com.projects.ecommerce.product.dto.ProductRequestDto;
 import com.projects.ecommerce.product.dto.SubCategoryDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,7 +27,7 @@ public class OrderItemsDto implements Serializable {
 //	private Integer productId;
 @JsonProperty("Product")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-private ProductDto product;
+private ProductsItemDto product;
 
 	private Integer orderId;
 	private Integer orderedQuantity;
