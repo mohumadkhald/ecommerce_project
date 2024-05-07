@@ -20,7 +20,7 @@ public interface OrderItemService {
 
 //	OrderItemsDto save(OrderItemsDto orderItemDto);
 
-	OrderItemsDto save(OrderItemDto orderItemDto);
+	OrderItemDto save(OrderItemDto orderItemDto);
 
 	void deleteById(final Integer orderItemId);
 

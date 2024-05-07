@@ -4,8 +4,6 @@ package com.projects.ecommerce.shipping.helper;
 import com.projects.ecommerce.product.domain.Color;
 import com.projects.ecommerce.product.domain.Product;
 import com.projects.ecommerce.product.domain.Size;
-import com.projects.ecommerce.product.dto.ProductDto;
-import com.projects.ecommerce.product.dto.ProductRequestDto;
 import com.projects.ecommerce.shipping.domain.ItemVariation;
 import com.projects.ecommerce.shipping.domain.OrderItem;
 import com.projects.ecommerce.shipping.dto.OrderItemDto;
@@ -69,6 +67,24 @@ public interface OrderItemMappingHelper {
 				.build());
 		return orderItemDtoBuilder.build();
 	}
+
+	static OrderItemDto map1(final OrderItem orderItem) {
+		OrderItemDto.OrderItemDtoBuilder orderItemDtoBuilder = OrderItemDto.builder()
+//				.productId(orderItem.getProductId())
+				.orderId(orderItem.getOrderId())
+				.orderedQuantity(orderItem.getOrderedQuantity())
+				.totalPrice(orderItem.getTotalPrice())
+				.orderNow(orderItem.isOrderNow())
+				.cartId(orderItem.getCartId())
+						.color(String.valueOf(orderItem.getVariations().get(1).getColor()));
+
+
+		// Set the colorsAndSizesWithQuantity in the builder
+		orderItemDtoBuilder.cartId(orderItem.getCartId());
+		orderItemDtoBuilder.orderId(orderItem.getOrderId());
+		return orderItemDtoBuilder.build();
+	}
+
 
 	public static OrderItem map(final OrderItemDto itemOrderDto, List<OrderItem> itemOrderList) {
 		// Check if an item order with the same product ID already exists

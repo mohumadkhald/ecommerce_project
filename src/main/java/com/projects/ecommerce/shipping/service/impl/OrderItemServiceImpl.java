@@ -13,7 +13,6 @@ import com.projects.ecommerce.shipping.dto.OrderItemsDto;
 import com.projects.ecommerce.shipping.helper.OrderItemMappingHelper;
 import com.projects.ecommerce.shipping.repository.OrderItemRepository;
 import com.projects.ecommerce.shipping.service.OrderItemService;
-import com.projects.ecommerce.user.model.User;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -194,7 +193,7 @@ public class OrderItemServiceImpl implements OrderItemService {
 	}
 
 	@Override
-	public OrderItemsDto save(final OrderItemDto orderItemDto) {
+	public OrderItemDto save(final OrderItemDto orderItemDto) {
 		log.info("*** OrderItemDto, service; save orderItem ***");
 		Product product = productService.findProductById(orderItemDto.getProductId());
 
@@ -213,7 +212,7 @@ public class OrderItemServiceImpl implements OrderItemService {
 		List<OrderItem> existingProducts = this.orderItemRepository.findAll();
 
 		// Save order item
-		return OrderItemMappingHelper.map(this.orderItemRepository.save(OrderItemMappingHelper.map(orderItemDto, existingProducts)));
+		return OrderItemMappingHelper.map1(this.orderItemRepository.save(OrderItemMappingHelper.map(orderItemDto, existingProducts)));
 	}
 
 

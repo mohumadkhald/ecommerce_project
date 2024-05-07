@@ -58,7 +58,7 @@ public class OrderItemResource {
 //	}
 	
 	@PostMapping
-	public ResponseEntity<OrderItemsDto> save(
+	public ResponseEntity<OrderItemDto> save(
 			@RequestBody 
 			@NotNull(message = "Input must not be NULL")
 			@Valid final OrderItemDto orderItemDto,

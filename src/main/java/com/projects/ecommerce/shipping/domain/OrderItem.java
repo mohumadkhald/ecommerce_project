@@ -22,12 +22,12 @@ public final class OrderItem extends AbstractMappedEntity implements Serializabl
 	@Serial
 	private static final long serialVersionUID = 1L;
 
-	@Column(name = "product_id", nullable = false, updatable = false)
-	private Integer productId;
+//	@Column(name = "product_id", nullable = false, updatable = false)
+//	private Integer productId;
 
-//	@ManyToOne(fetch = FetchType.EAGER)
-//	@JoinColumn(name = "product_id")
-//	private Product product;
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "product_id")
+	private Product product;
 
 
 	@Column(name = "order_id")
