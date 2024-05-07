@@ -1,12 +1,16 @@
 package com.projects.ecommerce.product.domain;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.projects.ecommerce.shipping.domain.ItemVariation;
+import com.projects.ecommerce.shipping.domain.OrderItem;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "products")
@@ -50,6 +54,10 @@ public final class Product extends AbstractMappedEntity implements Serializable 
 
 	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<ProductVariation> variations;
+
+	@JsonIgnore
+	@OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	private Set<ItemVariation> itemVariations;
 }
 
 
