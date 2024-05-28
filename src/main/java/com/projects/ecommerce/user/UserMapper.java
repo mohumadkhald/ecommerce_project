@@ -27,7 +27,7 @@ public class UserMapper {
         user.setEmail(dto.getEmail());
         user.setGender(dto.getGender());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
-        user.setRole(Role.User);
+        user.setRole(Role.USER);
 
         // Create and set account status
         AccountStatus accountStatus = new AccountStatus();

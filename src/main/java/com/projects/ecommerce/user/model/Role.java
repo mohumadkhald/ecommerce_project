@@ -4,5 +4,5 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(value = { "role" })
 public enum Role {
-    User,Admin
+    USER,ADMIN,MANAGER,ADMINISTRATOR
 }
