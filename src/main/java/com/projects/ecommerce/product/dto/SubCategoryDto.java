@@ -21,7 +21,7 @@ public class SubCategoryDto implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private Integer id;
-	@NotBlank(message = "categoryTitle cannot be empty or start space")
+	@NotBlank(message = "name cannot be empty or start space")
 	private String name;
 
 	private Integer categoryId;

@@ -36,7 +36,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/admin/mo")
                         .hasAuthority("ADMIN")
-                        .requestMatchers("/public/images/**", "/api/auth/register", "/api/auth/login", "/api/auth/send-reset", "/api/auth/reset", "/api/auth/verify-email")
+                        .requestMatchers("/api/products/product-category/**", "/api/categories/all", "/api/sub-categories/all", "/public/images/**", "/api/auth/register", "/api/auth/login", "/api/auth/send-reset", "/api/auth/reset", "/api/auth/verify-email")
                         .permitAll()
                         .anyRequest()
                         .authenticated())
@@ -63,7 +63,7 @@ public class SecurityConfig {
     private CorsConfigurationSource corsConfigurationSource() {
         return request -> {
             CorsConfiguration cfg = new CorsConfiguration();
-            cfg.setAllowedOrigins(List.of("http://localhost:3000"));
+            cfg.setAllowedOrigins(List.of("http://localhost:4200"));
             cfg.setAllowedMethods(Collections.singletonList("*"));
             cfg.setAllowCredentials(true);
             cfg.setAllowedHeaders(Collections.singletonList("*"));

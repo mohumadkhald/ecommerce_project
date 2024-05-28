@@ -13,4 +13,5 @@ public class AuthResponse {
     // Properties I want To Login User
     private String token;
     private String message;
+    private String role;
 }

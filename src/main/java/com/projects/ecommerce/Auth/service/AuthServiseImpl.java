@@ -63,9 +63,9 @@ public class AuthServiseImpl implements AuthService {
                 .lastname(request.getLastname())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.USER)
+                .role(Role.User)
                 .gender(request.getGender())
-                .phone(request.getPhone())
+//                .phone(request.getPhone())
                 .build();
 
         // Create EmailVerification entity
@@ -144,10 +144,10 @@ public class AuthServiseImpl implements AuthService {
 
             if (!user.getEmailVerification().isEmailVerified())
             {
-                return AuthResponse.builder().token(jwtToken).message("Login Success Email " + user.getEmail() + " Not Verify").build();
+                return AuthResponse.builder().token(jwtToken).role("User").message("Login Success Email " + user.getEmail() + " Not Verify").build();
             }
             // Return the token along with the user details
-            return AuthResponse.builder().token(jwtToken).message("Login Success").build();
+            return AuthResponse.builder().token(jwtToken).role("User").message("Login Success").build();
         } catch (AuthenticationException e) {
 
             String errorMessage = getString(e);

@@ -90,12 +90,18 @@ public class UserController {
 
 
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<UserDto> findById(
-            @PathVariable("userId")
-            @NotBlank(message = "Input must not blank")
-            @Valid final String userId) {
-        return ResponseEntity.ok(this.userService.findById(Integer.parseInt(userId.strip())));
+//    @GetMapping("/{userId}")
+//    public ResponseEntity<UserDto> findById(
+//            @PathVariable("userId")
+//            @NotBlank(message = "Input must not blank")
+//            @Valid final String userId) {
+//        return ResponseEntity.ok(this.userService.findById(Integer.parseInt(userId.strip())));
+//    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<UserDto> findById(@RequestHeader ("Authorization") String token){
+        int userID = userService.findUserIdByJwt(token);
+        return ResponseEntity.ok(this.userService.findById(userID));
     }
 
     /*

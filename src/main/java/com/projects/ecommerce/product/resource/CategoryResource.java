@@ -18,15 +18,15 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RequiredArgsConstructor
 public class CategoryResource {
-	
+
 	private final CategoryService categoryService;
-	
-	@GetMapping
+
+	@GetMapping("/all")
 	public ResponseEntity<DtoCollectionResponse<CategoryDto>> findAll() {
 		log.info("*** CategoryDto List, controller; fetch all categories *");
 		return ResponseEntity.ok(new DtoCollectionResponse<>(this.categoryService.findAll()));
 	}
-	
+
 	@GetMapping("/{categoryId}")
 	public ResponseEntity<CategoryDto> findById(
 			@PathVariable("categoryId")
@@ -35,45 +35,45 @@ public class CategoryResource {
 		log.info("*** CategoryDto, resource; fetch category by id *");
 		return ResponseEntity.ok(this.categoryService.findById(Integer.parseInt(categoryId)));
 	}
-	
+
 	@PostMapping
 	public ResponseEntity<CategoryDto> save(
-			@RequestBody 
+			@RequestBody
 			@Valid final CategoryDto categoryRequestDto) {
 		log.info("*** CategoryDto, resource; save category *");
 		return ResponseEntity.ok(this.categoryService.save(categoryRequestDto));
 	}
-	
+
 	@PutMapping
 	public ResponseEntity<CategoryDto> update(
-			@RequestBody 
-			@NotNull(message = "Input must not be NULL") 
+			@RequestBody
+			@NotNull(message = "Input must not be NULL")
 			@Valid final CategoryDto categoryDto) {
 		log.info("*** CategoryDto, resource; update category *");
 		return ResponseEntity.ok(this.categoryService.update(categoryDto));
 	}
-	
+
 	@PutMapping("/{categoryId}")
 	public ResponseEntity<CategoryDto> update(
 			@PathVariable("categoryId")
 			@NotBlank(message = "Input must not be blank")
 			@Valid final String categoryId,
-			@RequestBody 
-			@NotNull(message = "Input must not be NULL") 
+			@RequestBody
+			@NotNull(message = "Input must not be NULL")
 			@Valid final CategoryDto categoryDto) {
 		log.info("*** CategoryDto, resource; update category with categoryId *");
 		return ResponseEntity.ok(this.categoryService.update(Integer.parseInt(categoryId), categoryDto));
 	}
-	
+
 	@DeleteMapping("/{categoryId}")
 	public ResponseEntity<Boolean> deleteById(@PathVariable("categoryId") final String categoryId) {
 		log.info("*** Boolean, resource; delete category by id *");
 		this.categoryService.deleteById(Integer.parseInt(categoryId));
 		return ResponseEntity.ok(true);
 	}
-	
-	
-	
+
+
+
 }
 
 

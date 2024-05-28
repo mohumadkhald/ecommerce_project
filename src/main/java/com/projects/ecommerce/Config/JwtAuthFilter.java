@@ -67,6 +67,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext()
                         .setAuthentication(authenticationToken);
 
+            } else {
+                response.setContentType("application/json");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("{\"message\":\"Token not valid\"}");
             }
 
         }

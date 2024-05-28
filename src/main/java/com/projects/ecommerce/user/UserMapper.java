@@ -27,7 +27,7 @@ public class UserMapper {
         user.setEmail(dto.getEmail());
         user.setGender(dto.getGender());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
-        user.setRole(Role.USER);
+        user.setRole(Role.User);
 
         // Create and set account status
         AccountStatus accountStatus = new AccountStatus();
@@ -36,7 +36,7 @@ public class UserMapper {
         accountStatus.setCredentialsNonExpired(true);
         user.setAccountStatus(accountStatus);
 
-        user.setPhone(dto.getPhone());
+//        user.setPhone(dto.getPhone());
         return user;
     }
 

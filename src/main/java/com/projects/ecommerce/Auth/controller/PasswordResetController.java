@@ -18,6 +18,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -33,7 +35,7 @@ public class PasswordResetController {
     private EntityManager entityManager;
 
     @PostMapping("/send-reset")
-    public ResponseEntity<String> requestResetPassword(@RequestParam("email") String email) {
+    public ResponseEntity<Map<String, String>> requestResetPassword(@RequestParam("email") String email) {
 
         // Find the user by email
         User user = userRepo.findByEmail(email);
@@ -56,29 +58,38 @@ public class PasswordResetController {
             // Set the reset code expiry time
             passwordReset.setResetCodeExpiry(LocalDateTime.now().plusHours(24)); // Expiry time 1 day
 
+            // Send reset password email with the token
+            emailService.sendResetPasswordEmail(email, resetCode);
+
+            // Set How Many Times Send code
+            passwordReset.setTimesSend(1);
+
             // Save or update the password reset entry
             user.setPasswordReset(passwordReset);
             userRepo.save(user);
 
-            // Send reset password email with the token
-            emailService.sendResetPasswordEmail(email, resetCode);
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "code created successfully");
+            return ResponseEntity.ok(response);
 
-            return ResponseEntity.ok("Password reset sent successfully.");
         } else {
-            return ResponseEntity.badRequest().body("User not found.");
-        }
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Email " + email + "Not Exist");
+            return ResponseEntity.badRequest().body(response);        }
     }
 
 
 
     @PostMapping("/reset")
     @Transactional
-    public ResponseEntity<String> resetPassword(@RequestParam("email") String email, @Valid @RequestBody PasswordDto passwordDto) {
+    public ResponseEntity<Map<String, String>> resetPassword(@RequestParam("email") String email, @Valid @RequestBody PasswordDto passwordDto) {
         User user = userRepo.findByEmail(email);
 
         if (user == null) {
             // Handle case when user is not found
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Email " + email + "Not Exist");
+            return ResponseEntity.badRequest().body(response);
         }
 
         PasswordReset passwordReset = resetRepo.findByUser(user);
@@ -90,6 +101,7 @@ public class PasswordResetController {
                         .user(user)
                         .resetCode(passwordDto.getCode())
                         .timeTry(1) // Initialize try_time to 1
+                        .timesSend(1) // Initialize try_time-send to 1
                         .build();
             } else {
                 // Increment try_time and check if it's 5
@@ -99,6 +111,15 @@ public class PasswordResetController {
                     // Generate a new reset code and reset try_time
                     passwordReset.setResetCode(resetCode);
                     passwordReset.setTimeTry(0);
+
+                    // Send reset password email with the token
+                    emailService.sendResetPasswordEmail(email, resetCode);
+                    // Set How Many Times Send code
+                    passwordReset.setTimesSend(passwordReset.getTimesSend()+1);
+                    // Return appropriate response
+                    Map<String, String> response = new HashMap<>();
+                    response.put("message", "Incorrect code. Another Code Sent Check Email Address.");
+                    return ResponseEntity.badRequest().body(response);
                 } else {
                     passwordReset.setTimeTry(tries);
                 }
@@ -108,7 +129,9 @@ public class PasswordResetController {
             resetRepo.save(passwordReset);
 
             // Return appropriate response
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Incorrect code. Please try again.");
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Incorrect code. Please try again.");
+            return ResponseEntity.badRequest().body(response);
         }
 
         // If code is correct, reset try_time and proceed with password reset
@@ -119,8 +142,9 @@ public class PasswordResetController {
         userRepo.save(user);
         resetRepo.deleteByUserId(user.getId());
         // Return success response
-        return ResponseEntity.ok("Password reset successfully.");
-
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "The password has been reset");
+        return ResponseEntity.ok(response);
     }
 
 }

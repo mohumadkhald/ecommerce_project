@@ -29,5 +29,5 @@ public class PasswordReset {
     private String resetCode;
     private Integer timeTry;
     private LocalDateTime resetCodeExpiry;
-
+    private Integer timesSend;
 }
