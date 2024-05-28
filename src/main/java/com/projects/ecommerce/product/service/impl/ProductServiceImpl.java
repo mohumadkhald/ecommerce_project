@@ -152,7 +152,7 @@ public class ProductServiceImpl implements ProductService {
 //			 Map and save the updated category
 			product.setProductTitle(productDto.getProductTitle());
 			product.setPrice(productDto.getPrice());
-			product.setImageUrl(productDto.getImageUrl());
+			product.setImageUrl(productDto.getImg());
 			product.setDiscountPercent(productDto.getDiscountPercent());
 			product.setSubCategory(
 					SubCategory.builder()

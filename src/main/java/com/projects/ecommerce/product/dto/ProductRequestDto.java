@@ -27,7 +27,7 @@ public class ProductRequestDto implements Serializable {
 
 	@NotBlank(message = "Product title cannot be blank")
 	private String productTitle;
-	private String imageUrl;
+	private String img;
 
 	@NotNull(message = "Color must not be null")
 	@Enumerated(EnumType.STRING)

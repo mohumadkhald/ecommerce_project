@@ -104,7 +104,7 @@ public interface ProductMappingHelper {
 			Product product = Product.builder()
 					.productId(productDto.getProductId())
 					.productTitle(productDto.getProductTitle())
-					.imageUrl(productDto.getImageUrl())
+					.imageUrl(productDto.getImg())
 					.price(productDto.getPrice())
 					.discountPercent(productDto.getDiscountPercent())
 					.allQuantity(productDto.getQuantity())

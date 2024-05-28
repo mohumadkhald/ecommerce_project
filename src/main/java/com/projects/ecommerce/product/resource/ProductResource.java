@@ -5,6 +5,8 @@ import com.projects.ecommerce.product.dto.ProductDto;
 import com.projects.ecommerce.product.dto.ProductRequestDto;
 import com.projects.ecommerce.product.dto.Spec;
 import com.projects.ecommerce.product.service.ProductService;
+import com.projects.ecommerce.user.service.UserService;
+import com.projects.ecommerce.utilts.FileStorageService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -16,7 +18,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
 
 
@@ -27,6 +31,8 @@ import java.util.*;
 public class ProductResource {
 	
 	private final ProductService productService;
+	private final UserService userService;
+	private final FileStorageService fileStorageService;
 
 	@GetMapping
 	public ResponseEntity<Page<ProductDto>> findAll(
@@ -48,15 +54,26 @@ public class ProductResource {
 	public ResponseEntity<ProductDto> findById(
 			@PathVariable("productId") 
 			@NotBlank(message = "Input must not be blank!")
-			@Valid final String productId) {
+			@Valid final String productId
+	) {
 		log.info("*** ProductDto, resource; fetch product by id *");
 		return ResponseEntity.ok(this.productService.findById(Integer.parseInt(productId)));
 	}
 
 	@PostMapping
 	public ResponseEntity<Map<String, String>> save(
-			@RequestBody
-			@Valid final ProductRequestDto productDto) {
+			@ModelAttribute
+			@Valid final ProductRequestDto productDto,
+			@RequestPart(value = "image", required = false) MultipartFile image,
+			@RequestHeader("Authorization") String jwtToken
+	) throws IOException {
+		Integer userId = userService.findUserIdByJwt(jwtToken);
+
+		if (image != null)
+		{
+			String imageUrl = fileStorageService.storeFile(image, userId + "/messages");
+			productDto.setImg(imageUrl);
+		}
 		log.info("*** ProductDto, resource; save product ***");
 		productService.create(productDto);
 		Map<String, String> response = new HashMap<>();

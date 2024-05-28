@@ -64,7 +64,7 @@ public class FileStorageService {
         // Copy the file to the target location
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-        return fileName;
+        return String.valueOf(filePath);
     }
 
 }
