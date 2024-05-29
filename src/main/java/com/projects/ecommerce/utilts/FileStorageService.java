@@ -1,5 +1,7 @@
 package com.projects.ecommerce.utilts;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,6 +17,7 @@ import java.util.UUID;
 @Service
 public class FileStorageService {
 
+    private static final Logger log = LoggerFactory.getLogger(FileStorageService.class);
     private final Path fileStorageLocation;
 
 
@@ -38,33 +41,40 @@ public class FileStorageService {
             Files.createDirectories(folderPath);
         }
 
-
-// Get the original file name
+        // Get the original file name
         String originalFileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
 
-// Extract filename without the timestamp
+        // Extract filename without the timestamp
         String[] parts = originalFileName.split("\\s+");
         String fileNameWithoutTimestamp = parts[0]; // Assuming the filename is before the first space
 
-// Get the file extension from the original file name
+        // Get the file extension from the original file name
         String fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
 
-// Remove the file extension if it's duplicated
+        // Remove the file extension if it's duplicated
         if (fileNameWithoutTimestamp.endsWith(fileExtension)) {
             fileNameWithoutTimestamp = fileNameWithoutTimestamp.substring(0, fileNameWithoutTimestamp.length() - fileExtension.length());
         }
 
-// Generate a unique file name with the original file extension
+        // Generate a unique file name with the original file extension
         String fileName = UUID.randomUUID().toString() + "_" + fileNameWithoutTimestamp + fileExtension;
 
-// Resolve the file path
+        // Resolve the file path
         Path filePath = folderPath.resolve(fileName);
-
 
         // Copy the file to the target location
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-        return String.valueOf(filePath);
+        // Convert the file path to a string and remove everything before 'uploads'
+        String filePathString = filePath.toString();
+
+        String newFolder = folder.substring(folder.indexOf("/")+1);
+        log.info(newFolder);
+        String relativePath = filePathString.substring(filePathString.indexOf(newFolder));
+
+        // Return the new URL path
+
+        return "ec2-54-167-172-156.compute-1.amazonaws.com:8080/public/images/" + relativePath.replace("\\", "/");
     }
 
 }

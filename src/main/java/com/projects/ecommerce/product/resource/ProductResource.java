@@ -70,7 +70,7 @@ public class ProductResource {
 		log.info("*** ProductDto, resource; save product ***");
 		if (image != null)
 		{
-			String imageUrl = fileStorageService.storeFile(image, userId + "/messages");
+			String imageUrl = fileStorageService.storeFile(image, "products" + "/"+ productDto.getProductTitle());
 			productDto.setImageUrl(imageUrl);
 		}
 		productService.create(productDto);

@@ -43,10 +43,10 @@ import java.nio.file.Paths;
 @RestController
 public class ImageController {
 
-    @GetMapping("/public/images/{userId}/images/{imageName:.+}")
-    public ResponseEntity<byte[]> getImage(@PathVariable String imageName, @PathVariable Integer userId) throws IOException {
+    @GetMapping("/public/images/{product_title}/{imageName:.+}")
+    public ResponseEntity<byte[]> getImage(@PathVariable String imageName, @PathVariable String product_title) throws IOException {
         // Define the directory where the images are stored
-        String directory = "uploads/"+userId+"/messages";
+        String directory = "uploads/products/"+product_title;
 
         // Construct the full path to the image
         String imagePath = directory + "/" + imageName;
