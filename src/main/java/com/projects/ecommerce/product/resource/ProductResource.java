@@ -29,7 +29,7 @@ import java.util.*;
 @Slf4j
 @RequiredArgsConstructor
 public class ProductResource {
-	
+
 	private final ProductService productService;
 	private final UserService userService;
 	private final FileStorageService fileStorageService;
@@ -49,10 +49,10 @@ public class ProductResource {
 		return ResponseEntity.ok(productPage);
 	}
 
-	
+
 	@GetMapping("/{productId}")
 	public ResponseEntity<ProductDto> findById(
-			@PathVariable("productId") 
+			@PathVariable("productId")
 			@NotBlank(message = "Input must not be blank!")
 			@Valid final String productId) {
 		log.info("*** ProductDto, resource; fetch product by id *");
@@ -63,7 +63,7 @@ public class ProductResource {
 	public ResponseEntity<Map<String, String>> save(
 			@ModelAttribute
 			@Valid final ProductRequestDto productDto,
-			 @RequestPart(value = "image", required = false) MultipartFile image,
+            @RequestPart(value = "image", required = false) MultipartFile image,
 			@RequestHeader("Authorization") String jwtToken
 	) throws IOException {
 		Integer userId = userService.findUserIdByJwt(jwtToken);
@@ -95,20 +95,20 @@ public class ProductResource {
 
 	@PutMapping
 	public ResponseEntity<ProductDto> update(
-			@RequestBody 
-			@NotNull(message = "Input must not be NULL!") 
+			@RequestBody
+			@NotNull(message = "Input must not be NULL!")
 			@Valid final ProductDto productDto) {
 		log.info("*** ProductDto, resource; update product *");
 		return ResponseEntity.ok(this.productService.update(productDto));
 	}
-	
+
 	@PutMapping("/{productId}")
 	public ResponseEntity<ProductDto> update(
 			@PathVariable("productId")
 			@NotBlank(message = "Input must not be blank!")
 			@Valid final String productId,
-			@RequestBody 
-			@NotNull(message = "Input must not be NULL!") 
+			@RequestBody
+			@NotNull(message = "Input must not be NULL!")
 			@Valid final ProductRequestDto productDto) {
 		log.info("*** ProductDto, resource; update product with productId *");
 		return ResponseEntity.ok(this.productService.update(Integer.parseInt(productId), productDto));

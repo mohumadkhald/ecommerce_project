@@ -3,6 +3,7 @@ package com.projects.ecommerce.product.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,6 +25,7 @@ public class CategoryDto implements Serializable {
 
 	private Integer categoryId;
 
+    @NotBlank(message = "categoryTitle cannot be empty or start space")
     private String categoryTitle;
 
 	@JsonInclude(Include.NON_NULL)
