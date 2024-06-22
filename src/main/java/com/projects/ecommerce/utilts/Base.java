@@ -29,10 +29,10 @@ public class Base {
     )
     @CreationTimestamp
     private LocalDateTime createdAt;
+
     @Column(
             insertable = false
     )
-
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 

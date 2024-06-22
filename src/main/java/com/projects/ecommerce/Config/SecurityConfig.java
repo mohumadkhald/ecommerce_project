@@ -22,7 +22,6 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
@@ -36,7 +35,19 @@ public class SecurityConfig {
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/admin/mo")
                         .hasAuthority("ADMIN")
-                        .requestMatchers("/api/products/product-category/**", "/api/categories/all", "/api/sub-categories/all", "/public/images/**", "/api/auth/register", "/api/auth/login", "/api/auth/send-reset", "/api/auth/reset", "/api/auth/verify-email")
+                        .requestMatchers(
+                                "/api/products/product-category/**",
+                                "/api/categories/all",
+                                "/api/sub-categories/all",
+                                "/public/images/**",
+                                "/api/auth/register",
+                                "/api/auth/login",
+                                "/api/auth/send-reset",
+                                "/api/auth/reset",
+                                "/api/auth/verify-email",
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**")
                         .permitAll()
                         .anyRequest()
                         .authenticated())
