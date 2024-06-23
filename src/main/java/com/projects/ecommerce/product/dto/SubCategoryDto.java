@@ -23,6 +23,7 @@ public class SubCategoryDto implements Serializable {
 	private Integer id;
 	@NotBlank(message = "name cannot be empty or start space")
 	private String name;
+	private String img;
 
 	private Integer categoryId;
 

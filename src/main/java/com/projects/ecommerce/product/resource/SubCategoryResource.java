@@ -4,6 +4,7 @@ package com.projects.ecommerce.product.resource;
 import com.projects.ecommerce.product.dto.SubCategoryDto;
 import com.projects.ecommerce.product.dto.response.collection.DtoCollectionResponse;
 import com.projects.ecommerce.product.service.SubCategoryService;
+import com.projects.ecommerce.utilts.FileStorageService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -11,6 +12,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/sub-categories")
@@ -19,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class SubCategoryResource {
 
 	private final SubCategoryService subCategoryService;
+	private final FileStorageService fileStorageService;
 
 	@GetMapping("all")
 	public ResponseEntity<DtoCollectionResponse<SubCategoryDto>> findAll() {
@@ -37,9 +42,16 @@ public class SubCategoryResource {
 
 	@PostMapping
 	public ResponseEntity<SubCategoryDto> save(
-			@RequestBody
-			@Valid final SubCategoryDto subCategoryDto) {
+			@ModelAttribute
+			@Valid final SubCategoryDto subCategoryDto,
+			@RequestPart(value = "image", required = true) MultipartFile image
+			) throws IOException {
 		log.info("*** CategoryDto, resource; save category *");
+		if (image != null)
+		{
+			String imageUrl = fileStorageService.storeFile(image, "products" + "/"+ subCategoryDto.getName());
+			subCategoryDto.setImg(imageUrl);
+		}
 		return ResponseEntity.ok(this.subCategoryService.save(subCategoryDto));
 	}
 

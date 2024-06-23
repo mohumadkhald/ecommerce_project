@@ -13,6 +13,7 @@ public interface SubCategoryMappingHelper {
 		return SubCategoryDto.builder()
 				.id(subCategory.getSubId())
 				.name(subCategory.getName())
+				.img(subCategory.getImg())
 				.categoryId(subCategory.getCategory() != null ? subCategory.getCategory().getCategoryId() : null)
 				.build();
 	}
@@ -23,6 +24,7 @@ public interface SubCategoryMappingHelper {
 		return SubCategory.builder()
 				.subId(subCategoryDto.getId())
 				.name(subCategoryDto.getName())
+				.img(subCategoryDto.getImg())
 				.category(
 						Category.builder()
 								.categoryId(subCategoryDto.getCategoryId())

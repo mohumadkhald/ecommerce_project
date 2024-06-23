@@ -49,7 +49,11 @@ public class FileStorageService {
         String fileNameWithoutTimestamp = parts[0]; // Assuming the filename is before the first space
 
         // Get the file extension from the original file name
-        String fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
+        String fileExtension = "";
+        int dotIndex = originalFileName.lastIndexOf(".");
+        if (dotIndex >= 0) {
+            fileExtension = originalFileName.substring(dotIndex);
+        }
 
         // Remove the file extension if it's duplicated
         if (fileNameWithoutTimestamp.endsWith(fileExtension)) {
@@ -68,13 +72,16 @@ public class FileStorageService {
         // Convert the file path to a string and remove everything before 'uploads'
         String filePathString = filePath.toString();
 
-        String newFolder = folder.substring(folder.indexOf("/")+1);
+        // Ensure 'folder' contains a '/'
+        int slashIndex = folder.indexOf("/");
+        String newFolder = (slashIndex >= 0) ? folder.substring(slashIndex + 1) : folder;
+
+        // Replace spaces in newFolder with underscores
+        newFolder = newFolder.replaceAll("\\s+", "_");
         log.info(newFolder);
-        String relativePath = filePathString.substring(filePathString.indexOf(newFolder));
 
         // Return the new URL path
-
-        return "ec2-54-167-172-156.compute-1.amazonaws.com:8080/public/images/" + relativePath.replace("\\", "/");
+        return "http://localhost:8080/public/images/" + newFolder + "/" + fileName;
     }
 
 }

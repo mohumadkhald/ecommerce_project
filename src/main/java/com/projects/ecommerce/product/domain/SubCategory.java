@@ -29,6 +29,8 @@ public final class SubCategory extends AbstractMappedEntity implements Serializa
 	@Column(unique = true, nullable = false, updatable = false)
 	private String name;
 
+	private String img;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "category_id", nullable = false)
 	private Category category;
