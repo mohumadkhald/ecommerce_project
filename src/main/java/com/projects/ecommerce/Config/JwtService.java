@@ -61,6 +61,7 @@ public class JwtService {
         // Return true if the account is locked, false otherwise
         return false;
     }
+
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }

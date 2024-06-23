@@ -36,7 +36,7 @@ public class SecurityConfig {
                         .requestMatchers("/admin/mo")
                         .hasAuthority("ADMIN")
                         .requestMatchers(
-                                "/api/products/product-category/**",
+                                "/api/products/**",
                                 "/api/categories/all",
                                 "/api/sub-categories/all",
                                 "/public/images/**",

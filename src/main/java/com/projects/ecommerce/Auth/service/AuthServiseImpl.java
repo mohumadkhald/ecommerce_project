@@ -144,10 +144,10 @@ public class AuthServiseImpl implements AuthService {
 
             if (!user.getEmailVerification().isEmailVerified())
             {
-                return AuthResponse.builder().token(jwtToken).role("User").message("Login Success Email " + user.getEmail() + " Not Verify").build();
+                return AuthResponse.builder().token(jwtToken).role(user.getRole().toString()).message("Login Success Email " + user.getEmail() + " Not Verify").build();
             }
             // Return the token along with the user details
-            return AuthResponse.builder().token(jwtToken).role("User").message("Login Success").build();
+            return AuthResponse.builder().token(jwtToken).role(user.getRole().toString()).message("Login Success").build();
         } catch (AuthenticationException e) {
 
             String errorMessage = getString(e);

@@ -30,6 +30,8 @@ public class UserDto implements Serializable {
 	
 	private String phone;
 
+	private String role;
+
 	private boolean emailVerified;
 
 	@JsonProperty("address")

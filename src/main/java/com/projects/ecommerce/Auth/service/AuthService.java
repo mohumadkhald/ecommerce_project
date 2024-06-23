@@ -15,4 +15,5 @@ public interface AuthService {
 
     //Method Log in For Website
     AuthResponse login(LoginRequestDto request) throws Exception;
+
 }

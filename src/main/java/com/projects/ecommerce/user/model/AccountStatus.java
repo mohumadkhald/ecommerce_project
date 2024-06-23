@@ -28,5 +28,4 @@ public class AccountStatus  {
     private boolean accountNonLocked;
     private boolean credentialsNonExpired;
 
-    // Constructors, getters, and setters...
 }

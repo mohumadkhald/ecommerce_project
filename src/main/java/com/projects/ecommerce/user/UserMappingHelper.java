@@ -31,6 +31,7 @@ public interface UserMappingHelper {
 				.lastName(user.getLastname())
 				.imageUrl(user.getImgUrl())
 				.email(user.getEmail())
+				.role(user.getRole().toString())
 				.phone(user.getPhone())
 				.emailVerified(user.getEmailVerification().isEmailVerified())
 				.credentialDto(new CredentialDto(user.getId(), user.isAccountNonExpired(), user.isAccountNonLocked(), user.isCredentialsNonExpired()))

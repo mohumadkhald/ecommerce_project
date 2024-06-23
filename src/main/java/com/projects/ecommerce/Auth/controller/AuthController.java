@@ -70,8 +70,6 @@ public class AuthController {
         return authService.login(request);
     }
 
-
-
     @PostMapping("/logout/all")
     public void logoutAll(@RequestHeader("Authorization") String jwtToken) {
         String token = jwtToken.substring(7); // Extract token from "Bearer TOKEN"
@@ -87,9 +85,6 @@ public class AuthController {
         });
         tokenRepo.saveAll(validTokensForUser);
     }
-
-
-
 
 
     @GetMapping("/verify-email")
