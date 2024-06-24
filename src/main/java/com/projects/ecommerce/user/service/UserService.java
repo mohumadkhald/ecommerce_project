@@ -1,13 +1,10 @@
 package com.projects.ecommerce.user.service;
 
 import com.projects.ecommerce.Auth.dto.RegisterRequestDto;
-import com.projects.ecommerce.user.UserNotFoundException;
 import com.projects.ecommerce.user.dto.UserDto;
 import com.projects.ecommerce.user.dto.UserResponseDto;
-import com.projects.ecommerce.user.model.Address;
+import com.projects.ecommerce.user.model.User;
 import org.springframework.http.ResponseEntity;
-
-import java.util.Set;
 
 public interface UserService {
 
@@ -33,4 +30,7 @@ public interface UserService {
     ResponseEntity<?> updateUser(Integer id, RegisterRequestDto dto);
 
 
+    User findByEmail(String email);
+
+    void save(User newUser);
 }
