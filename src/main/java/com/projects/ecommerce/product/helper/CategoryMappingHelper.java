@@ -13,6 +13,8 @@ public interface CategoryMappingHelper {
 		return CategoryDto.builder()
 				.categoryId(category.getCategoryId())
 				.categoryTitle(category.getCategoryTitle())
+				.description(category.getDescription())
+				.img(category.getImg())
 				.build();
 	}
 
@@ -23,6 +25,8 @@ public interface CategoryMappingHelper {
 		return Category.builder()
 				.categoryId(categoryDto.getCategoryId())
 				.categoryTitle(categoryDto.getCategoryTitle())
+				.description(categoryDto.getDescription())
+				.img(categoryDto.getImg())
 				.build();
 	}
 

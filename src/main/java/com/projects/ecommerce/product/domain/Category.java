@@ -28,6 +28,10 @@ public final class Category extends AbstractMappedEntity implements Serializable
 	@Column(name = "category_title", unique = true, nullable = false)
 	private String categoryTitle;
 
+	private String description;
+
+	private String img;
+
 	@OneToMany(mappedBy = "category", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private Set<SubCategory> subCategories;
 }

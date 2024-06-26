@@ -1,14 +1,12 @@
 package com.projects.ecommerce.product.service.impl;
 
 
-import com.projects.ecommerce.product.dto.CategoryDto;
+import com.projects.ecommerce.product.domain.Category;
 import com.projects.ecommerce.product.dto.SubCategoryDto;
 import com.projects.ecommerce.product.exception.wrapper.CategoryNotFoundException;
-import com.projects.ecommerce.product.helper.CategoryMappingHelper;
 import com.projects.ecommerce.product.helper.SubCategoryMappingHelper;
 import com.projects.ecommerce.product.repository.CategoryRepository;
 import com.projects.ecommerce.product.repository.SubCategoryRepository;
-import com.projects.ecommerce.product.service.CategoryService;
 import com.projects.ecommerce.product.service.SubCategoryService;
 import com.projects.ecommerce.user.expetion.AlreadyExistsException;
 import jakarta.transaction.Transactional;
@@ -25,7 +23,8 @@ import java.util.List;
 public class SubCategoryServiceImpl implements SubCategoryService {
 	
 	private final SubCategoryRepository subcategoryRepository;
-	
+	private final CategoryRepository categoryRepository;
+
 	@Override
 	public List<SubCategoryDto> findAll() {
 		log.info("*** CategoryDto List, service; fetch all categorys *");
@@ -35,7 +34,14 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 					.distinct()
 					.toList();
 	}
-	
+
+	@Override
+	public List<SubCategoryDto> findAllByCategoryTitle(String categoryTitle) {
+		log.info("*** SubCategoryDto List, service; fetch all sub-categories by category title *");
+		Category category = categoryRepository.findByCategoryTitle(categoryTitle);
+		return this.subcategoryRepository.findByCategory(category);
+	}
+
 	@Override
 	public SubCategoryDto findById(final Integer subCategoryId) {
 		log.info("*** CategoryDto, service; fetch category by id *");
@@ -73,9 +79,10 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 		log.info("*** Void, service; delete category by id *");
 		this.subcategoryRepository.deleteById(subCategoryId);
 	}
-	
-	
-	
+
+
+
+
 }
 
 

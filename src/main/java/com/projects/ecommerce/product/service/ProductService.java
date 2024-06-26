@@ -40,4 +40,6 @@ public interface ProductService {
 
 	@Transactional
 	void updateProductStock(Integer productId, List<Spec> specs, Integer quantityToSubtract);
+
+    Page<ProductDto> getProductsByCategoryNameAndProdcutNameAndFilters(String subCategoryName, String productNmae, String color, Double minPrice, Double maxPrice, String s, int page, int pageSize, Sort sort);
 }

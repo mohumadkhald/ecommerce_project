@@ -28,6 +28,10 @@ public class CategoryDto implements Serializable {
     @NotBlank(message = "categoryTitle cannot be empty or start space")
     private String categoryTitle;
 
+	private String description;
+
+	private String img;
+
 	@JsonInclude(Include.NON_NULL)
 	private Set<SubCategoryDto> subCategoryDtos;
 

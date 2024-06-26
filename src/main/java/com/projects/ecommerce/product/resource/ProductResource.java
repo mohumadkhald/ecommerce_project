@@ -133,6 +133,26 @@ public class ProductResource {
 		return ResponseEntity.ok(products);
 	}
 
+	@GetMapping("/{subCategoryName}/{productNmae}")
+	public ResponseEntity<Page<ProductDto>> getProductsByCategoryNameAndProductNameAndFilters(
+			@PathVariable String subCategoryName,
+			@PathVariable String productNmae,
+			@RequestParam(required = false) String color,
+			@RequestParam(required = false) Double minPrice,
+			@RequestParam(required = false) Double maxPrice,
+			@RequestParam(required = false) String size, // Change parameter type to String
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "20") int pageSize,
+			@RequestParam(defaultValue = "desc") String sortDirection) {
+
+		Sort sort = Sort.by("createdAt").descending();
+		if (!sortDirection.equals("desc")) {
+			sort = Sort.by("createdAt").ascending();
+		}
+		Page<ProductDto> products = productService.getProductsByCategoryNameAndProdcutNameAndFilters(subCategoryName, productNmae, color, minPrice, maxPrice, size != null ? size.toUpperCase() : null, page, pageSize, sort); // Convert size to uppercase
+		return ResponseEntity.ok(products);
+	}
+
 	@GetMapping("/stock")
 	public ResponseEntity<Map<String, Map<String, Map<String, Integer>>>> getProductVariations(
 			@RequestParam String productName) {

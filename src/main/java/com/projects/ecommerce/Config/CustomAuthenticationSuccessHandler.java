@@ -21,6 +21,5 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         // Custom logic on successful authentication
         response.sendRedirect("/loginSuccess");
-//        response.sendRedirect("http://localhost:4200");
     }
 }

@@ -29,6 +29,12 @@ public class SubCategoryDto implements Serializable {
 
 	@JsonInclude(Include.NON_NULL)
 	private Set<ProductDto> productDtos;
+	public SubCategoryDto(Integer id, String name, Integer categoryId, String img) {
+		this.id = id;
+		this.name = name;
+		this.categoryId = categoryId;
+		this.img = img;
+	}
 
 }
 

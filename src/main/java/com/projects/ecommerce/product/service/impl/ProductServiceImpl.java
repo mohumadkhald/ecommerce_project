@@ -194,9 +194,22 @@ public class ProductServiceImpl implements ProductService {
 			productPage = productRepository.findByCategoryNameAndFilters(categoryName, Color.valueOf(color), minPrice, maxPrice, size != null ? Size.valueOf(size.toUpperCase()) : null, pageable); // Convert size to uppercase
 		}
 
+
 		return productPage.map(ProductMappingHelper::map);
 	}
 
+	@Override
+	public Page<ProductDto> getProductsByCategoryNameAndProdcutNameAndFilters(String subCategoryName, String productNmae, String color, Double minPrice, Double maxPrice, String s, int page, int pageSize, Sort sort) {
+		Pageable pageable = PageRequest.of(page, pageSize, sort);
+
+		Page<Product> productPage;
+		if (color == null) {
+			productPage = productRepository.findByCategoryNameAndProductTitleAndFilters(subCategoryName, productNmae,null, minPrice, maxPrice, s != null ? Size.valueOf(s.toUpperCase()) : null, pageable); // Convert size to uppercase
+		} else {
+			productPage = productRepository.findByCategoryNameAndProductTitleAndFilters(subCategoryName, productNmae,Color.valueOf(color), minPrice, maxPrice, s != null ? Size.valueOf(s.toUpperCase()) : null, pageable); // Convert size to uppercase
+		}
+		return productPage.map(ProductMappingHelper::map);
+	}
 
 	@Override
 	public Map<String, Map<String, Map<String, Integer>>> getProductVariations(String productName) {
@@ -338,15 +351,6 @@ public class ProductServiceImpl implements ProductService {
 				.sum();
 		product.setAllQuantity(totalQuantity);
 	}
-
-
-
-
-
-
-
-
-
 
 
 

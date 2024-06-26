@@ -47,6 +47,12 @@ public class SecurityConfig {
     @Value("${google.client.client-secret}")
     private String clientSecret;
 
+    @Value("${facebook.client.client-id}")
+    private String facebookClientId;
+
+    @Value("${facebook.client.client-secret}")
+    private String facebookClientSecret;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -57,6 +63,7 @@ public class SecurityConfig {
                                 "/api/products/**",
                                 "/api/categories/all",
                                 "/api/sub-categories/all",
+                                "/api/sub-categories/find/**",
                                 "/public/images/**",
                                 "/api/auth/register",
                                 "/api/auth/login",
@@ -109,7 +116,10 @@ public class SecurityConfig {
 
     @Bean
     public ClientRegistrationRepository clientRegistrationRepository() {
-        return new InMemoryClientRegistrationRepository(this.googleClientRegistration());
+        return new InMemoryClientRegistrationRepository(
+                this.googleClientRegistration(),
+                this.facebookClientRegistration()
+        );
     }
 
     private ClientRegistration googleClientRegistration() {
@@ -125,6 +135,20 @@ public class SecurityConfig {
                 .userNameAttributeName(IdTokenClaimNames.SUB)
                 .jwkSetUri("https://www.googleapis.com/oauth2/v3/certs")
                 .clientName("Google")
+                .build();
+    }
+    private ClientRegistration facebookClientRegistration() {
+        return ClientRegistration.withRegistrationId("facebook")
+                .clientId(facebookClientId)
+                .clientSecret(facebookClientSecret)
+                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                .redirectUri("{baseUrl}/login/oauth2/code/facebook")
+                .scope("public_profile", "email")
+                .authorizationUri("https://www.facebook.com/v10.0/dialog/oauth")
+                .tokenUri("https://graph.facebook.com/v10.0/oauth/access_token")
+                .userInfoUri("https://graph.facebook.com/me?fields=id,name,email,picture{url}")
+                .userNameAttributeName("id")
+                .clientName("Facebook")
                 .build();
     }
 

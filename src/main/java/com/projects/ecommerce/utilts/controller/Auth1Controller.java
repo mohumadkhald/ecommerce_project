@@ -13,6 +13,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
@@ -34,24 +35,62 @@ public class Auth1Controller {
     }
 
     @GetMapping("/loginSuccess")
-    public ModelAndView loginSuccess(@AuthenticationPrincipal OidcUser oidcUser) throws Exception {
+    public ModelAndView loginSuccess(@AuthenticationPrincipal OidcUser oidcUser, @AuthenticationPrincipal OAuth2User oauth2User) throws Exception {
+        String email;
+        String familyName;
+        String givenName;
+        String pictureUrl;
+        String name;
+
+        if (oidcUser != null) {
+            email = oidcUser.getEmail();
+            familyName = oidcUser.getFamilyName();
+            givenName = oidcUser.getGivenName();
+            pictureUrl = oidcUser.getPicture();
+            name = oidcUser.getName();
+        } else if (oauth2User != null) {
+            email = oauth2User.getAttribute("email");
+            name = oauth2User.getAttribute("name");
+            givenName = null;
+            familyName = null;
+            if (name != null) {
+                String[] nameParts = name.split(" ");
+                if (nameParts.length > 0) {
+                    givenName = nameParts[0]; // First part is given name
+                }
+                if (nameParts.length > 1) {
+                    familyName = nameParts[nameParts.length - 1]; // Last part is family name
+                }
+            }
+            pictureUrl = null;
+            Map<String, Object> pictureObj = oauth2User.getAttribute("picture");
+            if (pictureObj != null) {
+                Map<String, Object> dataObj = (Map<String, Object>) pictureObj.get("data");
+                if (dataObj != null) {
+                    pictureUrl = (String) dataObj.get("url");
+                }
+            }
+            name = oauth2User.getAttribute("name");
+        } else {
+            throw new Exception("Authentication principal is missing");
+        }
+
         LoginRequestDto loginRequestDto = new LoginRequestDto();
-        loginRequestDto.setEmail(oidcUser.getEmail());
+        loginRequestDto.setEmail(email);
         loginRequestDto.setPassword("123456Ax#");
         loginRequestDto.setRemember(true);
 
         // Check if user already exists in your system
-        User existingUser = userService.findByEmail(oidcUser.getEmail());
+        User existingUser = userService.findByEmail(email);
         if (existingUser == null) {
             // Create new user if not exists
             User newUser = new User();
-            newUser.setEmail(oidcUser.getEmail());
+            newUser.setEmail(email);
             newUser.setPassword(passwordEncoder.encode("123456Ax#"));
-            newUser.setLastname(oidcUser.getFamilyName());
-            newUser.setFirstname(oidcUser.getGivenName());
-            newUser.setGender(oidcUser.getGender());
-            newUser.setImgUrl(oidcUser.getPicture());
-            newUser.setCreatedBy(oidcUser.getName());
+            newUser.setLastname(familyName);
+            newUser.setFirstname(givenName);
+            newUser.setImgUrl(pictureUrl);
+            newUser.setCreatedBy(name);
 
             // Set account status and email verification
             AccountStatus accountStatus = new AccountStatus();
@@ -82,6 +121,7 @@ public class Auth1Controller {
 
         return modelAndView;
     }
+
 
     @GetMapping("/api/userinfo")
     public Map<String, Object> getUserInfo(@AuthenticationPrincipal OidcUser oidcUser) {

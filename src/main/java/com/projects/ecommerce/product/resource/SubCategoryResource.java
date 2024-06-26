@@ -31,13 +31,19 @@ public class SubCategoryResource {
 		return ResponseEntity.ok(new DtoCollectionResponse<>(this.subCategoryService.findAll()));
 	}
 
+	@GetMapping("/find/{categoryTitle}")
+	public ResponseEntity<DtoCollectionResponse<SubCategoryDto>> findSubByCategoryTitle(@PathVariable ("categoryTitle") String categoryTitle) {
+		log.info("*** CategoryDto List, controller; fetch all categories by category title *");
+		return ResponseEntity.ok(new DtoCollectionResponse<>(this.subCategoryService.findAllByCategoryTitle(categoryTitle)));
+	}
+
 	@GetMapping("/{subCategoryId}")
 	public ResponseEntity<SubCategoryDto> findById(
 			@PathVariable("subCategoryId")
 			@NotBlank(message = "Input must not be blank")
-			@Valid final String subCategoryId) {
+			@Valid final Integer subCategoryId) {
 		log.info("*** CategoryDto, resource; fetch category by id *");
-		return ResponseEntity.ok(this.subCategoryService.findById(Integer.parseInt(subCategoryId)));
+		return ResponseEntity.ok(this.subCategoryService.findById(subCategoryId));
 	}
 
 	@PostMapping
