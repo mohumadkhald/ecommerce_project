@@ -16,7 +16,7 @@ public interface ProductMappingHelper {
 
 	public static ProductDto map(final Product product) {
 		ProductDto.ProductDtoBuilder productDtoBuilder = ProductDto.builder()
-				.productId(product.getProductId())
+				.productId(product.getId())
 				.productTitle(product.getProductTitle())
 				.imageUrl(product.getImageUrl())
 				.price(product.getPrice())
@@ -49,7 +49,7 @@ public interface ProductMappingHelper {
 
 	public static Product map(final ProductDto productDto) {
 		Product product = Product.builder()
-				.productId(productDto.getProductId())
+				.Id(productDto.getProductId())
 				.productTitle(productDto.getProductTitle())
 				.imageUrl(productDto.getImageUrl())
 				.price(productDto.getPrice())
@@ -102,7 +102,7 @@ public interface ProductMappingHelper {
 		} else {
 			// If the product does not exist, create a new one
 			Product product = Product.builder()
-					.productId(productDto.getProductId())
+					.Id(productDto.getProductId())
 					.productTitle(productDto.getProductTitle())
 					.imageUrl(productDto.getImageUrl())
 					.price(productDto.getPrice())

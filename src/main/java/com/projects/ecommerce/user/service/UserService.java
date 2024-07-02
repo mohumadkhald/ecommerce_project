@@ -1,6 +1,7 @@
 package com.projects.ecommerce.user.service;
 
 import com.projects.ecommerce.Auth.dto.RegisterRequestDto;
+import com.projects.ecommerce.Auth.dto.UpdateUserRequestDto;
 import com.projects.ecommerce.user.dto.UserDto;
 import com.projects.ecommerce.user.dto.UserResponseDto;
 import com.projects.ecommerce.user.model.User;
@@ -27,10 +28,12 @@ public interface UserService {
 
     ResponseEntity<?> getAllUsers();
 
-    ResponseEntity<?> updateUser(Integer id, RegisterRequestDto dto);
+    ResponseEntity<?> updateUser(Integer id, UpdateUserRequestDto dto);
 
 
     User findByEmail(String email);
 
     void save(User newUser);
+
+    User findByUserId(Integer userID);
 }

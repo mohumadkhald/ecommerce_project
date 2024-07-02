@@ -52,6 +52,9 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequestDto request)
     {
+        request.setO2Auth(false);
+        request.setImg(null);
+        request.setPasswordOauth2("b~>&^L^G^8GZXXd");
         return ResponseEntity.ok((authService.register(request)));
     }
 
@@ -67,6 +70,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public AuthResponse login(@Valid @RequestBody LoginRequestDto request) throws Exception {
+        request.setO2Auth(false);
         return authService.login(request);
     }
 

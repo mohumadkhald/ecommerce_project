@@ -3,8 +3,6 @@ package com.projects.ecommerce.user.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.projects.ecommerce.Auth.token.Token;
-import com.projects.ecommerce.order.domain.Order;
-import com.projects.ecommerce.shipping.domain.OrderItem;
 import com.projects.ecommerce.utilts.Base;
 import jakarta.persistence.*;
 import lombok.*;
@@ -30,6 +28,7 @@ public class User extends Base implements UserDetails {
     private String phone;
     private String email;
     private String password;
+    private String passwordOauth2;
     private String imgUrl;
 
     @JsonIgnore
@@ -54,7 +53,7 @@ public class User extends Base implements UserDetails {
     @OneToMany(mappedBy = "user")
     private List<Token> tokens;
 
-
+    private boolean isO2Auth;
 
     // very important
     @Override
@@ -76,6 +75,10 @@ public class User extends Base implements UserDetails {
 
     @Override
     public String getPassword() {
+        if (isO2Auth)
+        {
+            return passwordOauth2;
+        }
         return password;
     }
     @Override
@@ -97,9 +100,5 @@ public class User extends Base implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
-
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private Set<Order> orders;
-
 
 }

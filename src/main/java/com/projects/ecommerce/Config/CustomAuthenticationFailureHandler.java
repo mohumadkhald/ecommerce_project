@@ -15,6 +15,6 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
         // Custom logic on authentication failure
-        response.sendRedirect("/login"); // Adjust this URL to where you want to redirect on failure
+        response.sendRedirect("http://localhost:4200/login");
     }
 }

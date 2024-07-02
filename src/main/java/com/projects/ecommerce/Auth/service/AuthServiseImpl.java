@@ -58,14 +58,20 @@ public class AuthServiseImpl implements AuthService {
     */
     @Override
     public AuthResponse register(RegisterRequestDto request) {
+
         var user = User.builder()
                 .firstname(request.getFirstname())
                 .lastname(request.getLastname())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
+                .passwordOauth2(passwordEncoder.encode(request.getPasswordOauth2()))
                 .role(Role.USER)
                 .gender(request.getGender())
+                .createdAt(LocalDateTime.now())
+                .createdBy(request.getEmail())
 //                .phone(request.getPhone())
+                .isO2Auth(request.isO2Auth())
+                .imgUrl(request.getImg())
                 .build();
 
         // Create EmailVerification entity
@@ -129,12 +135,19 @@ public class AuthServiseImpl implements AuthService {
     public AuthResponse login(LoginRequestDto request) throws Exception {
         try {
 
+            // Retrieve user details
+            var user = userRepo.findByEmail(request.getEmail());
+            if (request.isO2Auth())
+            {
+                user.setO2Auth(true);
+                user.setUpdatedBy(request.getEmail());
+                userRepo.save(user);
+                request.setPassword(request.getPasswordOauth2());
+            }
 
             // Authenticate user
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
-            // Retrieve user details
-            var user = userRepo.findByEmail(request.getEmail());
 
             int expirationDay = getExpirationDay(request.isRemember());
 

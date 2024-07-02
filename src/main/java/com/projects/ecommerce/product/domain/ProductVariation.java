@@ -21,7 +21,7 @@ public final class ProductVariation extends AbstractMappedEntity implements Seri
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "variation_id", unique = true, nullable = false, updatable = false)
-    private Integer variationId;
+    private Integer Id;
 
     @Column(name = "color")
     @Enumerated(EnumType.STRING)

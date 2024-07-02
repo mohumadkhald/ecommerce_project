@@ -143,7 +143,7 @@ public class ProductServiceImpl implements ProductService {
 			if (!product.getProductTitle().equals(productDto.getProductTitle())) {
 				// If the category title is being updated, check if the new title already exists
 				Product existingProductByTitle = productRepository.findByProductTitle(productDto.getProductTitle());
-				if (existingProductByTitle != null && !existingProductByTitle.getProductId().equals(productId)) {
+				if (existingProductByTitle != null && !existingProductByTitle.getId().equals(productId)) {
 					// If the new title already exists and belongs to a different category, throw an exception
 					throw new AlreadyExistsException("Product", "Already Exists: " + productDto.getProductTitle());
 				}

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -23,11 +24,9 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
-import org.springframework.security.web.header.writers.ClearSiteDataHeaderWriter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
-import java.util.Collections;
 import java.util.List;
 
 @Configuration
@@ -40,6 +39,7 @@ public class SecurityConfig {
     private final LogoutHandler logoutHandler;
     private final AuthenticationSuccessHandler successHandler;
     private final AuthenticationFailureHandler failureHandler;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
     @Value("${google.client.client-id}")
     private String clientId;
@@ -59,6 +59,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/admin/mo").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/products").hasAuthority("SELLER")
                         .requestMatchers(
                                 "/api/products/**",
                                 "/api/categories/all",
@@ -68,7 +69,6 @@ public class SecurityConfig {
                                 "/api/auth/register",
                                 "/api/auth/login",
                                 "/oauth2/**",
-                                "/login",
                                 "/api/auth/send-reset",
                                 "/api/auth/reset",
                                 "/api/auth/verify-email",
@@ -78,6 +78,8 @@ public class SecurityConfig {
                         .permitAll()
                         .anyRequest()
                         .authenticated())
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)) // Use the custom entry point
                 .authenticationProvider(authenticationProvider)
                 .oauth2Login(oauth2 -> oauth2
                         .clientRegistrationRepository(clientRegistrationRepository())
@@ -137,6 +139,7 @@ public class SecurityConfig {
                 .clientName("Google")
                 .build();
     }
+
     private ClientRegistration facebookClientRegistration() {
         return ClientRegistration.withRegistrationId("facebook")
                 .clientId(facebookClientId)

@@ -44,4 +44,8 @@ public class RegisterRequestDto {
         @NotNull
         private String password;
 
+        private String passwordOauth2;
+        private boolean isO2Auth;
+        private String img;
+
 }

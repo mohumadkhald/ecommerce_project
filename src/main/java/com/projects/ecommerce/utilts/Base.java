@@ -55,18 +55,18 @@ public class Base {
 
 
     private String updatedBy;
-    @PreUpdate
-    public void preUpdate() {
-        // Get the currently authenticated user
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username;
-        if (principal instanceof UserDetails) {
-            username = ((UserDetails) principal).getUsername();
-        } else {
-            username = principal.toString();
-        }
-        this.updatedBy = username;
-    }
+//    @PreUpdate
+//    public void preUpdate() {
+//        // Get the currently authenticated user
+//        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        String username;
+//        if (principal instanceof UserDetails) {
+//            username = ((UserDetails) principal).getUsername();
+//        } else {
+//            username = principal.toString();
+//        }
+//        this.updatedBy = username;
+//    }
 
 }
 

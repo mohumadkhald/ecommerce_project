@@ -15,5 +15,8 @@ public class LoginRequestDto {
     private String email;
     @NotEmpty
     private String password;
+    private String passwordOauth2;
     private boolean remember;
+    private boolean isO2Auth;
+
 }

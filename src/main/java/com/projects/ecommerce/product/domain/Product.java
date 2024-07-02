@@ -2,8 +2,6 @@ package com.projects.ecommerce.product.domain;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.projects.ecommerce.shipping.domain.ItemVariation;
-import com.projects.ecommerce.shipping.domain.OrderItem;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,7 +25,7 @@ public final class Product extends AbstractMappedEntity implements Serializable 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "product_id", unique = true, nullable = false, updatable = false)
-	private Integer productId;
+	private Integer Id;
 
 	@Column(name = "product_title")
 	private String productTitle;
@@ -55,9 +53,6 @@ public final class Product extends AbstractMappedEntity implements Serializable 
 	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<ProductVariation> variations;
 
-	@JsonIgnore
-	@OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	private Set<ItemVariation> itemVariations;
 }
 
 

@@ -2,14 +2,12 @@ package com.projects.ecommerce.utilts.controller;
 
 import com.projects.ecommerce.Auth.dto.AuthResponse;
 import com.projects.ecommerce.Auth.dto.LoginRequestDto;
+import com.projects.ecommerce.Auth.dto.RegisterRequestDto;
 import com.projects.ecommerce.Auth.service.AuthService;
-import com.projects.ecommerce.Config.JwtService;
-import com.projects.ecommerce.user.model.AccountStatus;
-import com.projects.ecommerce.user.model.EmailVerification;
-import com.projects.ecommerce.user.model.Role;
 import com.projects.ecommerce.user.model.User;
 import com.projects.ecommerce.user.service.UserService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
@@ -24,6 +22,7 @@ import java.util.Map;
 
 @RestController
 @AllArgsConstructor
+@Slf4j
 public class Auth1Controller {
     private final UserService userService;
     private final AuthService authService;
@@ -41,6 +40,7 @@ public class Auth1Controller {
         String givenName;
         String pictureUrl;
         String name;
+        String gender;
 
         if (oidcUser != null) {
             email = oidcUser.getEmail();
@@ -48,6 +48,7 @@ public class Auth1Controller {
             givenName = oidcUser.getGivenName();
             pictureUrl = oidcUser.getPicture();
             name = oidcUser.getName();
+            gender = oidcUser.getGender();
         } else if (oauth2User != null) {
             email = oauth2User.getAttribute("email");
             name = oauth2User.getAttribute("name");
@@ -71,54 +72,45 @@ public class Auth1Controller {
                 }
             }
             name = oauth2User.getAttribute("name");
+            gender = oauth2User.getAttribute("gender");
         } else {
             throw new Exception("Authentication principal is missing");
         }
 
-        LoginRequestDto loginRequestDto = new LoginRequestDto();
-        loginRequestDto.setEmail(email);
-        loginRequestDto.setPassword("123456Ax#");
-        loginRequestDto.setRemember(true);
 
+        ModelAndView modelAndView = new ModelAndView("redirect:http://localhost:4200/login");
         // Check if user already exists in your system
         User existingUser = userService.findByEmail(email);
         if (existingUser == null) {
-            // Create new user if not exists
-            User newUser = new User();
-            newUser.setEmail(email);
-            newUser.setPassword(passwordEncoder.encode("123456Ax#"));
-            newUser.setLastname(familyName);
-            newUser.setFirstname(givenName);
-            newUser.setImgUrl(pictureUrl);
-            newUser.setCreatedBy(name);
-
-            // Set account status and email verification
-            AccountStatus accountStatus = new AccountStatus();
-            accountStatus.setUser(newUser);
-            accountStatus.setAccountNonExpired(true);
-            accountStatus.setAccountNonLocked(true);
-            accountStatus.setCredentialsNonExpired(true);
-            newUser.setAccountStatus(accountStatus);
-
-            EmailVerification emailVerification = new EmailVerification();
-            emailVerification.setEmailVerified(true);
-            emailVerification.setUser(newUser);
-            newUser.setEmailVerification(emailVerification);
-
-            // Set role and save user
-            newUser.setRole(Role.USER);
-            userService.save(newUser);
+            log.info("creating new user");
+            RegisterRequestDto registerRequestDto = new RegisterRequestDto();
+            registerRequestDto.setEmail(email);
+            registerRequestDto.setPasswordOauth2("b~>&^L^G^8GZXXd");
+            registerRequestDto.setPassword("password");
+            registerRequestDto.setO2Auth(true);
+            registerRequestDto.setFirstname(givenName);
+            registerRequestDto.setLastname(familyName);
+            registerRequestDto.setGender(gender);
+            registerRequestDto.setImg(pictureUrl);
+            AuthResponse authResponse = authService.register(registerRequestDto);
+            // Create ModelAndView and add attributes
+            modelAndView.addObject("token", authResponse.getToken());
+            modelAndView.addObject("message", "Login Success");
+            modelAndView.addObject("role", authResponse.getRole());
         }
+        else {
+            log.info("user already exists");
+            LoginRequestDto loginRequestDto = new LoginRequestDto();
+            loginRequestDto.setEmail(email);
+            loginRequestDto.setPasswordOauth2("b~>&^L^G^8GZXXd");
+            loginRequestDto.setRemember(true);
+            loginRequestDto.setO2Auth(true);
+            AuthResponse authResponse = authService.login(loginRequestDto);
+            modelAndView.addObject("token", authResponse.getToken());
+            modelAndView.addObject("message", "Login Success");
+            modelAndView.addObject("role", authResponse.getRole());
 
-        // Perform login and retrieve authentication response
-        AuthResponse authResponse = authService.login(loginRequestDto);
-
-        // Create ModelAndView and add attributes
-        ModelAndView modelAndView = new ModelAndView("redirect:http://localhost:4200/login");
-        modelAndView.addObject("token", authResponse.getToken());
-        modelAndView.addObject("message", "Login Success");
-        modelAndView.addObject("role", authResponse.getRole());
-
+        }
         return modelAndView;
     }
 

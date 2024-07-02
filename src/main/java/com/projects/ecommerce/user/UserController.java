@@ -1,13 +1,13 @@
 package com.projects.ecommerce.user;
 
 import com.projects.ecommerce.Auth.dto.RegisterRequestDto;
+import com.projects.ecommerce.Auth.dto.UpdateUserRequestDto;
 import com.projects.ecommerce.user.dto.UserDto;
 import com.projects.ecommerce.user.dto.UserResponseDto;
 import com.projects.ecommerce.user.model.User;
 import com.projects.ecommerce.user.repository.UserRepo;
 import com.projects.ecommerce.user.service.UserService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -65,7 +65,7 @@ public class UserController {
     |--------------------------------------------------------------------------
     */
     @PutMapping("/profile")
-    public ResponseEntity<?> updateProfile(@RequestHeader("Authorization") String jwtToken,@Valid @RequestBody RegisterRequestDto newData)
+    public ResponseEntity<?> updateProfile(@RequestHeader("Authorization") String jwtToken,@Valid @RequestBody UpdateUserRequestDto newData)
     {
 
         Integer id = userService.findUserIdByJwt(jwtToken);
@@ -81,7 +81,7 @@ public class UserController {
     |--------------------------------------------------------------------------
     */
     @PutMapping("/{id}")
-    public ResponseEntity<?> editUser(@PathVariable Integer id,@Valid @RequestBody RegisterRequestDto newData)
+    public ResponseEntity<?> editUser(@PathVariable Integer id, @RequestBody UpdateUserRequestDto newData)
     {
 
         return userService.updateUser(id, newData);
