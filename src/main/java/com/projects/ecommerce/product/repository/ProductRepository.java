@@ -24,9 +24,6 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 
 
 
-
-
-
 //    @Query("SELECT p FROM Product p JOIN p.category c WHERE c.name = :categoryName " +
 //            "AND (:color IS NULL OR p.color = :color) " +
 //            "AND (:minPrice IS NULL OR p.price >= :minPrice) " +
@@ -72,9 +69,6 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
             @Param("maxPrice") Double maxPrice,
             @Param("size") Size size,
             Pageable pageable);
-
-
-
 
     Product findByProductTitle(String productTitle);
 

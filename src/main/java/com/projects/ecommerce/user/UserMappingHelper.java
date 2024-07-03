@@ -29,6 +29,7 @@ public interface UserMappingHelper {
 				.userId(user.getId())
 				.firstName(user.getFirstname())
 				.lastName(user.getLastname())
+				.gender(user.getGender())
 				.imageUrl(user.getImgUrl())
 				.email(user.getEmail())
 				.role(user.getRole().toString())

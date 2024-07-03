@@ -36,4 +36,6 @@ public interface UserService {
     void save(User newUser);
 
     User findByUserId(Integer userID);
+
+    void updateUserPhoto(Integer userId, String imageUrl);
 }

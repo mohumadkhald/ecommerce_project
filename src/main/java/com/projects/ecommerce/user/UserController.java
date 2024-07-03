@@ -7,21 +7,30 @@ import com.projects.ecommerce.user.dto.UserResponseDto;
 import com.projects.ecommerce.user.model.User;
 import com.projects.ecommerce.user.repository.UserRepo;
 import com.projects.ecommerce.user.service.UserService;
+import com.projects.ecommerce.utilts.FileStorageService;
+import com.projects.ecommerce.utilts.traits.ApiTrait;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
 @AllArgsConstructor
-@CrossOrigin(origins = "http://localhost:3000/")
+@Slf4j
+@CrossOrigin(origins = "http://localhost:4200/")
 public class UserController {
 
     private final UserRepo userRepo;
     private final UserService userService;
+    private final FileStorageService fileStorageService;
+
 
 
 
@@ -153,7 +162,19 @@ public class UserController {
 
 
 
-
-
+    @PatchMapping("photo")
+    public ResponseEntity<?> changePhoto(@RequestPart(value = "image", required = true) MultipartFile image,
+                              @RequestHeader("Authorization") String jwtToken) throws IOException {
+        Integer userId = userService.findUserIdByJwt(jwtToken);
+        log.info("*** ProductDto, resource; save product ***");
+        if (image != null)
+        {
+            String imageUrl = fileStorageService.storeFile(image, "users" + "/"+ userId);
+            userService.updateUserPhoto(userId, imageUrl);
+            return ApiTrait.successMessage(imageUrl, HttpStatus.OK);
+        } else {
+            return ApiTrait.successMessage("send Image", HttpStatus.BAD_REQUEST);
+        }
+    }
 
 }

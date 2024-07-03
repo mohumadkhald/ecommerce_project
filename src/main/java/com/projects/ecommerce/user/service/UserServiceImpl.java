@@ -318,6 +318,13 @@ public class UserServiceImpl implements UserService {
         return userRepo.findUserById(userID);
     }
 
+    @Override
+    public void updateUserPhoto(Integer userId, String imageUrl) {
+        User user = userRepo.findUserById(userId);
+        user.setImgUrl(imageUrl);
+        userRepo.save(user);
+    }
+
     /*|--------------------------------------------------------------------------
                                     | End Implement
     |-------------------------------------------------------------------------- */

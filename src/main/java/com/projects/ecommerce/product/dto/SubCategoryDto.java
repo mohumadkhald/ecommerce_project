@@ -23,8 +23,10 @@ public class SubCategoryDto implements Serializable {
 	private Integer id;
 	@NotBlank(message = "name cannot be empty or start space")
 	private String name;
+
 	private String img;
 
+	@NotNull
 	private Integer categoryId;
 
 	@JsonInclude(Include.NON_NULL)
@@ -35,7 +37,6 @@ public class SubCategoryDto implements Serializable {
 		this.categoryId = categoryId;
 		this.img = img;
 	}
-
 }
 
 

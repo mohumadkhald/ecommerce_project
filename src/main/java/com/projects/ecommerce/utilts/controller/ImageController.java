@@ -46,7 +46,14 @@ public class ImageController {
     @GetMapping("/public/images/{product_title}/{imageName:.+}")
     public ResponseEntity<byte[]> getImage(@PathVariable String imageName, @PathVariable String product_title) throws IOException {
         // Define the directory where the images are stored
-        String directory = "uploads/products/"+product_title;
+        String directory;
+
+        // Check if product_title is a number
+        if (product_title.matches("\\d+")) {
+            directory = "uploads/users/" + product_title;
+        } else {
+            directory = "uploads/products/" + product_title;
+        }
 
         // Construct the full path to the image
         String imagePath = directory + "/" + imageName;
@@ -76,4 +83,5 @@ public class ImageController {
             default -> MediaType.APPLICATION_OCTET_STREAM;
         };
     }
+
 }
