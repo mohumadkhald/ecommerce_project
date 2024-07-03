@@ -11,6 +11,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -48,18 +49,32 @@ public class SubCategoryResource {
 
 	@PostMapping
 	public ResponseEntity<SubCategoryDto> save(
-			@ModelAttribute
-			@Valid final SubCategoryDto subCategoryDto,
-			@RequestPart(value = "image", required = true) MultipartFile image
-			) throws IOException {
-		log.info("*** CategoryDto, resource; save category *");
-		if (image != null)
-		{
-			String imageUrl = fileStorageService.storeFile(image, "products" + "/"+ subCategoryDto.getName());
+			@ModelAttribute @Valid final SubCategoryDto subCategoryDto,
+			@RequestPart(value = "image", required = false) MultipartFile image,
+			BindingResult bindingResult
+	) throws IOException {
+
+		log.info("*** CategoryDto, resource; save category ***");
+
+		// Check if the image is null or empty and add a global error
+		if (image == null || image.isEmpty()) {
+			throw new IllegalStateException("Image file is required");
+		}
+
+		// Check for other validation errors
+		if (bindingResult.hasErrors()) {
+			return ResponseEntity.badRequest().body(null);
+		}
+
+		if (image != null && !image.isEmpty()) {
+			String imageUrl = fileStorageService.storeFile(image, "products/" + subCategoryDto.getName());
 			subCategoryDto.setImg(imageUrl);
 		}
+
 		return ResponseEntity.ok(this.subCategoryService.save(subCategoryDto));
 	}
+
+
 
 	@PutMapping
 	public ResponseEntity<SubCategoryDto> update(

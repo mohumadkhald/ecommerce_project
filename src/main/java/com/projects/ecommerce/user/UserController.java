@@ -14,6 +14,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -163,18 +164,24 @@ public class UserController {
 
 
     @PatchMapping("photo")
-    public ResponseEntity<?> changePhoto(@RequestPart(value = "image", required = true) MultipartFile image,
-                              @RequestHeader("Authorization") String jwtToken) throws IOException {
+    public ResponseEntity<?> changePhoto(
+            @RequestPart(value = "image", required = false) MultipartFile image,
+            @RequestHeader("Authorization") String jwtToken)
+            throws IOException {
+
         Integer userId = userService.findUserIdByJwt(jwtToken);
         log.info("*** ProductDto, resource; save product ***");
-        if (image != null)
-        {
-            String imageUrl = fileStorageService.storeFile(image, "users" + "/"+ userId);
-            userService.updateUserPhoto(userId, imageUrl);
-            return ApiTrait.successMessage(imageUrl, HttpStatus.OK);
-        } else {
-            return ApiTrait.successMessage("send Image", HttpStatus.BAD_REQUEST);
+
+        // Check if the image is null or empty and add a global error
+        if (image == null || image.isEmpty()) {
+            throw new IllegalStateException("Image file is required");
         }
+
+        String imageUrl = fileStorageService.storeFile(image, "users/" + userId);
+        userService.updateUserPhoto(userId, imageUrl);
+
+        return ApiTrait.successMessage(imageUrl, HttpStatus.OK);
     }
+
 
 }
