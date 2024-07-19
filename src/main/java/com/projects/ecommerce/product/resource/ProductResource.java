@@ -4,6 +4,8 @@ package com.projects.ecommerce.product.resource;
 import com.projects.ecommerce.product.dto.ProductDto;
 import com.projects.ecommerce.product.dto.ProductRequestDto;
 import com.projects.ecommerce.product.dto.Spec;
+import com.projects.ecommerce.product.dto.SubCategoryDto;
+import com.projects.ecommerce.product.dto.response.collection.DtoCollectionResponse;
 import com.projects.ecommerce.product.service.ProductService;
 import com.projects.ecommerce.user.service.UserService;
 import com.projects.ecommerce.utilts.FileStorageService;
@@ -67,6 +69,8 @@ public class ProductResource {
 			@RequestHeader("Authorization") String jwtToken
 	) throws IOException {
 		Integer userId = userService.findUserIdByJwt(jwtToken);
+		String email = userService.findById(userId).getEmail();
+		productDto.setEmail(email);
 		log.info("*** ProductDto, resource; save product ***");
 		if (image != null)
 		{
@@ -210,6 +214,29 @@ public class ProductResource {
 //
 //		return ResponseEntity.ok("Product variations updated successfully.");
 //	}
+
+
+	@GetMapping("/created-by")
+	public ResponseEntity<List<ProductDto>> getProductsCreatedByUser(@RequestParam("email") String email) {
+		List<ProductDto> products = productService.findAllByCreatedBy(email);
+		return ResponseEntity.ok(products);
+	}
+
+	@GetMapping("/find/created-by")
+	public ResponseEntity<List<ProductDto>> getAllProductsCreatedByUser(@RequestHeader("Authorization") String jwtToken) {
+		Integer userID = userService.findUserIdByJwt(jwtToken);
+		String email = userService.findById(userID).getEmail();
+		List<ProductDto> products = productService.findAllProductsByCreatedBy(email);
+		return ResponseEntity.ok(products);
+	}
+
+	@DeleteMapping("/{productId}")
+	public ResponseEntity<Void> removeProductFromCart(@PathVariable Integer productId, @RequestHeader("Authorization") String jwtToken) {
+		Integer userId = userService.findUserIdByJwt(jwtToken);
+		String email = userService.findById(userId).getEmail();
+		productService.removeProductByCreatedBy(email, productId); // Pass userId and itemId to the service method
+		return ResponseEntity.ok().build();
+	}
 }
 
 

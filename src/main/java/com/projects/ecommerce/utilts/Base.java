@@ -38,6 +38,7 @@ public class Base {
 
 
     private String createdBy;
+
     @PrePersist
     public void prePersist() {
         if (this.createdBy == null) {
@@ -55,6 +56,7 @@ public class Base {
 
 
     private String updatedBy;
+}
 //    @PreUpdate
 //    public void preUpdate() {
 //        // Get the currently authenticated user
@@ -68,7 +70,6 @@ public class Base {
 //        this.updatedBy = username;
 //    }
 
-}
 
 
 

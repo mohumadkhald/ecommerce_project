@@ -50,7 +50,9 @@ public class UserMapper {
                 user.getFirstname() + " " + user.getLastname(),
                 user.getGender(),
                 user.getEmail(),
-                emailVerification != null && emailVerification.isEmailVerified()               // Map account status fields
+                emailVerification != null && emailVerification.isEmailVerified(),
+                user.getCreatedAt().toString(),
+                user.getRole().toString()
         );
     }
 }

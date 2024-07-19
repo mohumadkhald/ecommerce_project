@@ -10,6 +10,7 @@ import com.projects.ecommerce.product.dto.ProductRequestDto;
 import com.projects.ecommerce.product.dto.SubCategoryDto;
 import com.projects.ecommerce.product.service.impl.ProductServiceImpl;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 public interface ProductMappingHelper {
@@ -49,7 +50,9 @@ public interface ProductMappingHelper {
 
 	public static Product map(final ProductDto productDto) {
 		Product product = Product.builder()
-				.Id(productDto.getProductId())
+				.id(productDto.getProductId())
+				.createdAt(LocalDateTime.now())
+				.createdBy(productDto.getEmail())
 				.productTitle(productDto.getProductTitle())
 				.imageUrl(productDto.getImageUrl())
 				.price(productDto.getPrice())
@@ -102,7 +105,9 @@ public interface ProductMappingHelper {
 		} else {
 			// If the product does not exist, create a new one
 			Product product = Product.builder()
-					.Id(productDto.getProductId())
+					.id(productDto.getProductId())
+					.createdBy(productDto.getEmail())
+					.createdAt(LocalDateTime.now())
 					.productTitle(productDto.getProductTitle())
 					.imageUrl(productDto.getImageUrl())
 					.price(productDto.getPrice())

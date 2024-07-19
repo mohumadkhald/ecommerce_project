@@ -21,6 +21,5 @@ public class ValidationErrorResponse {
             this.fieldName = fieldName;
             this.message = message;
         }
-
     }
 }

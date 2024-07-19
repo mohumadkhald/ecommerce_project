@@ -53,6 +53,7 @@ public class ProductRequestDto implements Serializable {
 	@NotNull(message = "SubCategory cannot be null")
 	private Integer subCategoryId;
 
+	private String email;
 }
 
 

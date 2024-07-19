@@ -11,6 +11,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +37,8 @@ public class PasswordResetController {
     private EntityManager entityManager;
 
     @PostMapping("/send-reset")
-    public ResponseEntity<Map<String, String>> requestResetPassword(@RequestParam("email") String email) {
+    public ResponseEntity<Map<String, String>> requestResetPassword(
+            @RequestParam("email") @NotNull @Email String email) {
 
         // Find the user by email
         User user = userRepo.findByEmail(email);
@@ -69,15 +72,15 @@ public class PasswordResetController {
             userRepo.save(user);
 
             Map<String, String> response = new HashMap<>();
-            response.put("message", "code created successfully");
+            response.put("message", "Code created successfully");
             return ResponseEntity.ok(response);
 
         } else {
             Map<String, String> response = new HashMap<>();
-            response.put("message", "Email " + email + "Not Exist");
-            return ResponseEntity.badRequest().body(response);        }
+            response.put("message", "Email " + email + " does not exist");
+            return ResponseEntity.badRequest().body(response);
+        }
     }
-
 
 
     @PostMapping("/reset")

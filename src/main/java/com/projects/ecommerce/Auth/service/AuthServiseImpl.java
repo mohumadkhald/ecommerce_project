@@ -194,7 +194,8 @@ public class AuthServiseImpl implements AuthService {
         {
             expirationDay = 1000 * 60 * 60 * 24 * 7; // check Remember Me token Valid 7 Days or when logout
         } else {
-            expirationDay = 1000 * 60 * 60 * 24; // If Not check RememberMe token valid 24 Hour or when logout
+            //expirationDay = 1000 * 60 * 60 * 24; // If Not check RememberMe token valid 24 Hour or when logout
+            expirationDay = 1000 * 60 * 60;
         }
         return expirationDay;
     }

@@ -2,18 +2,22 @@ package com.projects.ecommerce.user;
 
 import com.projects.ecommerce.Auth.dto.RegisterRequestDto;
 import com.projects.ecommerce.Auth.dto.UpdateUserRequestDto;
+import com.projects.ecommerce.Auth.token.TokenRepo;
 import com.projects.ecommerce.user.dto.UserDto;
 import com.projects.ecommerce.user.dto.UserResponseDto;
+import com.projects.ecommerce.user.model.AccountStatus;
 import com.projects.ecommerce.user.model.User;
 import com.projects.ecommerce.user.repository.UserRepo;
 import com.projects.ecommerce.user.service.UserService;
 import com.projects.ecommerce.utilts.FileStorageService;
 import com.projects.ecommerce.utilts.traits.ApiTrait;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.token.TokenService;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,8 +33,8 @@ import java.util.Optional;
 public class UserController {
 
     private final UserRepo userRepo;
+    private final TokenRepo tokenRepo;
     private final UserService userService;
-    private final FileStorageService fileStorageService;
 
 
 
@@ -74,14 +78,7 @@ public class UserController {
     | API Routes Edit Data of User
     |--------------------------------------------------------------------------
     */
-    @PutMapping("/profile")
-    public ResponseEntity<?> updateProfile(@RequestHeader("Authorization") String jwtToken,@Valid @RequestBody UpdateUserRequestDto newData)
-    {
 
-        Integer id = userService.findUserIdByJwt(jwtToken);
-        return userService.updateUser(id, newData);
-
-    }
 
 
 
@@ -100,36 +97,35 @@ public class UserController {
 
 
 
-//    @GetMapping("/{userId}")
-//    public ResponseEntity<UserDto> findById(
-//            @PathVariable("userId")
-//            @NotBlank(message = "Input must not blank")
-//            @Valid final String userId) {
-//        return ResponseEntity.ok(this.userService.findById(Integer.parseInt(userId.strip())));
-//    }
-
-    @GetMapping("/profile")
-    public ResponseEntity<UserDto> findById(@RequestHeader ("Authorization") String token){
-        int userID = userService.findUserIdByJwt(token);
-        return ResponseEntity.ok(this.userService.findById(userID));
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserDto> findById(
+            @PathVariable("userId")
+            @Valid final String userId) {
+        return ResponseEntity.ok(this.userService.findById(Integer.parseInt(userId.strip())));
     }
+
+
 
     /*
     |--------------------------------------------------------------------------
     | API Routes Delete User Not implement and need to remove any following first
     |--------------------------------------------------------------------------
     */
+    @Transactional
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteUser(@PathVariable Integer id)
-    {
+    public ResponseEntity<?> deleteUser(@PathVariable Integer id) {
         Optional<User> user = userRepo.findById(id);
-        if (user.isPresent())
-        {
+        if (user.isPresent()) {
+            // Delete associated tokens (assuming 'tokens' is another entity with a foreign key to 'users')
+            tokenRepo.deleteByUserId(id);
+
+            // Now delete the user
             userRepo.deleteById(id);
-            return ResponseEntity.ok("user deleted");
+            return ApiTrait.successMessage("User with " + id + " Deleted", HttpStatus.OK);
         }
-        return ResponseEntity.ok("user not found");
+        return ResponseEntity.ok("User not found");
     }
+
 
 
 
@@ -163,25 +159,42 @@ public class UserController {
 
 
 
-    @PatchMapping("photo")
-    public ResponseEntity<?> changePhoto(
-            @RequestPart(value = "image", required = false) MultipartFile image,
-            @RequestHeader("Authorization") String jwtToken)
-            throws IOException {
 
-        Integer userId = userService.findUserIdByJwt(jwtToken);
-        log.info("*** ProductDto, resource; save product ***");
+    @PatchMapping("/status/{id}")
+    public ResponseEntity<?> changeStatus(
+            @PathVariable Integer id,
+            @RequestParam(required = false) Boolean accNonLocked,
+            @RequestParam(required = false) Boolean accNonExpire,
+            @RequestParam(required = false) Boolean credentialNonExpire) {
 
-        // Check if the image is null or empty and add a global error
-        if (image == null || image.isEmpty()) {
-            throw new IllegalStateException("Image file is required");
+        log.info("Received request to change status for user with id: {}", id);
+
+        Optional<User> userOptional = userRepo.findById(id);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            AccountStatus accountStatus = user.getAccountStatus();
+
+            if (accNonLocked != null) {
+                accountStatus.setAccountNonLocked(accNonLocked);
+            }
+            if (accNonExpire != null) {
+                accountStatus.setAccountNonExpired(accNonExpire);
+            }
+            if (credentialNonExpire != null) {
+                accountStatus.setCredentialsNonExpired(credentialNonExpire);
+            }
+
+            accountStatus.setUser(user);
+            user.setAccountStatus(accountStatus);
+            userRepo.save(user);
+
+            log.info("User with id: {} updated successfully", id);
+            return ResponseEntity.ok(ApiTrait.successMessage("User with id " + id + " updated", HttpStatus.OK));
+        } else {
+            log.warn("User with id: {} not found", id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
-
-        String imageUrl = fileStorageService.storeFile(image, "users/" + userId);
-        userService.updateUserPhoto(userId, imageUrl);
-
-        return ApiTrait.successMessage(imageUrl, HttpStatus.OK);
     }
-
-
 }
+
+

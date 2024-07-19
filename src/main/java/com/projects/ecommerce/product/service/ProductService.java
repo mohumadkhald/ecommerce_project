@@ -5,11 +5,13 @@ import com.projects.ecommerce.product.domain.Product;
 import com.projects.ecommerce.product.dto.ProductDto;
 import com.projects.ecommerce.product.dto.ProductRequestDto;
 import com.projects.ecommerce.product.dto.Spec;
+import com.projects.ecommerce.product.dto.SubCategoryDto;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -42,4 +44,10 @@ public interface ProductService {
 	void updateProductStock(Integer productId, List<Spec> specs, Integer quantityToSubtract);
 
     Page<ProductDto> getProductsByCategoryNameAndProdcutNameAndFilters(String subCategoryName, String productNmae, String color, Double minPrice, Double maxPrice, String s, int page, int pageSize, Sort sort);
+
+	List<ProductDto> findAllByCreatedBy(String email);
+
+	List<ProductDto> findAllProductsByCreatedBy(String email);
+
+    void removeProductByCreatedBy(String email, Integer productId);
 }

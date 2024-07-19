@@ -21,6 +21,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -212,6 +213,29 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
+	public List<ProductDto> findAllByCreatedBy(String email) {
+		// Retrieve products from repository based on the email of the creator
+		List<Product> products = productRepository.findAllByCreatedBy(email);
+
+		// Map the list of Product entities to a list of ProductDto using ProductMappingHelper
+		return products.stream()
+				.map(ProductMappingHelper::map)
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	public List<ProductDto> findAllProductsByCreatedBy(String email) {
+		// Retrieve products from repository based on the email of the creator
+		List<Product> products = productRepository.findAllByCreatedBy(email);
+
+		// Map the list of Product entities to a list of ProductDto using ProductMappingHelper
+		return products.stream()
+				.map(ProductMappingHelper::map)
+				.collect(Collectors.toList());
+	}
+
+
+	@Override
 	public Map<String, Map<String, Map<String, Integer>>> getProductVariations(String productName) {
 		Product product = productRepository.findByProductTitle(productName);
 		Map<String, Map<String, Integer>> variationsMap = new HashMap<>();
@@ -352,6 +376,15 @@ public class ProductServiceImpl implements ProductService {
 		product.setAllQuantity(totalQuantity);
 	}
 
+
+
+	@Override
+	public void removeProductByCreatedBy(String email, Integer productId) {
+		Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
+		if (product.getCreatedBy().equals(email)) {
+			productRepository.deleteById(productId);
+		}
+	}
 
 
 

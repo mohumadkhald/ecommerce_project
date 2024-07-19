@@ -33,6 +33,8 @@ public class ProductDto implements Serializable {
 	private Double price;
 	private int discountPercent;
 
+	private String email;
+
 
 	@JsonProperty("subCategory")
 	@JsonInclude(Include.NON_NULL)

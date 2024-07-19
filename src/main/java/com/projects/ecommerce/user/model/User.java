@@ -3,6 +3,7 @@ package com.projects.ecommerce.user.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.projects.ecommerce.Auth.token.Token;
+import com.projects.ecommerce.cart.Cart;
 import com.projects.ecommerce.utilts.Base;
 import jakarta.persistence.*;
 import lombok.*;
@@ -54,6 +55,8 @@ public class User extends Base implements UserDetails {
     private List<Token> tokens;
 
     private boolean isO2Auth;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Cart> carts;
 
     // very important
     @Override

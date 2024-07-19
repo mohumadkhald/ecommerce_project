@@ -2,31 +2,24 @@ package com.projects.ecommerce.product.domain;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.projects.ecommerce.utilts.Base;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 
-@Entity
 @Table(name = "products")
-@NoArgsConstructor
+@Entity
+@Getter
+@Setter
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-@Data
-@Builder
-public final class Product extends AbstractMappedEntity implements Serializable {
-
-	@Serial
-	private static final long serialVersionUID = 1L;
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "product_id", unique = true, nullable = false, updatable = false)
-	private Integer Id;
-
+@NoArgsConstructor
+@SuperBuilder
+public final class Product extends Base {
 	@Column(name = "product_title")
 	private String productTitle;
 

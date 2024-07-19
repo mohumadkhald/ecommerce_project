@@ -79,8 +79,12 @@ public class Auth1Controller {
 
 
         ModelAndView modelAndView = new ModelAndView("redirect:http://localhost:4200/login");
+
         // Check if user already exists in your system
         User existingUser = userService.findByEmail(email);
+        // Add a query parameter to indicate that the user needs to set their first password
+        boolean isNewUser = existingUser == null;
+        modelAndView.addObject("newUser", isNewUser ? "true" : "false");
         if (existingUser == null) {
             log.info("creating new user");
             RegisterRequestDto registerRequestDto = new RegisterRequestDto();

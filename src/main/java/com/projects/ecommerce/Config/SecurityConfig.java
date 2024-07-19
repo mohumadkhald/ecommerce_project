@@ -59,6 +59,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/admin/mo").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/users").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/users/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/products").hasAuthority("SELLER")
                         .requestMatchers(
                                 "/api/products/**",
@@ -101,7 +103,7 @@ public class SecurityConfig {
     private CorsConfigurationSource corsConfigurationSource() {
         return request -> {
             CorsConfiguration configuration = new CorsConfiguration();
-            configuration.setAllowedOrigins(List.of("http://localhost:4200"));
+            configuration.setAllowedOrigins(List.of("http://localhost:4200","https://angular-ecommerc.vercel.app/"));
             configuration.setAllowedMethods(List.of("*"));
             configuration.setAllowCredentials(true);
             configuration.setAllowedHeaders(List.of("*"));

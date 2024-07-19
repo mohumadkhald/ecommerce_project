@@ -4,6 +4,7 @@ package com.projects.ecommerce.product.repository;
 import com.projects.ecommerce.product.domain.Color;
 import com.projects.ecommerce.product.domain.Product;
 import com.projects.ecommerce.product.domain.Size;
+import com.projects.ecommerce.product.dto.ProductDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,6 +13,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -73,4 +75,6 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     Product findByProductTitle(String productTitle);
 
     Optional<Product> findById(Integer productId);
+
+    List<Product> findAllByCreatedBy(String email);
 }
