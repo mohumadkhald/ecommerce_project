@@ -26,7 +26,7 @@ public class SubCategoryResource {
 	private final SubCategoryService subCategoryService;
 	private final FileStorageService fileStorageService;
 
-	@GetMapping("all")
+	@GetMapping
 	public ResponseEntity<DtoCollectionResponse<SubCategoryDto>> findAll() {
 		log.info("*** CategoryDto List, controller; fetch all categories *");
 		return ResponseEntity.ok(new DtoCollectionResponse<>(this.subCategoryService.findAll()));

@@ -10,10 +10,7 @@ import lombok.Setter;
 @Getter
 @AllArgsConstructor
 public class FirstPasswordDto {
-    private String token;
-
     @NotBlank(message = "Password cannot be empty or start space")
     @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}$", message = "Password must contain at least one digit, one lowercase and one uppercase letter, and be at least 8 characters")
     private String password;
-
 }

@@ -21,7 +21,6 @@ public interface CategoryMappingHelper {
 	public static Category map(final CategoryDto categoryDto) {
 
 
-
 		return Category.builder()
 				.categoryId(categoryDto.getCategoryId())
 				.categoryTitle(categoryDto.getCategoryTitle())
