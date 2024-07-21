@@ -185,14 +185,16 @@ public class ProductServiceImpl implements ProductService {
 
 
 	@Override
-	public Page<ProductDto> getProductsByCategoryNameAndFilters(String categoryName, String color, Double minPrice, Double maxPrice, String size, int page, int pageSize, Sort sort) {
+	public Page<ProductDto> getProductsByCategoryNameAndFilters(String categoryName, List<String> colors, Double minPrice, Double maxPrice, List<String> sizes, int page, int pageSize, Sort sort) {
 		Pageable pageable = PageRequest.of(page, pageSize, sort);
+		List<Size> sizeEnums = sizes != null ? sizes.stream().map(size -> Size.valueOf(size.toUpperCase())).toList() : null;
+		List<Color> colorEnums = colors != null ? colors.stream().map(color -> Color.valueOf(color.toLowerCase())).toList() : null;
 
 		Page<Product> productPage;
-		if (color == null) {
-			productPage = productRepository.findByCategoryNameAndFilters(categoryName, null, minPrice, maxPrice, size != null ? Size.valueOf(size.toUpperCase()) : null, pageable); // Convert size to uppercase
+		if (colorEnums == null) {
+			productPage = productRepository.findByCategoryNameAndFilters(categoryName, null, minPrice, maxPrice, sizeEnums, pageable); // Convert size to uppercase
 		} else {
-			productPage = productRepository.findByCategoryNameAndFilters(categoryName, Color.valueOf(color), minPrice, maxPrice, size != null ? Size.valueOf(size.toUpperCase()) : null, pageable); // Convert size to uppercase
+			productPage = productRepository.findByCategoryNameAndFilters(categoryName, colorEnums, minPrice, maxPrice, sizeEnums, pageable); // Convert size to uppercase
 		}
 
 

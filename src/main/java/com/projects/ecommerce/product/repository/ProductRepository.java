@@ -40,15 +40,15 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
             "JOIN p.subCategory c " +
             "JOIN p.variations pv " +
             "WHERE c.name = :subCategoryName " +
-            "AND (:color IS NULL OR pv.color = :color) " +
+            "AND (:colors IS NULL OR pv.color IN :colors) " +
             "AND (:minPrice IS NULL OR p.price >= :minPrice) " +
             "AND (:maxPrice IS NULL OR p.price <= :maxPrice) " +
-            "AND (:size IS NULL OR pv.size = :size)")
+            "AND (:sizes IS NULL OR pv.size IN :sizes)")
     Page<Product> findByCategoryNameAndFilters(@Param("subCategoryName") String subCategoryName,
-                                               @Param("color") Color color,
+                                               @Param("colors") List<Color> colors,
                                                @Param("minPrice") Double minPrice,
                                                @Param("maxPrice") Double maxPrice,
-                                               @Param("size") Size size,
+                                               @Param("sizes") List<Size> sizes,
                                                Pageable pageable);
 
 

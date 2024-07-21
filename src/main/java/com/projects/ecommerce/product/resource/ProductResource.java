@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -121,19 +122,23 @@ public class ProductResource {
 	@GetMapping("/product-category/{subCategoryName}")
 	public ResponseEntity<Page<ProductDto>> getProductsByCategoryNameAndFilters(
 			@PathVariable String subCategoryName,
-			@RequestParam(required = false) String color,
+			@RequestParam(required = false) List<String> color,
 			@RequestParam(required = false) Double minPrice,
 			@RequestParam(required = false) Double maxPrice,
-			@RequestParam(required = false) String size, // Change parameter type to String
+			@RequestParam(required = false) List<String> size, // Change parameter type to String
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int pageSize,
-			@RequestParam(defaultValue = "desc") String sortDirection) {
+			@RequestParam(defaultValue = "createdAt") String sortBy,
+			@RequestParam(defaultValue = "asc") String sortDirection) {
 
-		Sort sort = Sort.by("createdAt").descending();
-		if (!sortDirection.equals("desc")) {
-			sort = Sort.by("createdAt").ascending();
-		}
-		Page<ProductDto> products = productService.getProductsByCategoryNameAndFilters(subCategoryName, color, minPrice, maxPrice, size != null ? size.toUpperCase() : null, page, pageSize, sort); // Convert size to uppercase
+//		Sort sort = Sort.by("createdAt").descending();
+//		if (!sortDirection.equals("desc")) {
+//			sort = Sort.by("createdAt").ascending();
+//		}
+		List<String> uppercaseSizes = size != null ? size.stream().map(String::toUpperCase).collect(Collectors.toList()) : null;
+		List<String> colors = color != null ? color.stream().map(String::toLowerCase).toList() : null;
+		Sort sort = Sort.by(sortDirection.equals("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, sortBy);
+		Page<ProductDto> products = productService.getProductsByCategoryNameAndFilters(subCategoryName, colors, minPrice, maxPrice, uppercaseSizes, page, pageSize, sort); // Convert size to uppercase
 		return ResponseEntity.ok(products);
 	}
 
@@ -145,8 +150,8 @@ public class ProductResource {
 			@RequestParam(required = false) Double minPrice,
 			@RequestParam(required = false) Double maxPrice,
 			@RequestParam(required = false) String size, // Change parameter type to String
-			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int pageSize,
+			@RequestParam(defaultValue = "1") int page,
+			@RequestParam(defaultValue = "5") int pageSize,
 			@RequestParam(defaultValue = "desc") String sortDirection) {
 
 		Sort sort = Sort.by("createdAt").descending();

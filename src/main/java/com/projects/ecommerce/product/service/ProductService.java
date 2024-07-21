@@ -5,13 +5,11 @@ import com.projects.ecommerce.product.domain.Product;
 import com.projects.ecommerce.product.dto.ProductDto;
 import com.projects.ecommerce.product.dto.ProductRequestDto;
 import com.projects.ecommerce.product.dto.Spec;
-import com.projects.ecommerce.product.dto.SubCategoryDto;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -24,7 +22,7 @@ public interface ProductService {
 	ProductDto update(final ProductDto productDto);
 	ProductDto update(final Integer productId, final ProductRequestDto productDto);
 	void deleteById(final Integer productId);
-	Page<ProductDto> getProductsByCategoryNameAndFilters(String categoryName, String color, Double minPrice, Double maxPrice, String size, int page, int pageSize, Sort sort);
+	Page<ProductDto> getProductsByCategoryNameAndFilters(String categoryName, List<String> colors, Double minPrice, Double maxPrice, List<String> sizes, int page, int pageSize, Sort sort);
 
 
 	Map<String, Map<String, Map<String, Integer>>> getProductVariations(String productName);
