@@ -179,11 +179,17 @@ public class ProductResource {
 	@PutMapping("/{productId}/stock")
 	public ResponseEntity<Map<String, String>> updateProductVariations(
 			@PathVariable Integer productId,
-			@Valid @RequestBody List<Spec> specs) {
+			@Valid @RequestBody List<@Valid Spec> specs) {
+
+		Map<String, String> response = new HashMap<>();
+
+		if (specs == null || specs.isEmpty()) {
+			response.put("message", "Specs list cannot be empty.");
+			return ResponseEntity.badRequest().body(response);
+		}
 
 		productService.updateProductVariation(productId, specs);
 
-		Map<String, String> response = new HashMap<>();
 		response.put("message", "Product Set Variations successfully");
 		return ResponseEntity.ok(response);
 	}
