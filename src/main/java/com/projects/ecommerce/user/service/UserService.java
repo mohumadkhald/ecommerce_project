@@ -5,6 +5,8 @@ import com.projects.ecommerce.Auth.dto.UpdateUserRequestDto;
 import com.projects.ecommerce.user.dto.UserDto;
 import com.projects.ecommerce.user.dto.UserResponseDto;
 import com.projects.ecommerce.user.model.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 
 public interface UserService {
@@ -26,7 +28,7 @@ public interface UserService {
     // Method search user
     ResponseEntity<?> searchUser(String query);
 
-    ResponseEntity<?> getAllUsers();
+    ResponseEntity<Page<?>> getAllUsers(int page, int pageSize, Sort sort);
 
     ResponseEntity<?> updateUser(Integer id, UpdateUserRequestDto dto);
 

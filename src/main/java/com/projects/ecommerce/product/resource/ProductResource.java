@@ -1,11 +1,10 @@
 package com.projects.ecommerce.product.resource;
 
 
+import com.projects.ecommerce.product.dto.AllDetailsProductDto;
 import com.projects.ecommerce.product.dto.ProductDto;
 import com.projects.ecommerce.product.dto.ProductRequestDto;
 import com.projects.ecommerce.product.dto.Spec;
-import com.projects.ecommerce.product.dto.SubCategoryDto;
-import com.projects.ecommerce.product.dto.response.collection.DtoCollectionResponse;
 import com.projects.ecommerce.product.service.ProductService;
 import com.projects.ecommerce.user.service.UserService;
 import com.projects.ecommerce.utilts.FileStorageService;
@@ -61,6 +60,16 @@ public class ProductResource {
 		log.info("*** ProductDto, resource; fetch product by id *");
 		return ResponseEntity.ok(this.productService.findById(Integer.parseInt(productId)));
 	}
+
+	@GetMapping("/allDetails/{productId}")
+	public ResponseEntity<AllDetailsProductDto> findByProductId(
+			@PathVariable("productId")
+			@NotBlank(message = "Input must not be blank!")
+			@Valid final String productId) {
+		log.info("*** ProductDto, resource; fetch product by id *");
+		return ResponseEntity.ok(this.productService.findByProductId(Integer.parseInt(productId)));
+	}
+
 
 	@PostMapping
 	public ResponseEntity<Map<String, String>> save(
@@ -131,10 +140,6 @@ public class ProductResource {
 			@RequestParam(defaultValue = "createdAt") String sortBy,
 			@RequestParam(defaultValue = "asc") String sortDirection) {
 
-//		Sort sort = Sort.by("createdAt").descending();
-//		if (!sortDirection.equals("desc")) {
-//			sort = Sort.by("createdAt").ascending();
-//		}
 		List<String> uppercaseSizes = size != null ? size.stream().map(String::toUpperCase).collect(Collectors.toList()) : null;
 		List<String> colors = color != null ? color.stream().map(String::toLowerCase).toList() : null;
 		Sort sort = Sort.by(sortDirection.equals("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, sortBy);
@@ -146,19 +151,19 @@ public class ProductResource {
 	public ResponseEntity<Page<ProductDto>> getProductsByCategoryNameAndProductNameAndFilters(
 			@PathVariable String subCategoryName,
 			@PathVariable String productNmae,
-			@RequestParam(required = false) String color,
+			@RequestParam(required = false) List<String> color,
 			@RequestParam(required = false) Double minPrice,
 			@RequestParam(required = false) Double maxPrice,
-			@RequestParam(required = false) String size, // Change parameter type to String
+			@RequestParam(required = false) List<String> size, // Change parameter type to String
 			@RequestParam(defaultValue = "1") int page,
 			@RequestParam(defaultValue = "5") int pageSize,
-			@RequestParam(defaultValue = "desc") String sortDirection) {
+			@RequestParam(defaultValue = "createdAt") String sortBy,
+			@RequestParam(defaultValue = "asc") String sortDirection) {
 
-		Sort sort = Sort.by("createdAt").descending();
-		if (!sortDirection.equals("desc")) {
-			sort = Sort.by("createdAt").ascending();
-		}
-		Page<ProductDto> products = productService.getProductsByCategoryNameAndProdcutNameAndFilters(subCategoryName, productNmae, color, minPrice, maxPrice, size != null ? size.toUpperCase() : null, page, pageSize, sort); // Convert size to uppercase
+		List<String> uppercaseSizes = size != null ? size.stream().map(String::toUpperCase).toList() : null;
+		List<String> colors = color != null ? color.stream().map(String::toLowerCase).toList() : null;
+		Sort sort = Sort.by(sortDirection.equals("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, sortBy);
+		Page<ProductDto> products = productService.getProductsByCategoryNameAndProdcutNameAndFilters(subCategoryName, productNmae, colors, minPrice, maxPrice, uppercaseSizes, page, pageSize, sort); // Convert size to uppercase
 		return ResponseEntity.ok(products);
 	}
 
@@ -171,30 +176,30 @@ public class ProductResource {
 	}
 
 
-
-
-
 	@PutMapping("/{productId}/stock")
-	public ResponseEntity<String> updateProductVariation(
+	public ResponseEntity<Map<String, String>> updateProductVariations(
 			@PathVariable Integer productId,
-			@RequestBody Spec spec) {
+			@Valid @RequestBody List<Spec> specs) {
 
-		productService.updateProductVariation(productId, spec);
+		productService.updateProductVariation(productId, specs);
 
-		return ResponseEntity.ok("Product variations updated successfully.");
+		Map<String, String> response = new HashMap<>();
+		response.put("message", "Product Set Variations successfully");
+		return ResponseEntity.ok(response);
 	}
+
 
 	@PostMapping("/{productId}/stock")
 	public ResponseEntity<String> updateProductVariations(
 			@PathVariable Integer productId,
 			@RequestParam(required = false) boolean increase,
-			@RequestBody List<Spec> specs) {
-
+			@Valid @RequestBody List<@Valid Spec> specs) {
 
 		productService.updateProductStocks(productId, specs, increase);
 
 		return ResponseEntity.ok("Product variations updated successfully.");
 	}
+
 
 	@PostMapping("/{productId}/stocks")
 	public ResponseEntity<String> updateProductStock(
@@ -236,11 +241,10 @@ public class ProductResource {
 	}
 
 	@DeleteMapping("/{productId}")
-	public ResponseEntity<Void> removeProductFromCart(@PathVariable Integer productId, @RequestHeader("Authorization") String jwtToken) {
+	public ResponseEntity<?> removeProductFromCart(@PathVariable Integer productId, @RequestHeader("Authorization") String jwtToken) {
 		Integer userId = userService.findUserIdByJwt(jwtToken);
 		String email = userService.findById(userId).getEmail();
-		productService.removeProductByCreatedBy(email, productId); // Pass userId and itemId to the service method
-		return ResponseEntity.ok().build();
+		return productService.removeProductByCreatedBy(email, productId); // Pass userId and itemId to the service method
 	}
 }
 

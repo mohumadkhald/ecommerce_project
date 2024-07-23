@@ -4,7 +4,6 @@ package com.projects.ecommerce.product.repository;
 import com.projects.ecommerce.product.domain.Color;
 import com.projects.ecommerce.product.domain.Product;
 import com.projects.ecommerce.product.domain.Size;
-import com.projects.ecommerce.product.dto.ProductDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -59,17 +58,17 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
             "JOIN p.variations pv " +
             "WHERE c.categoryTitle = :categoryName " +
             "AND (:productName IS NULL OR p.productTitle LIKE %:productName%) " +
-            "AND (:color IS NULL OR pv.color = :color) " +
+            "AND (:color IS NULL OR pv.color IN :color) " +
             "AND (:minPrice IS NULL OR p.price >= :minPrice) " +
             "AND (:maxPrice IS NULL OR p.price <= :maxPrice) " +
-            "AND (:size IS NULL OR pv.size = :size)")
+            "AND (:size IS NULL OR pv.size IN :size)")
     Page<Product> findByCategoryNameAndProductTitleAndFilters(
             @Param("categoryName") String categoryName,
             @Param("productName") String productName,
-            @Param("color") Color color,
+            @Param("color") List<Color> color,
             @Param("minPrice") Double minPrice,
             @Param("maxPrice") Double maxPrice,
-            @Param("size") Size size,
+            @Param("size") List<Size> size,
             Pageable pageable);
 
     Product findByProductTitle(String productTitle);

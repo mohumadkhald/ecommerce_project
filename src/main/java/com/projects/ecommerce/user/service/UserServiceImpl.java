@@ -14,6 +14,10 @@ import com.projects.ecommerce.user.repository.UserRepo;
 import com.projects.ecommerce.user.dto.UserResponseDto;
 import com.projects.ecommerce.user.model.User;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -209,20 +213,20 @@ public class UserServiceImpl implements UserService {
     |
     */
     @Override
-    public ResponseEntity<?> getAllUsers() {
-        List<UserResponseDto> users = findAllUsers();
+    public ResponseEntity<Page<?>> getAllUsers(int page, int pageSize, Sort sort) {
+        Pageable pageable = PageRequest.of(page, pageSize, sort);
+        Page<UserResponseDto> users = findAllUsers(pageable);
+
         if (users.isEmpty()) {
-            return ApiTrait.errorMessage(new HashMap<>(), "No users found", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
-            return ApiTrait.data(users, "The Data Retrieved Success", HttpStatus.OK);
+            return new ResponseEntity<>(users, HttpStatus.OK);
         }
     }
 
-    private List<UserResponseDto> findAllUsers() {
-        return userRepo.findAll()
-                .stream()
-                .map(userMapper::toUserResponseDto)
-                .collect(Collectors.toList());
+    private Page<UserResponseDto> findAllUsers(Pageable pageable) {
+        return userRepo.findAll(pageable)
+                .map(userMapper::toUserResponseDto);
     }
 
     /*|--------------------------------------------------------------------------

@@ -30,7 +30,7 @@ public final class Product extends Base {
 	private Integer allQuantity;
 
 	@Column(name = "discounted_price")
-	private int discountedPrice;
+	private Double discountedPrice;
 
 	@Column(name = "discount_percent")
 	private int discountPercent;

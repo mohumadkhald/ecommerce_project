@@ -18,5 +18,4 @@ public class LoginRequestDto {
     private String passwordOauth2;
     private boolean remember;
     private boolean isO2Auth;
-
 }

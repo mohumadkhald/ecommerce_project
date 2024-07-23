@@ -105,28 +105,46 @@ public class CartService {
 
 
     public void syncCart(Integer userId, List<CartRequest> cartItems) {
-        // Retrieve user from database
+        // Retrieve user cart from the database
         Cart cart = getCartByUserId(userId);
 
+        // Create or update cart items based on the data received from the client
+        List<CartItem> newCartItems = new ArrayList<>();
 
-        // Create new cart items based on the data received from the client
-        List<CartItem> newCartItems = cartItems.stream()
-                .map(dto -> {
-                    CartItem cartItem = new CartItem();
-                    cartItem.setCart(cart);
-                    cartItem.setPrice(dto.getQuantity() * dto.getPrice());
-                    cartItem.setQuantity(dto.getQuantity());
-                    cartItem.setProductVariation(prodcutVariationService
-                            .findByProductIdAndColorAndSize(
-                                    dto.getProductId(),
-                                    Color.valueOf(dto.getColor()),
-                                    dto.getSize())
-                    );
-                    return cartItem;
-                })
-                .collect(Collectors.toList());
+        for (CartRequest dto : cartItems) {
+            ProductVariation productVariation = prodcutVariationService.findByProductIdAndColorAndSize(
+                    dto.getProductId(),
+                    Color.valueOf(dto.getColor()),
+                    dto.getSize()
+            );
 
-        // Save new cart items to the database
+            if (productVariation == null) {
+                throw new RuntimeException("Product variation not found");
+            }
+
+            // Check if the cart already contains this product variation
+            Optional<CartItem> existingCartItem = cart.getItems().stream()
+                    .filter(item -> item.getProductVariation().getId().equals(productVariation.getId()))
+                    .findFirst();
+
+            if (existingCartItem.isPresent()) {
+                // Update the quantity and price of the existing cart item
+                CartItem cartItem = existingCartItem.get();
+                cartItem.setQuantity(cartItem.getQuantity() + dto.getQuantity());
+                cartItem.setPrice(cartItem.getQuantity() * dto.getPrice());
+                newCartItems.add(cartItem);
+            } else {
+                // Create a new cart item
+                CartItem cartItem = new CartItem();
+                cartItem.setCart(cart);
+                cartItem.setPrice(dto.getQuantity() * dto.getPrice());
+                cartItem.setQuantity(dto.getQuantity());
+                cartItem.setProductVariation(productVariation);
+                newCartItems.add(cartItem);
+            }
+        }
+
+        // Save new or updated cart items to the database
         cartItemRepository.saveAll(newCartItems);
     }
 

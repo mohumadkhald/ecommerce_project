@@ -15,6 +15,8 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.token.TokenService;
@@ -135,9 +137,15 @@ public class UserController {
     |--------------------------------------------------------------------------
     */
     @GetMapping
-    public ResponseEntity<?> getUsers()
+    public ResponseEntity<Page<?>> getUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int pageSize,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection
+    )
     {
-        return userService.getAllUsers();
+        Sort sort = Sort.by(sortDirection.equals("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, sortBy);
+        return userService.getAllUsers(page, pageSize, sort);
     }
 
 

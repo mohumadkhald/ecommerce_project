@@ -55,4 +55,5 @@ public class UserMapper {
                 user.getRole().toString()
         );
     }
+
 }

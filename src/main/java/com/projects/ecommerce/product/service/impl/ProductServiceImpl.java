@@ -2,6 +2,7 @@ package com.projects.ecommerce.product.service.impl;
 
 
 import com.projects.ecommerce.product.domain.*;
+import com.projects.ecommerce.product.dto.AllDetailsProductDto;
 import com.projects.ecommerce.product.dto.ProductDto;
 import com.projects.ecommerce.product.dto.ProductRequestDto;
 import com.projects.ecommerce.product.dto.Spec;
@@ -11,6 +12,9 @@ import com.projects.ecommerce.product.helper.ProductMappingHelper;
 import com.projects.ecommerce.product.repository.ProductRepository;
 import com.projects.ecommerce.product.service.ProductService;
 import com.projects.ecommerce.user.expetion.AlreadyExistsException;
+import com.projects.ecommerce.user.model.Role;
+import com.projects.ecommerce.user.repository.UserRepo;
+import com.projects.ecommerce.utilts.traits.ApiTrait;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +22,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -30,6 +36,7 @@ import java.util.stream.Collectors;
 public class ProductServiceImpl implements ProductService {
 	
 	private final ProductRepository productRepository;
+	private final UserRepo userRepository;
 
 	@Override
 	public Page<ProductDto> findAll(Pageable pageable) {
@@ -202,14 +209,24 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
-	public Page<ProductDto> getProductsByCategoryNameAndProdcutNameAndFilters(String subCategoryName, String productNmae, String color, Double minPrice, Double maxPrice, String s, int page, int pageSize, Sort sort) {
+	public Page<ProductDto> getProductsByCategoryNameAndProdcutNameAndFilters
+			(String subCategoryName, String productNmae,
+			 List<String> colors, Double minPrice, Double maxPrice,
+			 List<String> sizes, int page, int pageSize, Sort sort) {
 		Pageable pageable = PageRequest.of(page, pageSize, sort);
-
+		List<Size> sizeEnums = sizes != null ? sizes.stream()
+				.map(size -> Size.valueOf(size.toUpperCase())).toList() : null;
+		List<Color> colorEnums = colors != null ? colors.stream()
+				.map(color -> Color.valueOf(color.toLowerCase())).toList() : null;
 		Page<Product> productPage;
-		if (color == null) {
-			productPage = productRepository.findByCategoryNameAndProductTitleAndFilters(subCategoryName, productNmae,null, minPrice, maxPrice, s != null ? Size.valueOf(s.toUpperCase()) : null, pageable); // Convert size to uppercase
+		if (colors == null) {
+			productPage = productRepository.findByCategoryNameAndProductTitleAndFilters
+					(subCategoryName, productNmae,null, minPrice,
+							maxPrice, sizeEnums, pageable); // Convert size to uppercase
 		} else {
-			productPage = productRepository.findByCategoryNameAndProductTitleAndFilters(subCategoryName, productNmae,Color.valueOf(color), minPrice, maxPrice, s != null ? Size.valueOf(s.toUpperCase()) : null, pageable); // Convert size to uppercase
+			productPage = productRepository.findByCategoryNameAndProductTitleAndFilters
+					(subCategoryName, productNmae, colorEnums, minPrice,
+							maxPrice, sizeEnums, pageable); // Convert size to uppercase
 		}
 		return productPage.map(ProductMappingHelper::map);
 	}
@@ -258,22 +275,24 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	@Transactional
-	public void updateProductVariation(Integer productId, Spec spec) {
+	public void updateProductVariation(Integer productId, List<Spec> specs) {
 		Product product = productRepository.findById(productId)
 				.orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
 
-		// Find the existing variation by size and color or create a new one if not found
-		Optional<ProductVariation> existingVariation = product.getVariations().stream()
-				.filter(variation -> variation.getSize().equals(Size.valueOf(spec.size())) && variation.getColor().equals(Color.valueOf(spec.color())))
-				.findFirst();
+		for (Spec spec : specs) {
+			Optional<ProductVariation> existingVariation = product.getVariations().stream()
+					.filter(variation -> variation.getSize().equals(Size.valueOf(spec.size())) &&
+							variation.getColor().equals(Color.valueOf(spec.color())))
+					.findFirst();
 
-		if (existingVariation.isPresent()) {
-			// Update existing variation
-			ProductVariation variationToUpdate = existingVariation.get();
-			variationToUpdate.setQuantity(spec.quantity());
-		} else {
-			// Create new variation
-			newProductVariation(product, spec, 0);
+			if (existingVariation.isPresent()) {
+				// Update existing variation
+				ProductVariation variationToUpdate = existingVariation.get();
+				variationToUpdate.setQuantity(spec.quantity());
+			} else {
+				// Create new variation
+				newProductVariation(product, spec, 0);
+			}
 		}
 
 		productRepository.save(product);
@@ -282,6 +301,31 @@ public class ProductServiceImpl implements ProductService {
 				.sum();
 		product.setAllQuantity(totalQuantity);
 	}
+
+//	public void updateProductVariation(Integer productId, Spec spec) {
+//		Product product = productRepository.findById(productId)
+//				.orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
+//
+//		// Find the existing variation by size and color or create a new one if not found
+//		Optional<ProductVariation> existingVariation = product.getVariations().stream()
+//				.filter(variation -> variation.getSize().equals(Size.valueOf(spec.size())) && variation.getColor().equals(Color.valueOf(spec.color())))
+//				.findFirst();
+//
+//		if (existingVariation.isPresent()) {
+//			// Update existing variation
+//			ProductVariation variationToUpdate = existingVariation.get();
+//			variationToUpdate.setQuantity(spec.quantity());
+//		} else {
+//			// Create new variation
+//			newProductVariation(product, spec, 0);
+//		}
+//
+//		productRepository.save(product);
+//		int totalQuantity = product.getVariations().stream()
+//				.mapToInt(ProductVariation::getQuantity)
+//				.sum();
+//		product.setAllQuantity(totalQuantity);
+//	}
 
 
 	@Override
@@ -381,14 +425,31 @@ public class ProductServiceImpl implements ProductService {
 
 
 	@Override
-	public void removeProductByCreatedBy(String email, Integer productId) {
-		Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
-		if (product.getCreatedBy().equals(email)) {
+	public ResponseEntity<?> removeProductByCreatedBy(String email, Integer productId) {
+		// Find the product by its ID
+		Product product = productRepository.findById(productId)
+				.orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
+
+		// Check if the user is an admin
+		boolean isAdmin = userRepository.findAllByRole(Role.valueOf("ADMIN"))
+				.stream()
+				.anyMatch(user -> user.getEmail().equals(email));
+
+		// If the user is an admin or is the creator of the product, delete it
+		if (isAdmin || product.getCreatedBy().equals(email)) {
 			productRepository.deleteById(productId);
+			return ApiTrait.successMessage("Product Deleted", HttpStatus.OK);
+		} else {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
 	}
 
-
+	@Override
+	public AllDetailsProductDto findByProductId(int i) {
+		return this.productRepository.findById(i)
+				.map(ProductMappingHelper::map2)
+				.orElseThrow(() -> new ProductNotFoundException(String.format("Product with id: %d not found", i)));
+	}
 
 }
 

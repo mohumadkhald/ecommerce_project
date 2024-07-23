@@ -5,13 +5,12 @@ import com.projects.ecommerce.product.domain.Category;
 import com.projects.ecommerce.product.domain.Product;
 import com.projects.ecommerce.product.domain.ProductVariation;
 import com.projects.ecommerce.product.domain.SubCategory;
-import com.projects.ecommerce.product.dto.ProductDto;
-import com.projects.ecommerce.product.dto.ProductRequestDto;
-import com.projects.ecommerce.product.dto.SubCategoryDto;
+import com.projects.ecommerce.product.dto.*;
 import com.projects.ecommerce.product.service.impl.ProductServiceImpl;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public interface ProductMappingHelper {
 
@@ -22,6 +21,7 @@ public interface ProductMappingHelper {
 				.imageUrl(product.getImageUrl())
 				.price(product.getPrice())
 				.discountPercent(product.getDiscountPercent())
+				.email(product.getCreatedBy())
 				.subCategoryDto(
 						SubCategoryDto.builder()
 								.id(product.getSubCategory().getSubId())
@@ -87,9 +87,9 @@ public interface ProductMappingHelper {
 
 
 	public static Product map(final ProductRequestDto productDto, List<Product> productList) {
-		// Check if a product with the same title already exists
+		// Check if a same seller add product with the same title already exists
 		Optional<Product> existingProduct = productList.stream()
-				.filter(p -> p.getProductTitle().equals(productDto.getProductTitle()))
+				.filter(p -> p.getProductTitle().equals(productDto.getProductTitle()) && p.getCreatedBy().equals(productDto.getEmail()))
 				.findFirst();
 
 		if (existingProduct.isPresent()) {
@@ -141,7 +141,36 @@ public interface ProductMappingHelper {
 	}
 
 
+	static AllDetailsProductDto map2(Product product) {
+		List<ProductVariationDto> productVariationDtos = product.getVariations().stream()
+				.map(variation -> {
+					ProductVariationDto variationDto = new ProductVariationDto();
+					variationDto.setColor(String.valueOf(variation.getColor()));
+					variationDto.setSize(String.valueOf(variation.getSize()));
+					variationDto.setQuantity(variation.getQuantity());
+					return variationDto;
+				})
+				.collect(Collectors.toList());
 
+		SubCategoryDto subCategoryDto = SubCategoryDto.builder()
+				.id(product.getSubCategory().getSubId())
+				.name(product.getSubCategory().getName())
+				.categoryId(product.getSubCategory().getCategory().getCategoryId())
+				.build();
+
+		return AllDetailsProductDto.builder()
+				.productId(product.getId())
+				.productTitle(product.getProductTitle())
+				.imageUrl(product.getImageUrl())
+				.price(product.getPrice())
+				.allQuantity(product.getAllQuantity())
+				.discountPercent(product.getDiscountPercent())
+				.discountPrice(product.getDiscountedPrice())
+				.email(product.getCreatedBy())
+				.productVariations(productVariationDtos)
+				.subCategoryDto(subCategoryDto)
+				.build();
+	}
 }
 
 

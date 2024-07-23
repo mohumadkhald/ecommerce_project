@@ -1,6 +1,7 @@
 package com.projects.ecommerce.user.repository;
 
 
+import com.projects.ecommerce.user.model.Role;
 import com.projects.ecommerce.user.model.User;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -8,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -24,4 +26,6 @@ public interface UserRepo extends JpaRepository<User, Integer> {
 
 
     User findByPasswordReset_ResetCode(String code);
+
+    List<User> findAllByRole(Role role);
 }

@@ -29,6 +29,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.util.List;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -61,8 +63,8 @@ public class SecurityConfig {
                         .requestMatchers("/admin/mo").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/users", "/api/categories/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/users/**").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/products").hasAuthority("SELLER")
-                        .requestMatchers(HttpMethod.GET, "/api/categories","/api/sub-categories").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/products").hasAnyAuthority("SELLER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/categories", "/api/sub-categories").permitAll()
 
                         .requestMatchers(
                                 "/api/products/**",
@@ -95,7 +97,9 @@ public class SecurityConfig {
                         .addLogoutHandler(logoutHandler)
                         .logoutSuccessHandler((request, response, authentication) ->
                                 SecurityContextHolder.clearContext()))
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()));
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .httpBasic(withDefaults())
+        ;
 
         return http.build();
     }
