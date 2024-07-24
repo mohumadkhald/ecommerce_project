@@ -18,7 +18,7 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RegisterRequestDto {
-        @NotBlank(message = "Last name cannot be empty or start space")
+        @NotBlank(message = "First name cannot be empty or start space")
         @Pattern(regexp = "^[^0-9]{3,}$", message = "Last Name must be at least 3 characters long and cannot contain numbers")
         private String firstname;
 
@@ -36,7 +36,7 @@ public class RegisterRequestDto {
         @Pattern(regexp = "^(.+)@(.+)$", message = "Email should be valid")
         private String email;
 
-        @NotNull
+        @NotBlank(message = "Gender cannot be empty or start space")
         private String gender;
 
         @NotBlank(message = "Password cannot be empty or start space")

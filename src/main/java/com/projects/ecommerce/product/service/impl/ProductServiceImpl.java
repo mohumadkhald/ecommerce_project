@@ -26,6 +26,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.AccessDeniedException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -445,11 +446,24 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
-	public AllDetailsProductDto findByProductId(int i) {
-		return this.productRepository.findById(i)
-				.map(ProductMappingHelper::map2)
-				.orElseThrow(() -> new ProductNotFoundException(String.format("Product with id: %d not found", i)));
+	public AllDetailsProductDto findByProductId(String email, int productId) throws AccessDeniedException {
+		// Find the product by its ID
+		Product product = productRepository.findById(productId)
+				.orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
+
+		boolean isAdmin = userRepository.findAllByRole(Role.ADMIN)
+				.stream()
+				.anyMatch(user -> user.getEmail().equals(email));
+
+		if (isAdmin || product.getCreatedBy().equals(email)) {
+			return productRepository.findById(productId)
+					.map(ProductMappingHelper::map2)
+					.orElseThrow(() -> new ProductNotFoundException(String.format("Product with id: %d not found", productId)));
+		} else {
+			throw new AccessDeniedException("You do not have permission to access this product.");
+		}
 	}
+
 
 }
 

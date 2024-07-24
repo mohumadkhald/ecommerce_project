@@ -1,24 +1,35 @@
 package com.projects.ecommerce.Config;
 
+import com.projects.ecommerce.Auth.token.Token;
+import com.projects.ecommerce.Auth.token.TokenRepo;
+import com.projects.ecommerce.utilts.traits.ApiTrait;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.util.Date;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Optional;
 import java.util.function.Function;
 
 @Service
 @Component
 public class JwtService {
+    private final TokenRepo tokenRepo;
+    public JwtService(TokenRepo tokenRepo) {
+        this.tokenRepo = tokenRepo;
+    }
+
+
     private static final String SECRET_KEY = "WmZq3t6weShVmYq3KaPdSgVikmcleckFJefdcdsgvUkXn2r5ucRfUjXnZHMcQfTj";
+
+
     public String extractUsername(String token) {
         return extractClaims(token, Claims::getSubject);
     }
@@ -97,7 +108,7 @@ public class JwtService {
                     .getBody();
         } catch (Exception e) {
             // Handle token parsing exceptions
-            // For example, log the error or throw a custom exception
+            invalidateToken(token);
             throw new RuntimeException("Failed to parse JWT token: " + e.getMessage(), e);
         }
     }
@@ -107,15 +118,21 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    private static final Set<String> revokedTokens = ConcurrentHashMap.newKeySet();
-
+//    private static final Set<String> revokedTokens = ConcurrentHashMap.newKeySet();
+//revokedTokens.add(token);
     // Function to invalidate or destroy a token
     public void invalidateToken(String token) {
-        revokedTokens.add(token);
+        Optional<Token> token1 = tokenRepo.findByToken(token);
+
+        token1.get().setExpired(true);
+        token1.get().setRevoked(true);
+        tokenRepo.save(token1.get());
+
     }
 
     // Function to check if a token is revoked
-    public static boolean isTokenRevoked(String token) {
-        return revokedTokens.contains(token);
+    public boolean isTokenRevoked(String token) {
+        Optional<Token> token1 = tokenRepo.findByToken(token);
+        return token1.get().isRevoked() || token1.get().isExpired();
     }
 }

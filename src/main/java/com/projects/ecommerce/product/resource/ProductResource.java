@@ -8,7 +8,9 @@ import com.projects.ecommerce.product.dto.Spec;
 import com.projects.ecommerce.product.service.ProductService;
 import com.projects.ecommerce.user.service.UserService;
 import com.projects.ecommerce.utilts.FileStorageService;
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
+import jakarta.validation.Validator;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -35,6 +38,8 @@ public class ProductResource {
 	private final ProductService productService;
 	private final UserService userService;
 	private final FileStorageService fileStorageService;
+	private final Validator validator;
+
 
 	@GetMapping
 	public ResponseEntity<Page<ProductDto>> findAll(
@@ -59,15 +64,6 @@ public class ProductResource {
 			@Valid final String productId) {
 		log.info("*** ProductDto, resource; fetch product by id *");
 		return ResponseEntity.ok(this.productService.findById(Integer.parseInt(productId)));
-	}
-
-	@GetMapping("/allDetails/{productId}")
-	public ResponseEntity<AllDetailsProductDto> findByProductId(
-			@PathVariable("productId")
-			@NotBlank(message = "Input must not be blank!")
-			@Valid final String productId) {
-		log.info("*** ProductDto, resource; fetch product by id *");
-		return ResponseEntity.ok(this.productService.findByProductId(Integer.parseInt(productId)));
 	}
 
 
@@ -107,23 +103,10 @@ public class ProductResource {
 
 
 
-	@PutMapping
-	public ResponseEntity<ProductDto> update(
-			@RequestBody
-			@NotNull(message = "Input must not be NULL!")
-			@Valid final ProductDto productDto) {
-		log.info("*** ProductDto, resource; update product *");
-		return ResponseEntity.ok(this.productService.update(productDto));
-	}
-
 	@PutMapping("/{productId}")
 	public ResponseEntity<ProductDto> update(
-			@PathVariable("productId")
-			@NotBlank(message = "Input must not be blank!")
-			@Valid final String productId,
-			@RequestBody
-			@NotNull(message = "Input must not be NULL!")
-			@Valid final ProductRequestDto productDto) {
+			@PathVariable("productId") String productId,
+			@Valid @RequestBody final ProductRequestDto productDto) {
 		log.info("*** ProductDto, resource; update product with productId *");
 		return ResponseEntity.ok(this.productService.update(Integer.parseInt(productId), productDto));
 	}
@@ -176,16 +159,30 @@ public class ProductResource {
 	}
 
 
+
 	@PutMapping("/{productId}/stock")
 	public ResponseEntity<Map<String, String>> updateProductVariations(
 			@PathVariable Integer productId,
-			@Valid @RequestBody List<@Valid Spec> specs) {
+			@RequestBody List<Spec> specs) {
 
 		Map<String, String> response = new HashMap<>();
 
 		if (specs == null || specs.isEmpty()) {
 			response.put("message", "Specs list cannot be empty.");
 			return ResponseEntity.badRequest().body(response);
+		}
+
+		Map<String, String> errors = new HashMap<>();
+		for (int i = 0; i < specs.size(); i++) {
+			Spec spec = specs.get(i);
+			Set<ConstraintViolation<Spec>> violations = validator.validate(spec);
+			for (ConstraintViolation<Spec> violation : violations) {
+				errors.put("spec[" + i + "]." + violation.getPropertyPath(), violation.getMessage());
+			}
+		}
+
+		if (!errors.isEmpty()) {
+			return ResponseEntity.badRequest().body(errors);
 		}
 
 		productService.updateProductVariation(productId, specs);
@@ -251,6 +248,19 @@ public class ProductResource {
 		Integer userId = userService.findUserIdByJwt(jwtToken);
 		String email = userService.findById(userId).getEmail();
 		return productService.removeProductByCreatedBy(email, productId); // Pass userId and itemId to the service method
+	}
+
+	@GetMapping("/allDetails/{productId}")
+	public ResponseEntity<AllDetailsProductDto> findByProductId(
+			@RequestHeader("Authorization") String jwtToken,
+			@PathVariable("productId")
+			@NotBlank(message = "Input must not be blank!")
+			@Valid final String productId) throws AccessDeniedException {
+
+		Integer userId = userService.findUserIdByJwt(jwtToken);
+		String email = userService.findById(userId).getEmail();
+		log.info("*** ProductDto, resource; fetch product by id *");
+		return ResponseEntity.ok(this.productService.findByProductId(email, Integer.parseInt(productId)));
 	}
 }
 

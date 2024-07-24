@@ -90,7 +90,7 @@ public class AuthServiseImpl implements AuthService {
         user.setAccountStatus(accountStatus);
 
         if (userRepo.existsByEmail(request.getEmail())) {
-            throw new AlreadyExistsException("email", "already exists");
+            throw new AlreadyExistsException("Email", "already exists");
         }
 
         var savedUser = userRepo.save(user);
@@ -98,7 +98,7 @@ public class AuthServiseImpl implements AuthService {
         var jwtToken = jwtService.generateToken(savedUser, expirationDay); // Generate token for savedUser
         savedUserToken(savedUser, jwtToken, false);
 //        emailService.sendVerificationEmail(savedUser.getEmail(), savedUser.getEmailVerification().getVerificationToken()); // Send verification email using EmailVerification entity
-        return AuthResponse.builder().token(jwtToken).message("Register Success Have A Nice Time").build();
+        return AuthResponse.builder().role(String.valueOf(user.getRole())).token(jwtToken).message("Register Success Have A Nice Time").build();
     }
 
     @Override
@@ -195,7 +195,7 @@ public class AuthServiseImpl implements AuthService {
             expirationDay = 1000 * 60 * 60 * 24 * 7; // check Remember Me token Valid 7 Days or when logout
         } else {
             //expirationDay = 1000 * 60 * 60 * 24; // If Not check RememberMe token valid 24 Hour or when logout
-            expirationDay = 1000 * 60 * 60 * 24;
+            expirationDay = 1000 * 30;
         }
         return expirationDay;
     }

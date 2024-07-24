@@ -60,11 +60,11 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers("/admin/mo").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/users", "/api/categories/**").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/users/**").hasAuthority("ADMIN")
+                        .requestMatchers("/api/users/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/sub-categories", "/api/categories/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/sub-categories", "/api/categories/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/products").hasAnyAuthority("SELLER", "ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/categories", "/api/sub-categories").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/categories/**", "/api/sub-categories", "/api/products/allDetails/**").permitAll()
 
                         .requestMatchers(
                                 "/api/products/**",

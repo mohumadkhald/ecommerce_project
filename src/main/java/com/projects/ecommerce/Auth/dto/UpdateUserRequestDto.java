@@ -32,10 +32,10 @@ public class UpdateUserRequestDto {
         @Pattern(regexp = "^(.+)@(.+)$", message = "Email should be valid")
         private String email;
 
-        @NotNull
+        @NotBlank(message = "Gender cannot be empty or start space")
         private String gender;
 
-        @NotBlank(message = "Password cannot be empty or start space")
+        @NotBlank(message = "oldPassword cannot be empty or start space")
         private String oldPassword;
 
         @NotBlank(message = "Password cannot be empty or start space")

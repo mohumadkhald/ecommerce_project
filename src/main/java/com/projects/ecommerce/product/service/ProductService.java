@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Map;
 
@@ -54,5 +55,5 @@ public interface ProductService {
 
     ResponseEntity<?> removeProductByCreatedBy(String email, Integer productId);
 
-	AllDetailsProductDto findByProductId(int i);
+	AllDetailsProductDto findByProductId(String email, int i) throws AccessDeniedException;
 }
