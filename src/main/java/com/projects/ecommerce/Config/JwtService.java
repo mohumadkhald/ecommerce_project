@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import java.security.Key;
 import java.util.Date;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 @Service
@@ -100,9 +102,13 @@ public class JwtService {
 
     public Claims extractAllClaims(String token) {
         try {
+            // Set clock skew tolerance to 7 days (1s 10milliseconds)
+            long clockSkewTolerance = 1000 * 60 * 60 * 24 * 7L; //very important to show to display token not valid
+
             return Jwts
                     .parserBuilder()
                     .setSigningKey(getSignInKey())
+                    .setAllowedClockSkewSeconds(clockSkewTolerance / 1000) // Set clock skew tolerance
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
@@ -113,26 +119,30 @@ public class JwtService {
         }
     }
 
+
     private Key getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-//    private static final Set<String> revokedTokens = ConcurrentHashMap.newKeySet();
+    private static final Set<String> revokedTokens = ConcurrentHashMap.newKeySet();
+
+    //    private static final Set<String> revokedTokens = ConcurrentHashMap.newKeySet();
 //revokedTokens.add(token);
     // Function to invalidate or destroy a token
     public void invalidateToken(String token) {
-        Optional<Token> token1 = tokenRepo.findByToken(token);
-
-        token1.get().setExpired(true);
-        token1.get().setRevoked(true);
-        tokenRepo.save(token1.get());
-
+//        Optional<Token> token1 = tokenRepo.findByToken(token);
+//        token1.get().setExpired(true);
+//        token1.get().setRevoked(true);
+//        tokenRepo.save(token1.get());
+        revokedTokens.add(token);
     }
 
     // Function to check if a token is revoked
     public boolean isTokenRevoked(String token) {
-        Optional<Token> token1 = tokenRepo.findByToken(token);
-        return token1.get().isRevoked() || token1.get().isExpired();
+//        Optional<Token> token1 = tokenRepo.findByToken(token);
+//        return token1.get().isRevoked() || token1.get().isExpired();
+        return revokedTokens.contains(token);
+
     }
 }
