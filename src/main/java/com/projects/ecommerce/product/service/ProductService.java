@@ -18,7 +18,10 @@ import java.util.Map;
 
 public interface ProductService {
 
-	Page<ProductDto> findAll(Pageable pageable);
+//	Page<ProductDto> findAll(Pageable pageable);
+
+	Page<ProductDto> findAll(Pageable pageable, Double minPrice, Double maxPrice);
+
 	ProductDto findById(final Integer productId);
 	ProductDto create(final ProductRequestDto productDto);
 	List<ProductDto> saveAll(List<ProductRequestDto> productDtos);
@@ -54,6 +57,8 @@ public interface ProductService {
 	List<ProductDto> findAllProductsByCreatedBy(String email);
 
     ResponseEntity<?> removeProductByCreatedBy(String email, Integer productId);
+
+	ResponseEntity<?> removeProductsByCreatedBy(String email, List<Integer> productIds);
 
 	AllDetailsProductDto findByProductId(String email, int i) throws AccessDeniedException;
 

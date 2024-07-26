@@ -43,18 +43,22 @@ public class ProductResource {
 
 	@GetMapping
 	public ResponseEntity<Page<ProductDto>> findAll(
+			@RequestParam("email") String email,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int pageSize,
 			@RequestParam(defaultValue = "createdAt") String sortBy,
-			@RequestParam(defaultValue = "desc") String sortDirection) {
+			@RequestParam(defaultValue = "desc") String sortDirection,
+			@RequestParam(required = false) Double minPrice,
+			@RequestParam(required = false) Double maxPrice) {
 
 		Sort sort = Sort.by(sortDirection.equals("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, sortBy);
 		Pageable pageable = PageRequest.of(page, pageSize, sort);
 
-		log.info("*** ProductDto List, controller; fetch all categories ***");
-		Page<ProductDto> productPage = productService.findAll(pageable);
+		log.info("*** ProductDto List, controller; fetch all products with filters ***");
+		Page<ProductDto> productPage = productService.findAll(pageable, minPrice, maxPrice);
 		return ResponseEntity.ok(productPage);
 	}
+
 
 
 	@GetMapping("/{productId}")
@@ -248,6 +252,13 @@ public class ProductResource {
 		Integer userId = userService.findUserIdByJwt(jwtToken);
 		String email = userService.findById(userId).getEmail();
 		return productService.removeProductByCreatedBy(email, productId); // Pass userId and itemId to the service method
+	}
+
+	@DeleteMapping("/bulk-delete")
+	public ResponseEntity<?> removeProductsFromCart(@RequestParam List<Integer> productIds, @RequestHeader("Authorization") String jwtToken) {
+		Integer userId = userService.findUserIdByJwt(jwtToken);
+		String email = userService.findById(userId).getEmail();
+		return productService.removeProductsByCreatedBy(email, productIds);
 	}
 
 	@GetMapping("/allDetails/{productId}")

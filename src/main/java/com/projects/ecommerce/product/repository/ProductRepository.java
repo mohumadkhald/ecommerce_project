@@ -76,4 +76,10 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     Optional<Product> findById(Integer productId);
 
     List<Product> findAllByCreatedBy(String email);
+
+    Page<Product> findByPriceBetween(Double minPrice, Double maxPrice, Pageable pageable);
+
+    Page<Product> findByPriceGreaterThanEqual(Double minPrice, Pageable pageable);
+
+    Page<Product> findByPriceLessThanEqual(Double maxPrice, Pageable pageable);
 }

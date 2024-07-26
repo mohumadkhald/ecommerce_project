@@ -40,10 +40,20 @@ public class ProductServiceImpl implements ProductService {
 	private final UserRepo userRepository;
 
 	@Override
-	public Page<ProductDto> findAll(Pageable pageable) {
-		log.info("*** ProductDto List, service; fetch all products ***");
-		return productRepository.findAll(pageable).map(ProductMappingHelper::map);
+	public Page<ProductDto> findAll(Pageable pageable, Double minPrice, Double maxPrice) {
+		log.info("*** ProductDto List, service; fetch all products with filters ***");
+
+		if (minPrice != null && maxPrice != null) {
+			return productRepository.findByPriceBetween(minPrice, maxPrice, pageable).map(ProductMappingHelper::map);
+		} else if (minPrice != null) {
+			return productRepository.findByPriceGreaterThanEqual(minPrice, pageable).map(ProductMappingHelper::map);
+		} else if (maxPrice != null) {
+			return productRepository.findByPriceLessThanEqual(maxPrice, pageable).map(ProductMappingHelper::map);
+		} else {
+			return productRepository.findAll(pageable).map(ProductMappingHelper::map);
+		}
 	}
+
 
 
 	@Override
@@ -444,6 +454,34 @@ public class ProductServiceImpl implements ProductService {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
 	}
+
+	@Override
+	public ResponseEntity<?> removeProductsByCreatedBy(String email, List<Integer> productIds) {
+		// Find the products by their IDs
+		List<Product> products = productRepository.findAllById(productIds);
+
+		if (products.isEmpty()) {
+			throw new ProductNotFoundException("Products not found with the provided ids: " + productIds);
+		}
+
+		// Check if the user is an admin
+		boolean isAdmin = userRepository.findAllByRole(Role.valueOf("ADMIN"))
+				.stream()
+				.anyMatch(user -> user.getEmail().equals(email));
+
+		// Filter out the products that the user is not allowed to delete
+		List<Product> productsToDelete = products.stream()
+				.filter(product -> isAdmin || product.getCreatedBy().equals(email))
+				.collect(Collectors.toList());
+
+		if (productsToDelete.isEmpty()) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+		}
+
+		productRepository.deleteAll(productsToDelete);
+		return ApiTrait.successMessage("Products Deleted", HttpStatus.OK);
+	}
+
 
 	@Override
 	public AllDetailsProductDto findByProductId(String email, int productId) throws AccessDeniedException {
