@@ -34,7 +34,12 @@ public class UserMapper {
         accountStatus.setAccountNonExpired(true);
         accountStatus.setAccountNonLocked(true);
         accountStatus.setCredentialsNonExpired(true);
+        accountStatus.setUser(user);
         user.setAccountStatus(accountStatus);
+        EmailVerification emailVerification = new EmailVerification();
+        emailVerification.setEmailVerified(false);
+        emailVerification.setUser(user);
+        user.setEmailVerification(emailVerification);
 
 //        user.setPhone(dto.getPhone());
         return user;

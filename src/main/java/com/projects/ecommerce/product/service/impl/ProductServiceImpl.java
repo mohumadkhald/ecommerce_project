@@ -464,6 +464,54 @@ public class ProductServiceImpl implements ProductService {
 		}
 	}
 
+	@Override
+	public ResponseEntity<?> setDiscount(String email, Integer productId, Double discount) throws AccessDeniedException {
+		Map<String, String> response = new HashMap<>();
+		// Find the product by its ID
+		Product product = productRepository.findById(productId)
+				.orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
+
+		boolean isAdmin = userRepository.findAllByRole(Role.ADMIN)
+				.stream()
+				.anyMatch(user -> user.getEmail().equals(email));
+
+		if (isAdmin || product.getCreatedBy().equals(email)) {
+			product.setDiscountPercent(discount);
+			Double discountedPrice = product.getPrice() - (product.getPrice() * discount / 100);
+			product.setDiscountedPrice(discountedPrice);
+			productRepository.save(product);
+			response.put("message", "The Discount has been set");
+			return ResponseEntity.ok(response);
+		} else {
+			throw new AccessDeniedException("You do not have permission to access this product.");
+		}
+	}
+
+	@Override
+	public ResponseEntity<?> setDiscounts(String email, List<Integer> productIds, Double discount) throws AccessDeniedException {
+		Map<String, String> response = new HashMap<>();
+		boolean isAdmin = userRepository.findAllByRole(Role.ADMIN)
+				.stream()
+				.anyMatch(user -> user.getEmail().equals(email));
+
+		for (Integer productId : productIds) {
+			Product product = productRepository.findById(productId)
+					.orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
+
+			if (isAdmin || product.getCreatedBy().equals(email)) {
+				product.setDiscountPercent(discount);
+				Double discountedPrice = product.getPrice() - (product.getPrice() * discount / 100);
+				product.setDiscountedPrice(discountedPrice);
+				productRepository.save(product);
+			} else {
+				throw new AccessDeniedException("You do not have permission to access product with id: " + productId);
+			}
+		}
+
+		response.put("message", "The Discount has been set for the specified products");
+		return ResponseEntity.ok(response);
+	}
+
 
 }
 

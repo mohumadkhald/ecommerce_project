@@ -25,7 +25,7 @@ public class AllDetailsProductDto implements Serializable {
     private String imageUrl;
     private String sku;
     private Double price;
-    private int discountPercent;
+    private Double discountPercent;
     private Double discountPrice;
     private int allQuantity;
     private String email;

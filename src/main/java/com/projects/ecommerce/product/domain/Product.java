@@ -33,7 +33,7 @@ public final class Product extends Base {
 	private Double discountedPrice;
 
 	@Column(name = "discount_percent")
-	private int discountPercent;
+	private Double discountPercent;
 
 	@Column(columnDefinition = "decimal")
 	private Double price;
@@ -45,6 +45,14 @@ public final class Product extends Base {
 
 	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<ProductVariation> variations;
+
+	public double getDiscountedPrice() {
+		return discountedPrice;
+	}
+
+	private void setDiscountedPrice() {
+		this.discountedPrice = this.price - (this.price * this.discountPercent / 100);
+	}
 
 }
 

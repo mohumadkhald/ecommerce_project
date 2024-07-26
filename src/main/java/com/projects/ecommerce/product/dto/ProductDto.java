@@ -31,7 +31,7 @@ public class ProductDto implements Serializable {
 	private String sku;
 	private Map<String, List<String>> colorsAndSizes; // Map to store colors and associated sizes
 	private Double price;
-	private int discountPercent;
+	private Double discountPercent;
 
 	private String email;
 

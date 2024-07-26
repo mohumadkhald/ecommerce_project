@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Optional;
 import java.util.Set;
@@ -125,24 +126,21 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    private static final Set<String> revokedTokens = ConcurrentHashMap.newKeySet();
+//    private static final Set<String> revokedTokens = ConcurrentHashMap.newKeySet();
 
-    //    private static final Set<String> revokedTokens = ConcurrentHashMap.newKeySet();
-//revokedTokens.add(token);
-    // Function to invalidate or destroy a token
     public void invalidateToken(String token) {
-//        Optional<Token> token1 = tokenRepo.findByToken(token);
-//        token1.get().setExpired(true);
-//        token1.get().setRevoked(true);
-//        tokenRepo.save(token1.get());
-        revokedTokens.add(token);
+        Optional<Token> tokenOptional = tokenRepo.findByToken(token);
+        tokenOptional.get().setExpired(true);
+        tokenOptional.get().setRevoked(true);
+        tokenOptional.get().setExpirationDate(LocalDateTime.now());
+        tokenRepo.save(tokenOptional.get());
+//        revokedTokens.add(token);
     }
 
     // Function to check if a token is revoked
     public boolean isTokenRevoked(String token) {
-//        Optional<Token> token1 = tokenRepo.findByToken(token);
-//        return token1.get().isRevoked() || token1.get().isExpired();
-        return revokedTokens.contains(token);
-
+        Optional<Token> tokenOptional = tokenRepo.findByToken(token);
+        return tokenOptional.get().isRevoked() || tokenOptional.get().isExpired();
+//        return revokedTokens.contains(token);
     }
 }

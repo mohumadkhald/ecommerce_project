@@ -56,4 +56,8 @@ public interface ProductService {
     ResponseEntity<?> removeProductByCreatedBy(String email, Integer productId);
 
 	AllDetailsProductDto findByProductId(String email, int i) throws AccessDeniedException;
+
+	ResponseEntity<?> setDiscount(String email, Integer productId, Double discount) throws AccessDeniedException;
+
+	ResponseEntity<?> setDiscounts(String email, List<Integer> productIds, Double discount) throws AccessDeniedException;
 }

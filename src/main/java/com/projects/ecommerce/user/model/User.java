@@ -31,7 +31,7 @@ public class User extends Base implements UserDetails {
     private String password;
     private String passwordOauth2;
     private String imgUrl;
-
+    private boolean needsToSetPassword;
     @JsonIgnore
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
     private Set<Address> addresses;

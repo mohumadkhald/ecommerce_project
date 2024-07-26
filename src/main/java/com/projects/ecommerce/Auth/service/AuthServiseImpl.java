@@ -26,6 +26,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -76,9 +77,14 @@ public class AuthServiseImpl implements AuthService {
 
         // Create EmailVerification entity
         EmailVerification emailVerification = new EmailVerification();
+        if (request.isO2Auth()){
+            emailVerification.setEmailVerified(true);
+        } else {
+            emailVerification.setEmailVerified(false);
+        }
         emailVerification.setUser(user);
-        emailVerification.setVerificationToken(UUID.randomUUID().toString());
-        emailVerification.setVerificationTokenExpiry(LocalDateTime.now().plusHours(24)); // Set expiry time (1 day)
+//        emailVerification.setVerificationToken(UUID.randomUUID().toString());
+//        emailVerification.setVerificationTokenExpiry(LocalDateTime.now().plusHours(24)); // Set expiry time (1 day)
         user.setEmailVerification(emailVerification);
 
         // account status for user
@@ -195,7 +201,7 @@ public class AuthServiseImpl implements AuthService {
             expirationDay = 1000 * 60 * 60 * 24 * 7; // check Remember Me token Valid 7 Days or when logout
         } else {
             //expirationDay = 1000 * 60 * 60 * 24; // If Not check RememberMe token valid 24 Hour or when logout
-            expirationDay = 1000 * 30;
+            expirationDay = 1000 * 60 * 60 * 24;
         }
         return expirationDay;
     }
@@ -204,7 +210,8 @@ public class AuthServiseImpl implements AuthService {
     private void savedUserToken(User user, String jwtToken, boolean status) {
         int expirationDay = getExpirationDay(status); // Get expiration day based on status
         LocalDateTime expirationDateTime = LocalDateTime.now().plusDays(expirationDay / (24 * 60 * 60 * 1000));
-
+        List<Token> notValidTokensByUser = tokenRepo.findAllNotValidTokensByUser(user.getId());
+        tokenRepo.deleteAll(notValidTokensByUser);
         var myToken = Token.builder()
                 .user(user)
                 .token(jwtToken)

@@ -77,14 +77,14 @@ public class Auth1Controller {
             throw new Exception("Authentication principal is missing");
         }
 
-
         ModelAndView modelAndView = new ModelAndView("redirect:http://localhost:4200/login");
 
         // Check if user already exists in your system
         User existingUser = userService.findByEmail(email);
-        // Add a query parameter to indicate that the user needs to set their first password
-        boolean isNewUser = existingUser == null;
-        modelAndView.addObject("newUser", isNewUser ? "true" : "false");
+
+        // Default password indicating the user needs to set their own password
+        String defaultPassword = "defaultPassword";
+
         if (existingUser == null) {
             log.info("creating new user");
             RegisterRequestDto registerRequestDto = new RegisterRequestDto();
@@ -97,12 +97,15 @@ public class Auth1Controller {
             registerRequestDto.setGender(gender);
             registerRequestDto.setImg(pictureUrl);
             AuthResponse authResponse = authService.register(registerRequestDto);
-            // Create ModelAndView and add attributes
+
+            User newUser = userService.findByEmail(email);
+            newUser.setNeedsToSetPassword(true);
+            userService.save(newUser);
+
             modelAndView.addObject("token", authResponse.getToken());
             modelAndView.addObject("message", "Login Success");
             modelAndView.addObject("role", authResponse.getRole());
-        }
-        else {
+        } else {
             log.info("user already exists");
             LoginRequestDto loginRequestDto = new LoginRequestDto();
             loginRequestDto.setEmail(email);
@@ -110,11 +113,21 @@ public class Auth1Controller {
             loginRequestDto.setRemember(true);
             loginRequestDto.setO2Auth(true);
             AuthResponse authResponse = authService.login(loginRequestDto);
+
             modelAndView.addObject("token", authResponse.getToken());
             modelAndView.addObject("message", "Login Success");
             modelAndView.addObject("role", authResponse.getRole());
-
         }
+
+
+        boolean isNewUser = existingUser == null;
+        if (isNewUser) {
+            modelAndView.addObject("newUser", "true");
+        } else {
+            modelAndView.addObject("newUser", existingUser.isNeedsToSetPassword() ? "true" : "false");
+        }
+
+
         return modelAndView;
     }
 

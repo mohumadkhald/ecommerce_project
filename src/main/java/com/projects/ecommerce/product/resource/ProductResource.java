@@ -262,6 +262,28 @@ public class ProductResource {
 		log.info("*** ProductDto, resource; fetch product by id *");
 		return ResponseEntity.ok(this.productService.findByProductId(email, Integer.parseInt(productId)));
 	}
+
+	@PatchMapping("setDiscount/{productId}")
+	public ResponseEntity<?> setDiscount
+			(@RequestHeader("Authorization") String jwtToken,
+			 @PathVariable("productId") Integer productId, @RequestParam("discount") Double discount) throws AccessDeniedException {
+
+		Integer id = userService.findUserIdByJwt(jwtToken);
+		String email = userService.findByUserId(id).getEmail();
+		return  this.productService.setDiscount(email, productId, discount);
+	}
+
+	@PatchMapping("setDiscount")
+	public ResponseEntity<?> setDiscounts(
+			@RequestHeader("Authorization") String jwtToken,
+			@RequestParam("productIds") List<Integer> productIds,
+			@RequestParam("discount") Double discount) throws AccessDeniedException {
+
+		Integer id = userService.findUserIdByJwt(jwtToken);
+		String email = userService.findByUserId(id).getEmail();
+		return this.productService.setDiscounts(email, productIds, discount);
+	}
+
 }
 
 

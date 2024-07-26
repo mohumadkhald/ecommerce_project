@@ -159,10 +159,16 @@ public class AuthController {
 
         Integer id = userService.findUserIdByJwt(jwtToken);
         User user = userService.findByUserId(id);
-        user.setPassword(passwordEncoder.encode(firstPasswordDto.getPassword()));
-        userRepo.save(user);
         Map<String, String> response = new HashMap<>();
-        response.put("message", "The password has been set");
+        if (user.isNeedsToSetPassword()) {
+            user.setPassword(passwordEncoder.encode(firstPasswordDto.getPassword()));
+            user.setNeedsToSetPassword(false);
+            userRepo.save(user);
+            response.put("message", "The password has been set");
+        } else {
+            response.put("message", "The password Cant set");
+        }
+
         return ResponseEntity.ok(response);
     }
 
