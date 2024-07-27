@@ -7,6 +7,7 @@ import com.projects.ecommerce.product.domain.Size;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.repository.query.Param;
@@ -17,7 +18,7 @@ import java.util.Optional;
 
 @Repository
 @EnableJpaRepositories
-public interface ProductRepository extends JpaRepository<Product, Integer> {
+public interface ProductRepository extends JpaRepository<Product, Integer>, JpaSpecificationExecutor<Product> {
 
     // page and size only
 //    @Query("SELECT p FROM Product p JOIN p.category c WHERE c.name = :categoryName")

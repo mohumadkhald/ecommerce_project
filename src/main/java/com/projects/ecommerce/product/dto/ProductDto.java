@@ -32,8 +32,9 @@ public class ProductDto implements Serializable {
 	private Map<String, List<String>> colorsAndSizes; // Map to store colors and associated sizes
 	private Double price;
 	private Double discountPercent;
-
+	private Double discountPrice;
 	private String email;
+	private boolean inStock;
 
 
 	@JsonProperty("subCategory")

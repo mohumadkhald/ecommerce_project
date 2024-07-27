@@ -3,7 +3,9 @@ package com.projects.ecommerce.cart;
 import com.projects.ecommerce.product.domain.Color;
 import com.projects.ecommerce.product.domain.Product;
 import com.projects.ecommerce.product.domain.ProductVariation;
+import com.projects.ecommerce.product.domain.Size;
 import com.projects.ecommerce.product.service.ProdcutVariationService;
+import com.projects.ecommerce.product.service.impl.ProductServiceImpl;
 import com.projects.ecommerce.user.model.User;
 import com.projects.ecommerce.user.repository.UserRepo;
 import lombok.AllArgsConstructor;
@@ -27,6 +29,8 @@ public class CartService {
 
     @Autowired
     private UserRepo userRepository;
+    @Autowired
+    private ProductServiceImpl productServiceImpl;
 
     public Cart getCartByUserId(Integer userId) {
         return cartRepository.findByUserId(userId)
@@ -54,11 +58,21 @@ public class CartService {
                 cartRequest.getSize()
         );
         if (productVariation == null) {
-            throw new RuntimeException("Product variation not found");
+            Product product = productServiceImpl.findProductById(cartRequest.getProductId());
+            ProductVariation newProductVariation = new ProductVariation();
+            newProductVariation.setColor(Color.valueOf(cartRequest.getColor()));
+            newProductVariation.setSize(Size.valueOf(cartRequest.getSize()));
+            newProductVariation.setQuantity(0);
+            newProductVariation.setProduct(
+                    product
+            );
+            prodcutVariationService.save(newProductVariation);
+            productVariation = newProductVariation;
         }
         // Check if the cart already contains this product variation
+        ProductVariation finalProductVariation = productVariation;
         Optional<CartItem> existingCartItem = cart.getItems().stream()
-                .filter(item -> item.getProductVariation().getId().equals(productVariation.getId()))
+                .filter(item -> item.getProductVariation().getId().equals(finalProductVariation.getId()))
                 .findFirst();
 
         if (existingCartItem.isPresent())

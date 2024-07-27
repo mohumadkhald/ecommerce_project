@@ -15,6 +15,7 @@ import com.projects.ecommerce.user.expetion.AlreadyExistsException;
 import com.projects.ecommerce.user.model.Role;
 import com.projects.ecommerce.user.repository.UserRepo;
 import com.projects.ecommerce.utilts.traits.ApiTrait;
+import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -40,19 +42,28 @@ public class ProductServiceImpl implements ProductService {
 	private final UserRepo userRepository;
 
 	@Override
-	public Page<ProductDto> findAll(Pageable pageable, Double minPrice, Double maxPrice) {
+	public Page<AllDetailsProductDto> findAll(Pageable pageable, Double minPrice, Double maxPrice, String email) {
 		log.info("*** ProductDto List, service; fetch all products with filters ***");
 
-		if (minPrice != null && maxPrice != null) {
-			return productRepository.findByPriceBetween(minPrice, maxPrice, pageable).map(ProductMappingHelper::map);
-		} else if (minPrice != null) {
-			return productRepository.findByPriceGreaterThanEqual(minPrice, pageable).map(ProductMappingHelper::map);
-		} else if (maxPrice != null) {
-			return productRepository.findByPriceLessThanEqual(maxPrice, pageable).map(ProductMappingHelper::map);
-		} else {
-			return productRepository.findAll(pageable).map(ProductMappingHelper::map);
-		}
+		Specification<Product> spec = (root, query, criteriaBuilder) -> {
+			List<Predicate> predicates = new ArrayList<>();
+
+			if (minPrice != null) {
+				predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("price"), minPrice));
+			}
+			if (maxPrice != null) {
+				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("price"), maxPrice));
+			}
+			if (email != null && !email.isEmpty()) {
+				predicates.add(criteriaBuilder.equal(root.get("createdBy"), email));
+			}
+
+			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+		};
+
+		return productRepository.findAll(spec, pageable).map(ProductMappingHelper::map2);
 	}
+
 
 
 
@@ -210,9 +221,9 @@ public class ProductServiceImpl implements ProductService {
 
 		Page<Product> productPage;
 		if (colorEnums == null) {
-			productPage = productRepository.findByCategoryNameAndFilters(categoryName, null, minPrice, maxPrice, sizeEnums, pageable); // Convert size to uppercase
+			productPage = productRepository.findByCategoryNameAndFilters(categoryName, null, minPrice, maxPrice, sizeEnums, pageable);
 		} else {
-			productPage = productRepository.findByCategoryNameAndFilters(categoryName, colorEnums, minPrice, maxPrice, sizeEnums, pageable); // Convert size to uppercase
+			productPage = productRepository.findByCategoryNameAndFilters(categoryName, colorEnums, minPrice, maxPrice, sizeEnums, pageable);
 		}
 
 

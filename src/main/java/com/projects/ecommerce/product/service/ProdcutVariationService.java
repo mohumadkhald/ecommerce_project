@@ -14,4 +14,8 @@ public class ProdcutVariationService {
     public ProductVariation findByProductIdAndColorAndSize(Integer productId, Color color, String size) {
         return productVariationRepository.findByProductIdAndColorAndSize(productId, color, Size.valueOf(size));
     }
+
+    public void save(ProductVariation newProductVariation) {
+        productVariationRepository.save(newProductVariation);
+    }
 }

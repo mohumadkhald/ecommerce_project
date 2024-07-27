@@ -20,7 +20,8 @@ public interface ProductService {
 
 //	Page<ProductDto> findAll(Pageable pageable);
 
-	Page<ProductDto> findAll(Pageable pageable, Double minPrice, Double maxPrice);
+
+	Page<AllDetailsProductDto> findAll(Pageable pageable, Double minPrice, Double maxPrice, String email);
 
 	ProductDto findById(final Integer productId);
 	ProductDto create(final ProductRequestDto productDto);

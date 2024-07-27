@@ -15,37 +15,44 @@ import java.util.stream.Collectors;
 public interface ProductMappingHelper {
 
 	public static ProductDto map(final Product product) {
-		ProductDto.ProductDtoBuilder productDtoBuilder = ProductDto.builder()
-				.productId(product.getId())
-				.productTitle(product.getProductTitle())
-				.imageUrl(product.getImageUrl())
-				.price(product.getPrice())
-				.discountPercent(product.getDiscountPercent())
-				.email(product.getCreatedBy())
-				.subCategoryDto(
-						SubCategoryDto.builder()
-								.id(product.getSubCategory().getSubId())
-								.name(product.getSubCategory().getName())
-								.categoryId(product.getSubCategory().getCategory().getCategoryId())
-								.build());
-		// Extract color and size from all variations
-		Map<String, List<String>> colorsAndSizes = new HashMap<>();
-		List<ProductVariation> variations = product.getVariations();
-		if (variations != null && !variations.isEmpty()) {
-			for (ProductVariation variation : variations) {
-				String color = String.valueOf(variation.getColor());
-				String size = String.valueOf(variation.getSize());
+        boolean inStock = false;
+        if (product.getAllQuantity() > 0) {
+            inStock = true;
+        }
 
-				// If color already exists, add size to its list; otherwise, create a new list for the color
-				colorsAndSizes.computeIfAbsent(color, k -> new ArrayList<>()).add(size);
-			}
-		}
+        ProductDto.ProductDtoBuilder productDtoBuilder = ProductDto.builder()
+                .productId(product.getId())
+                .productTitle(product.getProductTitle())
+                .imageUrl(product.getImageUrl())
+                .price(product.getPrice())
+                .discountPercent(product.getDiscountPercent())
+                .discountPrice(product.getDiscountedPrice())
+                .inStock(inStock)
+                .email(product.getCreatedBy())
+                .subCategoryDto(
+                        SubCategoryDto.builder()
+                                .id(product.getSubCategory().getSubId())
+                                .name(product.getSubCategory().getName())
+                                .categoryId(product.getSubCategory().getCategory().getCategoryId())
+                                .build());
+        // Extract color and size from all variations
+        Map<String, List<String>> colorsAndSizes = new HashMap<>();
+        List<ProductVariation> variations = product.getVariations();
+        if (variations != null && !variations.isEmpty()) {
+            for (ProductVariation variation : variations) {
+                String color = String.valueOf(variation.getColor());
+                String size = String.valueOf(variation.getSize());
 
-		// Set the colorsAndSizes in the builder
-		productDtoBuilder.colorsAndSizes(colorsAndSizes);
+                // If color already exists, add size to its list; otherwise, create a new list for the color
+                colorsAndSizes.computeIfAbsent(color, k -> new ArrayList<>()).add(size);
+            }
+        }
 
-		return productDtoBuilder.build();
-	}
+        // Set the colorsAndSizes in the builder
+        productDtoBuilder.colorsAndSizes(colorsAndSizes);
+
+        return productDtoBuilder.build();
+    }
 
 
 	public static Product map(final ProductDto productDto) {
@@ -103,6 +110,10 @@ public interface ProductMappingHelper {
 
 			return product;
 		} else {
+			if (productDto.getDiscountPercent() == null) {
+				productDto.setDiscountPercent(0.0);
+				productDto.setDiscountedPrice(0.0);
+			}
 			// If the product does not exist, create a new one
 			Product product = Product.builder()
 					.id(productDto.getProductId())
@@ -112,6 +123,7 @@ public interface ProductMappingHelper {
 					.imageUrl(productDto.getImageUrl())
 					.price(productDto.getPrice())
 					.discountPercent(productDto.getDiscountPercent())
+					.discountedPrice(productDto.getDiscountedPrice())
 					.allQuantity(productDto.getQuantity())
 					.subCategory(
 							SubCategory.builder()

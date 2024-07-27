@@ -42,22 +42,23 @@ public class ProductResource {
 
 
 	@GetMapping
-	public ResponseEntity<Page<ProductDto>> findAll(
-			@RequestParam("email") String email,
+	public ResponseEntity<Page<AllDetailsProductDto>> findAll(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int pageSize,
 			@RequestParam(defaultValue = "createdAt") String sortBy,
 			@RequestParam(defaultValue = "desc") String sortDirection,
 			@RequestParam(required = false) Double minPrice,
-			@RequestParam(required = false) Double maxPrice) {
+			@RequestParam(required = false) Double maxPrice,
+			@RequestParam(required = false) String email) {
 
 		Sort sort = Sort.by(sortDirection.equals("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, sortBy);
 		Pageable pageable = PageRequest.of(page, pageSize, sort);
 
 		log.info("*** ProductDto List, controller; fetch all products with filters ***");
-		Page<ProductDto> productPage = productService.findAll(pageable, minPrice, maxPrice);
+		Page<AllDetailsProductDto> productPage = productService.findAll(pageable, minPrice, maxPrice, email);
 		return ResponseEntity.ok(productPage);
 	}
+
 
 
 
