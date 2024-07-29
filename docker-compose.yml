@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+    app-angular:
+        image: mohumadkhald/angular-ecommerce:2.0.0
+        ports:
+            - 4200:4200
+
+    app-java:
+        image: mohumadkhald/ecommerc-angular:2.0
+        ports:
+            - 8080:8080
+        networks:
+            - some-network
+        environment:
+            - SPRING_DATASOURCE_URL=${DB_URL}
+            - SPRING_DATASOURCE_USERNAME=${MYSQL_USER}
+            - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
+            - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.MySQLDialect
+
+    some-mariadb:
+        image: mariadb:latest
+        container_name: some-mariadb
+        environment:
+            MARIADB_DATABASE: ${DB_NAME}
+            MARIADB_USER: ${MYSQL_USER}
+            MARIADB_PASSWORD: ${MYSQL_PASSWORD}
+            MARIADB_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+        volumes:
+            - maria-data:/var/lib/mysql
+        networks:
+            - some-network
+
+    phpmyadmin:
+        image: phpmyadmin
+        restart: always
+        environment:
+            PMA_HOST: some-mariadb
+            PMA_PORT: 3306
+            # PMA_USER: ${MYSQL_USER}
+            # PMA_PASSWORD: ${MYSQL_PASSWORD}
+        ports:
+            - "8081:80"
+        depends_on:
+            - some-mariadb
+        networks:
+            - some-network
+
+networks:
+    some-network:
+        external: true
+
+volumes:
+    maria-data:
+        driver: local

@@ -122,7 +122,8 @@ public class ProductResource {
 			@RequestParam(required = false) List<String> color,
 			@RequestParam(required = false) Double minPrice,
 			@RequestParam(required = false) Double maxPrice,
-			@RequestParam(required = false) List<String> size, // Change parameter type to String
+			@RequestParam(required = false) List<String> size,
+			@RequestParam(required = false) Boolean available,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int pageSize,
 			@RequestParam(defaultValue = "createdAt") String sortBy,
@@ -131,9 +132,10 @@ public class ProductResource {
 		List<String> uppercaseSizes = size != null ? size.stream().map(String::toUpperCase).collect(Collectors.toList()) : null;
 		List<String> colors = color != null ? color.stream().map(String::toLowerCase).toList() : null;
 		Sort sort = Sort.by(sortDirection.equals("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, sortBy);
-		Page<ProductDto> products = productService.getProductsByCategoryNameAndFilters(subCategoryName, colors, minPrice, maxPrice, uppercaseSizes, page, pageSize, sort); // Convert size to uppercase
+		Page<ProductDto> products = productService.getProductsByCategoryNameAndFilters(subCategoryName, colors, minPrice, maxPrice, uppercaseSizes, available, page, pageSize, sort);
 		return ResponseEntity.ok(products);
 	}
+
 
 	@GetMapping("/{subCategoryName}/{productNmae}")
 	public ResponseEntity<Page<ProductDto>> getProductsByCategoryNameAndProductNameAndFilters(

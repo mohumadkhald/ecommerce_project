@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,6 +50,7 @@ public class Auth1Controller {
             pictureUrl = oidcUser.getPicture();
             name = oidcUser.getName();
             gender = oidcUser.getGender();
+            log.info("email: " + gender);
         } else if (oauth2User != null) {
             email = oauth2User.getAttribute("email");
             name = oauth2User.getAttribute("name");
@@ -97,11 +99,6 @@ public class Auth1Controller {
             registerRequestDto.setGender(gender);
             registerRequestDto.setImg(pictureUrl);
             AuthResponse authResponse = authService.register(registerRequestDto);
-
-            User newUser = userService.findByEmail(email);
-            newUser.setNeedsToSetPassword(true);
-            userService.save(newUser);
-
             modelAndView.addObject("token", authResponse.getToken());
             modelAndView.addObject("message", "Login Success");
             modelAndView.addObject("role", authResponse.getRole());

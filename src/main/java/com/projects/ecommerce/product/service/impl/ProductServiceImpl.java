@@ -10,8 +10,12 @@ import com.projects.ecommerce.product.exception.wrapper.CategoryNotFoundExceptio
 import com.projects.ecommerce.product.exception.wrapper.ProductNotFoundException;
 import com.projects.ecommerce.product.helper.ProductMappingHelper;
 import com.projects.ecommerce.product.repository.ProductRepository;
+import com.projects.ecommerce.product.service.CategoryService;
 import com.projects.ecommerce.product.service.ProductService;
+import com.projects.ecommerce.product.service.SubCategoryService;
 import com.projects.ecommerce.user.expetion.AlreadyExistsException;
+import com.projects.ecommerce.user.expetion.NotFoundException;
+import com.projects.ecommerce.user.expetion.UserNotFoundException;
 import com.projects.ecommerce.user.model.Role;
 import com.projects.ecommerce.user.repository.UserRepo;
 import com.projects.ecommerce.utilts.traits.ApiTrait;
@@ -40,6 +44,7 @@ public class ProductServiceImpl implements ProductService {
 	
 	private final ProductRepository productRepository;
 	private final UserRepo userRepository;
+	private final SubCategoryService subCategoryService;
 
 	@Override
 	public Page<AllDetailsProductDto> findAll(Pageable pageable, Double minPrice, Double maxPrice, String email) {
@@ -72,7 +77,7 @@ public class ProductServiceImpl implements ProductService {
 		log.info("*** ProductDto, service; fetch product by id *");
 		return this.productRepository.findById(productId)
 				.map(ProductMappingHelper::map)
-				.orElseThrow(() -> new ProductNotFoundException(String.format("Product with id: %d not found", productId)));
+				.orElseThrow(() -> new NotFoundException("Product", "Product with ID " + productId + " Not Found: "));
 	}
 
 	@Override
@@ -214,18 +219,15 @@ public class ProductServiceImpl implements ProductService {
 
 
 	@Override
-	public Page<ProductDto> getProductsByCategoryNameAndFilters(String categoryName, List<String> colors, Double minPrice, Double maxPrice, List<String> sizes, int page, int pageSize, Sort sort) {
+	public Page<ProductDto> getProductsByCategoryNameAndFilters(String categoryName, List<String> colors, Double minPrice, Double maxPrice, List<String> sizes, Boolean available, int page, int pageSize, Sort sort) {
 		Pageable pageable = PageRequest.of(page, pageSize, sort);
 		List<Size> sizeEnums = sizes != null ? sizes.stream().map(size -> Size.valueOf(size.toUpperCase())).toList() : null;
 		List<Color> colorEnums = colors != null ? colors.stream().map(color -> Color.valueOf(color.toLowerCase())).toList() : null;
-
-		Page<Product> productPage;
-		if (colorEnums == null) {
-			productPage = productRepository.findByCategoryNameAndFilters(categoryName, null, minPrice, maxPrice, sizeEnums, pageable);
-		} else {
-			productPage = productRepository.findByCategoryNameAndFilters(categoryName, colorEnums, minPrice, maxPrice, sizeEnums, pageable);
+		boolean subCategory = subCategoryService.findByName(categoryName);
+		if (!subCategory) {
+			throw new NotFoundException("Category", "Category " + categoryName + " Notfound");
 		}
-
+		Page<Product> productPage = productRepository.findByCategoryNameAndFilters(categoryName, colorEnums, minPrice, maxPrice, sizeEnums, available, pageable);
 
 		return productPage.map(ProductMappingHelper::map);
 	}

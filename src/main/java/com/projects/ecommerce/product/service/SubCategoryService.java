@@ -15,4 +15,6 @@ public interface SubCategoryService {
 	void deleteById(final Integer subCategoryId);
 
     List<SubCategoryDto> findAllByCategoryTitle(String categoryTitle);
+
+	boolean findByName(String categoryName);
 }

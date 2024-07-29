@@ -2,7 +2,6 @@ package com.projects.ecommerce.user.expetion;
 
 import com.projects.ecommerce.Auth.expetion.AuthenticationnException;
 import com.projects.ecommerce.utilts.traits.ApiTrait;
-import com.projects.ecommerce.user.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -36,7 +35,12 @@ public class UserException {
         error.put("user", "User Not Found"); // Assuming "user" is the field causing the error
         return  ApiTrait.errorMessage(error, ex.getMessage(), HttpStatus.NOT_FOUND);
     }
-
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<?> handleNotFoundException(NotFoundException ex, WebRequest request) {
+        HashMap<String, String> error = new HashMap<>();
+        error.put(ex.getField(), ex.getMessage()); // Assuming "user" is the field causing the error
+        return  ApiTrait.errorMessage(error, ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
         var errors = new HashMap<String, String>();

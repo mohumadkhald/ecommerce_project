@@ -3,12 +3,12 @@ package com.projects.ecommerce.product.service.impl;
 
 import com.projects.ecommerce.product.domain.Category;
 import com.projects.ecommerce.product.dto.SubCategoryDto;
-import com.projects.ecommerce.product.exception.wrapper.CategoryNotFoundException;
 import com.projects.ecommerce.product.helper.SubCategoryMappingHelper;
 import com.projects.ecommerce.product.repository.CategoryRepository;
 import com.projects.ecommerce.product.repository.SubCategoryRepository;
 import com.projects.ecommerce.product.service.SubCategoryService;
 import com.projects.ecommerce.user.expetion.AlreadyExistsException;
+import com.projects.ecommerce.user.expetion.NotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +39,15 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 	public List<SubCategoryDto> findAllByCategoryTitle(String categoryTitle) {
 		log.info("*** SubCategoryDto List, service; fetch all sub-categories by category title *");
 		Category category = categoryRepository.findByCategoryTitle(categoryTitle);
+		if (category == null) {
+			throw new NotFoundException("Category", "Category: " + categoryTitle.toUpperCase() + "Not Found");
+		}
 		return this.subcategoryRepository.findByCategory(category);
+	}
+
+	@Override
+	public boolean findByName(String categoryName) {
+		return subcategoryRepository.existsByName(categoryName);
 	}
 
 	@Override
@@ -47,7 +55,7 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 		log.info("*** CategoryDto, service; fetch category by id *");
 		return this.subcategoryRepository.findById(subCategoryId)
 				.map(SubCategoryMappingHelper::map)
-				.orElseThrow(() -> new CategoryNotFoundException(String.format("Category with id: %d not found", subCategoryId)));
+				.orElseThrow(() -> new NotFoundException("Category", String.format("Category with id: %d not found", subCategoryId)));
 	}
 	
 	@Override

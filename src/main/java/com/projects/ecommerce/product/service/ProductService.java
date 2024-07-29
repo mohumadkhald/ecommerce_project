@@ -29,10 +29,6 @@ public interface ProductService {
 	ProductDto update(final ProductDto productDto);
 	ProductDto update(final Integer productId, final ProductRequestDto productDto);
 	void deleteById(final Integer productId);
-	Page<ProductDto> getProductsByCategoryNameAndFilters
-			(String categoryName, List<String> colors,
-			 Double minPrice, Double maxPrice, List<String> sizes,
-			 int page, int pageSize, Sort sort);
 
 
 	Map<String, Map<String, Map<String, Integer>>> getProductVariations(String productName);
@@ -51,7 +47,9 @@ public interface ProductService {
 	@Transactional
 	void updateProductStock(Integer productId, List<Spec> specs, Integer quantityToSubtract);
 
-    Page<ProductDto> getProductsByCategoryNameAndProdcutNameAndFilters(String subCategoryName, String productNmae, List<String> color, Double minPrice, Double maxPrice, List<String> size, int page, int pageSize, Sort sort);
+	Page<ProductDto> getProductsByCategoryNameAndFilters(String categoryName, List<String> colors, Double minPrice, Double maxPrice, List<String> sizes, Boolean available, int page, int pageSize, Sort sort);
+
+	Page<ProductDto> getProductsByCategoryNameAndProdcutNameAndFilters(String subCategoryName, String productNmae, List<String> color, Double minPrice, Double maxPrice, List<String> size, int page, int pageSize, Sort sort);
 
 	List<ProductDto> findAllByCreatedBy(String email);
 

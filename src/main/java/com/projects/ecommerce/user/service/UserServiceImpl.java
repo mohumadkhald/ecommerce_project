@@ -3,11 +3,11 @@ package com.projects.ecommerce.user.service;
 import com.projects.ecommerce.Auth.dto.RegisterRequestDto;
 import com.projects.ecommerce.Auth.dto.UpdateUserRequestDto;
 import com.projects.ecommerce.Config.JwtService;
+import com.projects.ecommerce.user.expetion.UserNotFoundException;
 import com.projects.ecommerce.utilts.traits.ApiTrait;
 import com.projects.ecommerce.user.UserMapper;
 
 import com.projects.ecommerce.user.UserMappingHelper;
-import com.projects.ecommerce.user.UserNotFoundException;
 import com.projects.ecommerce.user.dto.UserDto;
 import com.projects.ecommerce.user.expetion.AlreadyExistsException;
 import com.projects.ecommerce.user.repository.UserRepo;
@@ -299,7 +299,7 @@ public class UserServiceImpl implements UserService {
             return ApiTrait.errorMessage(null, e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (RuntimeException e) {
             // Return error response for incorrect old password
-            return ApiTrait.errorMessage(null, e.getMessage(), HttpStatus.UNAUTHORIZED);
+            return ApiTrait.errorMessage(null, e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             // Return error response for unexpected errors
             return ApiTrait.errorMessage(null, "An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);

@@ -99,9 +99,13 @@ public class CategoryServiceImpl implements CategoryService {
 		log.info("*** Void, service; delete category by id *");
 		this.categoryRepository.deleteById(categoryId);
 	}
-	
-	
-	
+
+	@Override
+	public Category findByCategoryName(String categoryName) {
+		return categoryRepository.findByCategoryTitle(categoryName);
+	}
+
+
 }
 
 

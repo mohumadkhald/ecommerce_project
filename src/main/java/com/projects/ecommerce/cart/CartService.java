@@ -4,7 +4,7 @@ import com.projects.ecommerce.product.domain.Color;
 import com.projects.ecommerce.product.domain.Product;
 import com.projects.ecommerce.product.domain.ProductVariation;
 import com.projects.ecommerce.product.domain.Size;
-import com.projects.ecommerce.product.service.ProdcutVariationService;
+import com.projects.ecommerce.product.service.impl.ProdcutVariationService;
 import com.projects.ecommerce.product.service.impl.ProductServiceImpl;
 import com.projects.ecommerce.user.model.User;
 import com.projects.ecommerce.user.repository.UserRepo;

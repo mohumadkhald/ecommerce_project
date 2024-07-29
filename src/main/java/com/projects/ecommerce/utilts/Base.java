@@ -7,75 +7,72 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.time.LocalDateTime;
 
-@AllArgsConstructor
-@NoArgsConstructor
+@MappedSuperclass
 @Data
 @SuperBuilder
-@MappedSuperclass
+@AllArgsConstructor
+@NoArgsConstructor
+@EntityListeners(BaseEntityListener.class)
 public class Base {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(
-            updatable = false,
-            nullable = false
-    )
+    @Column(updatable = false, nullable = false)
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-    @Column(
-            insertable = false
-    )
+    @Column(insertable = false)
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-
     private String createdBy;
+    private String updatedBy;
 
     @PrePersist
     public void prePersist() {
         if (this.createdBy == null) {
-            // Get the currently authenticated user
-            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            String username;
-            if (principal instanceof UserDetails) {
-                username = ((UserDetails) principal).getUsername();
-            } else {
-                username = principal.toString();
-            }
-            this.createdBy = username;
+            this.createdBy = getAuthenticatedUsername();
         }
     }
 
-
-    private String updatedBy;
     @PreUpdate
     public void preUpdate() {
-        // Get the currently authenticated user
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username;
-        if (principal instanceof UserDetails) {
-            username = ((UserDetails) principal).getUsername();
+        String username = getAuthenticatedUsername();
+        if (username != null) {
+            this.updatedBy = username;
         } else {
-            username = principal.toString();
+            this.updatedBy = this.createdBy; // or some default value
         }
-        this.updatedBy = username;
+        this.updatedAt = LocalDateTime.now();
     }
+
+    public static String getAuthenticatedUsername() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return null;
+        }
+
+        // Check if the authentication is of type OAuth2Authentication
+        if (authentication instanceof OAuth2AuthenticationToken) {
+            OAuth2User oauth2User = ((OAuth2AuthenticationToken) authentication).getPrincipal();
+            // Extract email or name from the OAuth2User
+            return oauth2User.getAttribute("email");
+        }
+
+        return authentication.getName();
+    }
+
 }
-
-
-
-
-
-
-
 
 
 //@Id

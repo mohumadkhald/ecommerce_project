@@ -43,13 +43,17 @@ public interface ProductRepository extends JpaRepository<Product, Integer>, JpaS
             "AND (:colors IS NULL OR pv.color IN :colors) " +
             "AND (:minPrice IS NULL OR p.price >= :minPrice) " +
             "AND (:maxPrice IS NULL OR p.price <= :maxPrice) " +
-            "AND (:sizes IS NULL OR pv.size IN :sizes)")
+            "AND (:sizes IS NULL OR pv.size IN :sizes) " +
+            "AND (:available IS NULL OR (:available = TRUE AND p.allQuantity > 0) OR (:available = FALSE AND p.allQuantity <= 0))"
+    )
     Page<Product> findByCategoryNameAndFilters(@Param("subCategoryName") String subCategoryName,
                                                @Param("colors") List<Color> colors,
                                                @Param("minPrice") Double minPrice,
                                                @Param("maxPrice") Double maxPrice,
                                                @Param("sizes") List<Size> sizes,
+                                               @Param("available") Boolean available,
                                                Pageable pageable);
+
 
 
 
