@@ -4,11 +4,12 @@ FROM amazoncorretto:17.0.7-alpine
 # Set working directory
 WORKDIR /usr/app
 
-# Expose port 8080
-EXPOSE 8080
+# Expose port 8443
+EXPOSE 8443
 
-# Copy the jar file into the container
+# Copy the jar file and keystore file into the container
 COPY ./target/ecommerce-*.jar ./ecommerce.jar
+COPY ./src/main/resources/keystore.p12 /etc/ssl/certs/keystore.p12
 
 # Run the jar file
 CMD ["java", "-jar", "./ecommerce.jar"]

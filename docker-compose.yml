@@ -7,9 +7,9 @@ services:
             - 4200:4200
 
     app-java:
-        image: mohumadkhald/ecommerc-angular:2.0
+        image: mohumadkhald/ecommerc-angular:4.0
         ports:
-            - 8080:8080
+            - 8443:8443
         environment:
             - SPRING_DATASOURCE_URL=${DB_URL}
             - SPRING_DATASOURCE_USERNAME=${MYSQL_USER}
