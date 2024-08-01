@@ -11,5 +11,8 @@ EXPOSE 8443
 COPY ./target/ecommerce-*.jar ./ecommerce.jar
 COPY ./src/main/resources/keystore.p12 /etc/ssl/certs/keystore.p12
 
+# Create the uploads directory
+RUN mkdir -p /usr/app/uploads
+
 # Run the jar file
 CMD ["java", "-jar", "./ecommerce.jar"]

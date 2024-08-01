@@ -79,7 +79,7 @@ public class Auth1Controller {
             throw new Exception("Authentication principal is missing");
         }
 
-        ModelAndView modelAndView = new ModelAndView("redirect:http://localhost:4200/login");
+        ModelAndView modelAndView = new ModelAndView("redirect:https://angular-ecommerc.vercel.app/login");
 
         // Check if user already exists in your system
         User existingUser = userService.findByEmail(email);

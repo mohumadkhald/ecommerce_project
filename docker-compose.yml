@@ -7,15 +7,18 @@ services:
             - 4200:4200
 
     app-java:
-        image: mohumadkhald/ecommerc-angular:4.0
+        build: .
+        image: mohumadkhald/ecommerc-angular:10.0
         ports:
-            - 8443:8443
+            - "8443:8443"
         environment:
-            - SPRING_DATASOURCE_URL=${DB_URL}
-            - SPRING_DATASOURCE_USERNAME=${MYSQL_USER}
-            - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
-            - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.MySQLDialect
-            - spring.jpa.hibernate.ddl-auto=update
+            SPRING_DATASOURCE_URL: ${DB_URL}
+            SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
+            SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+            SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.MySQLDialect
+            SPRING_JPA_HIBERNATE_DDL_AUTO: update
+        volumes:
+            - ./uploads:/usr/app/uploads
 
     some-mariadb:
         image: mariadb:latest

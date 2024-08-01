@@ -81,7 +81,9 @@ public class FileStorageService {
         log.info(newFolder);
 
         // Return the new URL path
-        return "http://localhost:8080/public/images/" + newFolder + "/" + fileName;
+        return "https://ec2-13-245-232-27.af-south-1.compute.amazonaws.com:8443/public/images/" + newFolder + "/" + fileName;
+//        return "https://localhost:8443/public/images/" + newFolder + "/" + fileName;
+
     }
 
 }

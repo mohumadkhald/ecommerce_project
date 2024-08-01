@@ -101,6 +101,12 @@ public class SecurityConfig {
                 .httpBasic(withDefaults())
         ;
 
+        http
+                .requiresChannel(channel ->
+                        channel
+                                .anyRequest().requiresSecure()
+        );
+
         return http.build();
     }
 
