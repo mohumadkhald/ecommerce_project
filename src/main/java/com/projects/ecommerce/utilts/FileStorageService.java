@@ -2,6 +2,7 @@ package com.projects.ecommerce.utilts;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,6 +20,8 @@ public class FileStorageService {
 
     private static final Logger log = LoggerFactory.getLogger(FileStorageService.class);
     private final Path fileStorageLocation;
+    @Value("${image.base-url}")
+    private String baseUrl;
 
 
     public FileStorageService() {
@@ -81,10 +84,10 @@ public class FileStorageService {
         log.info(newFolder);
 
         // Return the new URL path
-        return "https://ec2-13-247-87-159.af-south-1.compute.amazonaws.com:8443/public/images/" + newFolder + "/" + fileName;
-//        return "https://localhost:8443/public/images/" + newFolder + "/" + fileName;
+//        return "https://ec2-13-247-87-159.af-south-1.compute.amazonaws.com:8443/public/images/" + newFolder + "/" + fileName;
+//        return "http://localhost:8080/public/images/" + newFolder + "/" + fileName;
 //        return "http://ec2-13-247-87-159.af-south-1.compute.amazonaws.com:8082/" + folder + "/" + fileName;
-
+        return baseUrl + newFolder + "/" + fileName;
 
     }
 

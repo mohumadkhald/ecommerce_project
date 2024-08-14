@@ -19,7 +19,10 @@ import com.projects.ecommerce.user.expetion.UserNotFoundException;
 import com.projects.ecommerce.user.model.Role;
 import com.projects.ecommerce.user.repository.UserRepo;
 import com.projects.ecommerce.utilts.traits.ApiTrait;
+import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,12 +50,59 @@ public class ProductServiceImpl implements ProductService {
 	private final SubCategoryService subCategoryService;
 
 	@Override
-	public Page<AllDetailsProductDto> findAll(Pageable pageable, Double minPrice, Double maxPrice, String email) {
+//	public Page<AllDetailsProductDto> findAll(Pageable pageable, Double minPrice, Double maxPrice, List<String> color, List<String> size, Boolean available, String email, String productTitle) {
+//		log.info("*** ProductDto List, service; fetch all products with filters ***");
+//
+//		Specification<Product> spec = (root, query, criteriaBuilder) -> {
+//			List<Predicate> predicates = new ArrayList<>();
+//
+//			if (minPrice != null) {
+//				predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("price"), minPrice));
+//			}
+//			if (maxPrice != null) {
+//				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("price"), maxPrice));
+//			}
+//			if (email != null && !email.isEmpty()) {
+//				predicates.add(criteriaBuilder.equal(root.get("createdBy"), email));
+//			}
+//			if (productTitle != null && !productTitle.isEmpty()) {
+//				predicates.add(criteriaBuilder.like(root.get("productTitle"), "%" + productTitle + "%"));
+//			}
+//
+//			if (color != null && !color.isEmpty()) {
+//				Join<Product, ProductVariation> variationJoin = root.join("variations");
+//				List<Color> colorEnums = color.stream()
+//						.map(Color::valueOf)
+//						.collect(Collectors.toList());
+//				predicates.add(variationJoin.get("color").in(colorEnums));
+//			}
+//			if (size != null && !size.isEmpty()) {
+//				Join<Product, ProductVariation> variationJoin = root.join("variations");
+//				List<Size> sizeEnums = size.stream()
+//						.map(Size::valueOf)
+//						.collect(Collectors.toList());
+//				predicates.add(variationJoin.get("size").in(sizeEnums));
+//			}
+//			if (available != null) {
+//				if (available) {
+//					predicates.add(criteriaBuilder.greaterThan(root.get("allQuantity"), 0));
+//				} else {
+//					predicates.add(criteriaBuilder.equal(root.get("allQuantity"), 0));
+//				}
+//			}
+//
+//			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+//		};
+//
+//		return productRepository.findAll(spec, pageable).map(ProductMappingHelper::map2);
+//	}
+	public Page<AllDetailsProductDto> findAll(Pageable pageable, Double minPrice, Double maxPrice, List<String> colors, List<String> sizes, Boolean available, String email, String productTitle) {
 		log.info("*** ProductDto List, service; fetch all products with filters ***");
 
 		Specification<Product> spec = (root, query, criteriaBuilder) -> {
 			List<Predicate> predicates = new ArrayList<>();
 
+			// Basic predicates
 			if (minPrice != null) {
 				predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("price"), minPrice));
 			}
@@ -62,13 +112,118 @@ public class ProductServiceImpl implements ProductService {
 			if (email != null && !email.isEmpty()) {
 				predicates.add(criteriaBuilder.equal(root.get("createdBy"), email));
 			}
+			if (productTitle != null && !productTitle.isEmpty()) {
+				predicates.add(criteriaBuilder.like(root.get("productTitle"), "%" + productTitle + "%"));
+			}
+
+			// Join with ProductVariation
+			Join<Product, ProductVariation> variationJoin = root.join("variations");
+
+			// Color Filter
+			if (colors != null && !colors.isEmpty()) {
+				List<Color> colorEnums = colors.stream()
+						.map(Color::valueOf)
+						.toList();
+
+				// Ensure product has all specified colors
+				Subquery<Long> colorSubquery = query.subquery(Long.class);
+				Root<ProductVariation> colorRoot = colorSubquery.from(ProductVariation.class);
+				colorSubquery.select(colorRoot.get("product").get("id"))
+						.where(
+								criteriaBuilder.and(
+										colorRoot.get("color").in(colorEnums),
+										criteriaBuilder.equal(colorRoot.get("product").get("id"), root.get("id")),
+										criteriaBuilder.greaterThan(colorRoot.get("quantity"), 0)  // Ensure quantity > 0
+								)
+						)
+						.groupBy(colorRoot.get("product").get("id"))
+						.having(
+								criteriaBuilder.equal(
+										criteriaBuilder.countDistinct(colorRoot.get("color")),
+										(long) colorEnums.size()
+								)
+						);
+
+				Predicate hasAllColors = criteriaBuilder.exists(colorSubquery);
+				predicates.add(hasAllColors);
+			}
+
+			// Size Filter
+			if (sizes != null && !sizes.isEmpty()) {
+				List<Size> sizeEnums = sizes.stream()
+						.map(Size::valueOf)
+						.toList();
+
+				// Ensure product has all specified sizes
+				Subquery<Long> sizeSubquery = query.subquery(Long.class);
+				Root<ProductVariation> sizeRoot = sizeSubquery.from(ProductVariation.class);
+				sizeSubquery.select(sizeRoot.get("product").get("id"))
+						.where(
+								criteriaBuilder.and(
+										sizeRoot.get("size").in(sizeEnums),
+										criteriaBuilder.equal(sizeRoot.get("product").get("id"), root.get("id")),
+										criteriaBuilder.greaterThan(sizeRoot.get("quantity"), 0)  // Ensure quantity > 0
+								)
+						)
+						.groupBy(sizeRoot.get("product").get("id"))
+						.having(
+								criteriaBuilder.equal(
+										criteriaBuilder.countDistinct(sizeRoot.get("size")),
+										(long) sizeEnums.size()
+								)
+						);
+
+				Predicate hasAllSizes = criteriaBuilder.exists(sizeSubquery);
+				predicates.add(hasAllSizes);
+			}
+
+			// Color and Size Combination
+			if ((colors != null && !colors.isEmpty()) && (sizes != null && !sizes.isEmpty())) {
+				Subquery<Long> combinedSubquery = query.subquery(Long.class);
+				Root<ProductVariation> combinedRoot = combinedSubquery.from(ProductVariation.class);
+
+				List<Predicate> colorSizePredicates = new ArrayList<>();
+				if (!colors.isEmpty()) {
+					List<Color> colorEnums = colors.stream()
+							.map(Color::valueOf)
+							.toList();
+					colorSizePredicates.add(combinedRoot.get("color").in(colorEnums));
+				}
+				if (!sizes.isEmpty()) {
+					List<Size> sizeEnums = sizes.stream()
+							.map(Size::valueOf)
+							.toList();
+					colorSizePredicates.add(combinedRoot.get("size").in(sizeEnums));
+				}
+
+				combinedSubquery.select(combinedRoot.get("product").get("id"))
+						.where(
+								criteriaBuilder.and(
+										criteriaBuilder.equal(combinedRoot.get("product").get("id"), root.get("id")),
+										criteriaBuilder.and(colorSizePredicates.toArray(new Predicate[0])),
+										criteriaBuilder.greaterThan(combinedRoot.get("quantity"), 0)  // Ensure quantity > 0
+								)
+						)
+						.groupBy(combinedRoot.get("product").get("id"))
+						.having(
+								criteriaBuilder.equal(
+										criteriaBuilder.countDistinct(combinedRoot.get("id")),
+										((long) colors.size() * sizes.size())
+								)
+						);
+
+				Predicate hasAllColorSizeCombinations = criteriaBuilder.exists(combinedSubquery);
+				predicates.add(hasAllColorSizeCombinations);
+			}
+
+			// Ensure distinct products
+			query.distinct(true);
 
 			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
 		};
 
 		return productRepository.findAll(spec, pageable).map(ProductMappingHelper::map2);
 	}
-
 
 
 
@@ -95,21 +250,29 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
-	public List<ProductDto> saveAll(List<ProductRequestDto> productDtos) {
+	public List<ProductDto> saveAll(List<ProductRequestDto> productDtos, String email) {
 		log.info("*** ProductDto, service; save products ***");
 		// Retrieve existing products from the repository
 		List<Product> existingProducts = this.productRepository.findAll();
 
-		Map<String, Product> productMap = new HashMap<>(); // Map to store products by name
+		// Map to store products by name
+		Map<String, Product> productMap = new HashMap<>();
+		for (Product product : existingProducts) {
+			productMap.put(product.getProductTitle(), product);
+		}
 
 		for (ProductRequestDto productDto : productDtos) {
 			String productName = productDto.getProductTitle();
 			Product existingProduct = productMap.get(productName);
-			if (existingProduct != null) {
-				// If the product with the same name already exists in the map, update its quantities
-				updateProduct(existingProduct, productDto);
+			log.info(String.valueOf(existingProduct));
+
+			if (existingProduct != null && existingProduct.getSubCategory().getSubId().equals(productDto.getSubCategoryId())) {
+				// If the product with the same name and email already exists in the map, update its quantities
+				if (existingProduct.getCreatedBy() != null && existingProduct.getCreatedBy().equals(email)) {
+					updateProduct(existingProduct, productDto);
+				}
 			} else {
-				// If the product does not exist in the map, create a new one
+				// If the product does not exist in the map, or the email does not match, create a new one
 				Product mappedProduct = ProductMappingHelper.map(productDto, existingProducts);
 				productMap.put(productName, mappedProduct);
 			}
@@ -124,6 +287,7 @@ public class ProductServiceImpl implements ProductService {
 
 		return savedProductDtos;
 	}
+
 
 	private void updateProduct(Product product, ProductRequestDto productDto) {
 		// Implement the logic to update the existing product based on the new productDto

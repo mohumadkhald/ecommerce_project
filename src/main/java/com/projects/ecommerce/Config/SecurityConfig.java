@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -27,6 +28,7 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.springframework.security.config.Customizer.withDefaults;
@@ -42,6 +44,7 @@ public class SecurityConfig {
     private final AuthenticationSuccessHandler successHandler;
     private final AuthenticationFailureHandler failureHandler;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final Environment environment;
 
     @Value("${google.client.client-id}")
     private String clientId;
@@ -101,11 +104,11 @@ public class SecurityConfig {
                 .httpBasic(withDefaults())
         ;
 
-        http
-                .requiresChannel(channel ->
-                        channel
-                                .anyRequest().requiresSecure()
-        );
+        if (Arrays.asList(environment.getActiveProfiles()).contains("docker")) {
+            http.requiresChannel(channel ->
+                    channel.anyRequest().requiresSecure()
+            );
+        }
 
         return http.build();
     }

@@ -47,15 +47,21 @@ public class ProductResource {
 			@RequestParam(defaultValue = "20") int pageSize,
 			@RequestParam(defaultValue = "createdAt") String sortBy,
 			@RequestParam(defaultValue = "desc") String sortDirection,
+			@RequestParam(required = false) List<String> size,
+			@RequestParam(required = false) List<String> color,
+			@RequestParam(required = false) Boolean available,
 			@RequestParam(required = false) Double minPrice,
 			@RequestParam(required = false) Double maxPrice,
-			@RequestParam(required = false) String email) {
+			@RequestParam(required = false) String email,
+			@RequestParam(required = false) String productTitle) {
 
+		List<String> uppercaseSizes = size != null ? size.stream().map(String::toUpperCase).collect(Collectors.toList()) : null;
+		List<String> colors = color != null ? color.stream().map(String::toLowerCase).toList() : null;
 		Sort sort = Sort.by(sortDirection.equals("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, sortBy);
 		Pageable pageable = PageRequest.of(page, pageSize, sort);
 
 		log.info("*** ProductDto List, controller; fetch all products with filters ***");
-		Page<AllDetailsProductDto> productPage = productService.findAll(pageable, minPrice, maxPrice, email);
+		Page<AllDetailsProductDto> productPage = productService.findAll(pageable, minPrice, maxPrice, colors,uppercaseSizes, available, email, productTitle);
 		return ResponseEntity.ok(productPage);
 	}
 
@@ -98,9 +104,12 @@ public class ProductResource {
 	public ResponseEntity<Map<String, String>> saveBatch(
 			@RequestBody
 			@NotNull(message = "Input must not be NULL!")
-			@Valid final List<ProductRequestDto> productDtos) {
+			@Valid final List<ProductRequestDto> productDtos, @RequestHeader("Authorization") String jwtToken
+	) throws IOException {
+		Integer userId = userService.findUserIdByJwt(jwtToken);
+		String email = userService.findById(userId).getEmail();
 		log.info("*** ProductDto, resource; save products batch ***");
-		productService.saveAll(productDtos);
+		productService.saveAll(productDtos, email);
 		Map<String, String> response = new HashMap<>();
 		response.put("message", "Products created successfully");
 		return ResponseEntity.ok(response);

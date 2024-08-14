@@ -21,11 +21,11 @@ public interface ProductService {
 //	Page<ProductDto> findAll(Pageable pageable);
 
 
-	Page<AllDetailsProductDto> findAll(Pageable pageable, Double minPrice, Double maxPrice, String email);
+	Page<AllDetailsProductDto> findAll(Pageable pageable, Double minPrice, Double maxPrice,List<String> color, List<String> size, Boolean available, String email, String productTitle);
 
 	ProductDto findById(final Integer productId);
 	ProductDto create(final ProductRequestDto productDto);
-	List<ProductDto> saveAll(List<ProductRequestDto> productDtos);
+	List<ProductDto> saveAll(List<ProductRequestDto> productDtos, String email);
 	ProductDto update(final ProductDto productDto);
 	ProductDto update(final Integer productId, final ProductRequestDto productDto);
 	void deleteById(final Integer productId);

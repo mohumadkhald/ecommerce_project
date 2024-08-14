@@ -6,6 +6,7 @@ WORKDIR /usr/app
 
 # Expose port 8443
 EXPOSE 8443
+ENV SPRING_PROFILES_ACTIVE=docker
 
 # Copy the jar file and keystore file into the container
 COPY ./target/ecommerce-*.jar ./ecommerce.jar

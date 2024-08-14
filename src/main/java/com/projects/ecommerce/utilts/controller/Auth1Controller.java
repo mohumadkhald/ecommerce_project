@@ -8,6 +8,8 @@ import com.projects.ecommerce.user.model.User;
 import com.projects.ecommerce.user.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
@@ -22,12 +24,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@AllArgsConstructor
 @Slf4j
 public class Auth1Controller {
     private final UserService userService;
     private final AuthService authService;
     private final PasswordEncoder passwordEncoder;
+
+    @Value("${base-url}")
+    private String baseUrl;
+
+    public Auth1Controller(UserService userService, AuthService authService, PasswordEncoder passwordEncoder) {
+        this.userService = userService;
+        this.authService = authService;
+        this.passwordEncoder = passwordEncoder;
+    }
+
 
     @GetMapping("/login")
     public RedirectView login() {
@@ -79,7 +90,7 @@ public class Auth1Controller {
             throw new Exception("Authentication principal is missing");
         }
 
-        ModelAndView modelAndView = new ModelAndView("redirect:https://angular-ecommerc.vercel.app/login");
+        ModelAndView modelAndView = new ModelAndView("redirect:" + baseUrl);
 
         // Check if user already exists in your system
         User existingUser = userService.findByEmail(email);
