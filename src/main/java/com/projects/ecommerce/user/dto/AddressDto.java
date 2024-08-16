@@ -22,8 +22,12 @@ public class AddressDto {
 	private String fullAddress;
 	
 	private String postalCode;
-	
+
+	private String state;
+
 	private String city;
+
+	private String country;
 	
 	@JsonProperty("user")
 	@JsonInclude(value = Include.NON_NULL)
