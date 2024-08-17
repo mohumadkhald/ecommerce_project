@@ -13,4 +13,5 @@ public class ProductVariationDto {
     private String color;
     private String size;
     private int quantity;
+    private String img;
 }

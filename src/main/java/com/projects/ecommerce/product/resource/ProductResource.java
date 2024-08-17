@@ -83,16 +83,19 @@ public class ProductResource {
 			@ModelAttribute
 			@Valid final ProductRequestDto productDto,
             @RequestPart(value = "image", required = false) MultipartFile image,
+			@RequestPart(value = "image1", required = false) MultipartFile image1,
 			@RequestHeader("Authorization") String jwtToken
 	) throws IOException {
 		Integer userId = userService.findUserIdByJwt(jwtToken);
 		String email = userService.findById(userId).getEmail();
 		productDto.setEmail(email);
 		log.info("*** ProductDto, resource; save product ***");
-		if (image != null)
+		if (image != null && image1 != null)
 		{
 			String imageUrl = fileStorageService.storeFile(image, "products" + "/"+ productDto.getProductTitle());
+			String imageSpec = fileStorageService.storeFile(image1, "products" + "/"+ productDto.getProductTitle());
 			productDto.setImageUrl(imageUrl);
+			productDto.setImgSpec(imageSpec);
 		}
 		productService.create(productDto);
 		Map<String, String> response = new HashMap<>();

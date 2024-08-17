@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.projects.ecommerce.product.domain.Color;
+import com.projects.ecommerce.product.domain.ProductVariation;
 import com.projects.ecommerce.product.domain.Size;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -29,6 +30,7 @@ public class ProductDto implements Serializable {
 	private String productTitle;
 	private String imageUrl;
 	private String sku;
+	private List<ProductVariationDto> productVariations;
 	private Map<String, List<String>> colorsAndSizes; // Map to store colors and associated sizes
 	private Double price;
 	private Double discountPercent;

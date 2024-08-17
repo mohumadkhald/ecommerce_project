@@ -469,14 +469,14 @@ public class ProductServiceImpl implements ProductService {
 
 		for (Spec spec : specs) {
 			Optional<ProductVariation> existingVariation = product.getVariations().stream()
-					.filter(variation -> variation.getSize().equals(Size.valueOf(spec.size())) &&
-							variation.getColor().equals(Color.valueOf(spec.color())))
+					.filter(variation -> variation.getSize().equals(Size.valueOf(spec.getSize())) &&
+							variation.getColor().equals(Color.valueOf(spec.getColor())))
 					.findFirst();
 
 			if (existingVariation.isPresent()) {
 				// Update existing variation
 				ProductVariation variationToUpdate = existingVariation.get();
-				variationToUpdate.setQuantity(spec.quantity());
+				variationToUpdate.setQuantity(spec.getQuantity());
 			} else {
 				// Create new variation
 				newProductVariation(product, spec, 0);
@@ -526,17 +526,17 @@ public class ProductServiceImpl implements ProductService {
 		for (Spec spec : specs) {
 			// Find the existing variation by size and color or create a new one if not found
 			Optional<ProductVariation> existingVariation = product.getVariations().stream()
-					.filter(variation -> variation.getSize().equals(Size.valueOf(spec.size())) && variation.getColor().equals(Color.valueOf(spec.color())))
+					.filter(variation -> variation.getSize().equals(Size.valueOf(spec.getSize())) && variation.getColor().equals(Color.valueOf(spec.getColor())))
 					.findFirst();
 
 			if (existingVariation.isPresent()) {
 				// Update existing variation
 				ProductVariation variationToUpdate = existingVariation.get();
 				int currentQuantity = variationToUpdate.getQuantity();
-				variationToUpdate.setQuantity(increaseQuantity ? currentQuantity + spec.quantity() : spec.quantity());
+				variationToUpdate.setQuantity(increaseQuantity ? currentQuantity + spec.getQuantity() : spec.getQuantity());
 			} else {
 				// Create new variation
-				newProductVariation(product, spec, spec.quantity());
+				newProductVariation(product, spec, spec.getQuantity());
 			}
 		}
 
@@ -551,9 +551,9 @@ public class ProductServiceImpl implements ProductService {
 
 	private void newProductVariation(Product product, Spec spec, Integer increaseQuantity) {
 		ProductVariation newVariation = new ProductVariation();
-		newVariation.setSize(Size.valueOf(spec.size()));
-		newVariation.setColor(Color.valueOf(spec.color()));
-		newVariation.setQuantity(spec.quantity() + increaseQuantity);
+		newVariation.setSize(Size.valueOf(spec.getSize()));
+		newVariation.setColor(Color.valueOf(spec.getColor()));
+		newVariation.setQuantity(spec.getQuantity() + increaseQuantity);
 		newVariation.setProduct(product);
 		product.getVariations().add(newVariation);
 	}
@@ -587,7 +587,7 @@ public class ProductServiceImpl implements ProductService {
 		for (Spec spec : specs) {
 			// Find the existing variation by size and color or create a new one if not found
 			Optional<ProductVariation> existingVariation = product.getVariations().stream()
-					.filter(variation -> variation.getSize().equals(Size.valueOf(spec.size())) && variation.getColor().equals(Color.valueOf(spec.color())))
+					.filter(variation -> variation.getSize().equals(Size.valueOf(spec.getSize())) && variation.getColor().equals(Color.valueOf(spec.getColor())))
 					.findFirst();
 
 			if (existingVariation.isPresent()) {

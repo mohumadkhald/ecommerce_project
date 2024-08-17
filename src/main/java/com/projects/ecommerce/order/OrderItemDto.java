@@ -5,12 +5,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 class OrderItemDto {
-    private ProductVariationDto productVariation;
+    private List<ProductVariationDto> productVariations; // Updated to hold a list of variations
     private String productName;
     private String img;
     private Double price;

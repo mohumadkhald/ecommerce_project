@@ -7,6 +7,9 @@ import com.projects.ecommerce.product.domain.ProductVariation;
 import com.projects.ecommerce.product.domain.Size;
 import com.projects.ecommerce.user.model.User;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public interface OrderMappingHelper {
@@ -16,15 +19,38 @@ public interface OrderMappingHelper {
 			return null;
 		}
 
+		// Group order items by product title
+		Map<String, List<OrderItem>> groupedItems = order.getOrderItems().stream()
+				.collect(Collectors.groupingBy(item -> item.getProductVariation().getProduct().getProductTitle()));
+
+		// Map each group to an OrderItemDto with multiple ProductVariationDto objects
+		List<OrderItemDto> orderItemDtos = groupedItems.entrySet().stream()
+				.map(entry -> {
+					List<ProductVariationDto> variations = entry.getValue().stream()
+							.map(orderItem -> ProductVariationDto.builder()
+									.color(String.valueOf(orderItem.getProductVariation().getColor()))
+									.size(String.valueOf(orderItem.getProductVariation().getSize()))
+									.quantity(orderItem.getQuantity())
+									.build())
+							.collect(Collectors.toList());
+
+					OrderItem firstItem = entry.getValue().get(0);
+
+					return OrderItemDto.builder()
+							.productVariations(variations)
+							.productName(firstItem.getProductVariation().getProduct().getProductTitle())
+							.img(firstItem.getProductVariation().getProduct().getImageUrl())
+							.price(firstItem.getProductVariation().getProduct().getPrice())
+							.build();
+				})
+				.collect(Collectors.toList());
+
 		return OrderDto.builder()
 				.id(order.getId())
 				.userId(order.getUser().getId())
-				.orderItems(order.getOrderItems().stream()
-						.map(OrderMappingHelper::mapOrderItem)
-						.collect(Collectors.toList()))
+				.orderItems(orderItemDtos)
 				.totalPrice(order.getTotalPrice())
 				.status(order.getStatus().name())
-//				.paymentInfo(map(order.getPaymentInfo()))
 				.shippingAddress(map(order.getShippingAddress()))
 				.orderDate(order.getOrderDate())
 				.deliveryDate(order.getDeliveryDate())
@@ -36,12 +62,10 @@ public interface OrderMappingHelper {
 			return null;
 		}
 
+		// Create the Order object
 		Order order = Order.builder()
 				.id(orderDto.getId())
-				.user(User.builder().id(orderDto.getUserId()).build()) // Assuming User is fetched elsewhere or use userId for later fetching
-				.orderItems(orderDto.getOrderItems().stream()
-						.map(OrderMappingHelper::mapOrderItem)
-						.collect(Collectors.toList()))
+				.user(User.builder().id(orderDto.getUserId()).build()) // Assuming User is referenced by id
 				.totalPrice(orderDto.getTotalPrice())
 				.status(OrderStatus.valueOf(orderDto.getStatus()))
 				.paymentInfo(map(orderDto.getPaymentInfo()))
@@ -50,42 +74,63 @@ public interface OrderMappingHelper {
 				.deliveryDate(orderDto.getDeliveryDate())
 				.build();
 
+		// Map and set OrderItems
+		List<OrderItem> orderItems = orderDto.getOrderItems().stream()
+				.flatMap(orderItemDto -> OrderMappingHelper.mapOrderItem(orderItemDto).stream()) // Handles multiple items from a single DTO
+				.collect(Collectors.toList());
+
 		// Set the order reference for each order item
-		order.getOrderItems().forEach(orderItem -> orderItem.setOrder(order));
+		orderItems.forEach(orderItem -> orderItem.setOrder(order));
+
+		// Add items to the order
+		order.setOrderItems(orderItems);
 
 		return order;
 	}
 
-	static OrderItemDto mapOrderItem(final OrderItem orderItem) {
-		if (orderItem == null) {
+	static OrderItemDto mapOrderItem(final List<OrderItem> orderItems) {
+		if (orderItems == null || orderItems.isEmpty()) {
 			return null;
 		}
 
-		return OrderItemDto.builder()
-				.productVariation(ProductVariationDto.builder()
+		// Extract product name and image from the first item (assuming they are the same for all variations)
+		String productName = orderItems.get(0).getProductVariation().getProduct().getProductTitle();
+		String img = orderItems.get(0).getProductVariation().getProduct().getImageUrl();
+		Double price = orderItems.get(0).getProductVariation().getProduct().getPrice();
+
+		// Map each order item to a ProductVariationDto
+		List<ProductVariationDto> variations = orderItems.stream()
+				.map(orderItem -> ProductVariationDto.builder()
 						.color(String.valueOf(orderItem.getProductVariation().getColor()))
 						.size(String.valueOf(orderItem.getProductVariation().getSize()))
 						.quantity(orderItem.getQuantity())
 						.build())
-				.productName(orderItem.getProductVariation().getProduct().getProductTitle()) // Assuming there's a getProduct() in ProductVariation
-				.img(orderItem.getProductVariation().getProduct().getImageUrl()) // Assuming there's a getProduct() in ProductVariation
-				.price(orderItem.getProductVariation().getProduct().getPrice())
+				.collect(Collectors.toList());
+
+		// Return a single OrderItemDto containing all variations
+		return OrderItemDto.builder()
+				.productVariations(variations)
+				.productName(productName)
+				.img(img)
+				.price(price)
 				.build();
 	}
 
-	static OrderItem mapOrderItem(final OrderItemDto orderItemDto) {
-		if (orderItemDto == null) {
-			return null;
+	static List<OrderItem> mapOrderItem(final OrderItemDto orderItemDto) {
+		if (orderItemDto == null || orderItemDto.getProductVariations() == null) {
+			return Collections.emptyList();
 		}
 
-		return OrderItem.builder()
-				.productVariation(ProductVariation.builder()
-						.size(Size.valueOf(orderItemDto.getProductVariation().getSize()))
-						.color(Color.valueOf(orderItemDto.getProductVariation().getColor()))
-						.quantity(orderItemDto.getProductVariation().getQuantity())
-						.build()) // Assuming ProductVariation is fetched elsewhere
-				.price(orderItemDto.getPrice())
-				.build();
+		return orderItemDto.getProductVariations().stream()
+				.map(variation -> OrderItem.builder()
+						.productVariation(ProductVariation.builder()
+								.size(Size.valueOf(variation.getSize()))
+								.color(Color.valueOf(variation.getColor()))
+								.quantity(variation.getQuantity())
+								.build())
+						.price(orderItemDto.getPrice())
+						.build())
+				.collect(Collectors.toList());
 	}
 
 	static PaymentInfoDto map(final PaymentInfo paymentInfo) {
@@ -162,6 +207,7 @@ public interface OrderMappingHelper {
 				.size(String.valueOf(productVariation.getSize()))
 				.build();
 	}
+
 }
 
 

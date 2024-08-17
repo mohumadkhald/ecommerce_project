@@ -29,6 +29,9 @@ public class ProductRequestDto implements Serializable {
 	private String productTitle;
 	private String imageUrl;
 
+	private String imgSpec;
+
+
 	@NotNull(message = "Color must not be null")
 	@Enumerated(EnumType.STRING)
 	private Color color;

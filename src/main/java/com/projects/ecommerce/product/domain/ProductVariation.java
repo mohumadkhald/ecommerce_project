@@ -34,6 +34,8 @@ public final class ProductVariation extends AbstractMappedEntity implements Seri
     @Column(name = "quantity")
     private int quantity;
 
+    private String img;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "product_id")
     private Product product;
