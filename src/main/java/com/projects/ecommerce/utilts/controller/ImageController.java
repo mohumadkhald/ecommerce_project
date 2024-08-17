@@ -43,17 +43,18 @@ import java.nio.file.Paths;
 @RestController
 public class ImageController {
 
-    @GetMapping("/public/images/{product_title}/{imageName:.+}")
-    public ResponseEntity<byte[]> getImage(@PathVariable String imageName, @PathVariable String product_title) throws IOException {
+    @GetMapping("/public/images/{folder}/{product_title}/{imageName:.+}")
+    public ResponseEntity<byte[]> getImage(@PathVariable String imageName, @PathVariable String folder, @PathVariable String product_title) throws IOException {
         // Define the directory where the images are stored
         String directory;
 
+        directory = "uploads/" + folder + "/" + product_title;
         // Check if product_title is a number
-        if (product_title.matches("\\d+")) {
-            directory = "uploads/users/" + product_title;
-        } else {
-            directory = "uploads/products/" + product_title;
-        }
+//        if (product_title.matches("\\d+")) {
+//            directory = "uploads/users/" + product_title;
+//        } else {
+//            directory = "uploads/products/" + product_title;
+//        }
 
         // Construct the full path to the image
         String imagePath = directory + "/" + imageName;

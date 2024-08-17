@@ -10,12 +10,10 @@ import com.projects.ecommerce.product.exception.wrapper.CategoryNotFoundExceptio
 import com.projects.ecommerce.product.exception.wrapper.ProductNotFoundException;
 import com.projects.ecommerce.product.helper.ProductMappingHelper;
 import com.projects.ecommerce.product.repository.ProductRepository;
-import com.projects.ecommerce.product.service.CategoryService;
 import com.projects.ecommerce.product.service.ProductService;
 import com.projects.ecommerce.product.service.SubCategoryService;
 import com.projects.ecommerce.user.expetion.AlreadyExistsException;
 import com.projects.ecommerce.user.expetion.NotFoundException;
-import com.projects.ecommerce.user.expetion.UserNotFoundException;
 import com.projects.ecommerce.user.model.Role;
 import com.projects.ecommerce.user.repository.UserRepo;
 import com.projects.ecommerce.utilts.traits.ApiTrait;
@@ -463,11 +461,12 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	@Transactional
-	public void updateProductVariation(Integer productId, List<Spec> specs) {
+	public void updateProductVariation(Integer productId, List<Spec> specs, List<String> imageUrls) {
 		Product product = productRepository.findById(productId)
 				.orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
 
-		for (Spec spec : specs) {
+		for (int i = 0; i < specs.size(); i++) {
+			Spec spec = specs.get(i);
 			Optional<ProductVariation> existingVariation = product.getVariations().stream()
 					.filter(variation -> variation.getSize().equals(Size.valueOf(spec.getSize())) &&
 							variation.getColor().equals(Color.valueOf(spec.getColor())))
@@ -477,9 +476,14 @@ public class ProductServiceImpl implements ProductService {
 				// Update existing variation
 				ProductVariation variationToUpdate = existingVariation.get();
 				variationToUpdate.setQuantity(spec.getQuantity());
+				if (i < imageUrls.size()) {
+					variationToUpdate.setImg(imageUrls.get(i));
+				}
 			} else {
+				log.info(String.valueOf(imageUrls));
 				// Create new variation
-				newProductVariation(product, spec, 0);
+				String imageUrl = (i < imageUrls.size()) ? imageUrls.get(i) : null;
+				newProductVariation(product, spec, 0, imageUrl);
 			}
 		}
 
@@ -489,6 +493,8 @@ public class ProductServiceImpl implements ProductService {
 				.sum();
 		product.setAllQuantity(totalQuantity);
 	}
+
+
 
 //	public void updateProductVariation(Integer productId, Spec spec) {
 //		Product product = productRepository.findById(productId)
@@ -536,7 +542,7 @@ public class ProductServiceImpl implements ProductService {
 				variationToUpdate.setQuantity(increaseQuantity ? currentQuantity + spec.getQuantity() : spec.getQuantity());
 			} else {
 				// Create new variation
-				newProductVariation(product, spec, spec.getQuantity());
+				newProductVariation(product, spec, spec.getQuantity(), null);
 			}
 		}
 
@@ -549,11 +555,12 @@ public class ProductServiceImpl implements ProductService {
 
 
 
-	private void newProductVariation(Product product, Spec spec, Integer increaseQuantity) {
+	private void newProductVariation(Product product, Spec spec, Integer increaseQuantity, String img) {
 		ProductVariation newVariation = new ProductVariation();
 		newVariation.setSize(Size.valueOf(spec.getSize()));
 		newVariation.setColor(Color.valueOf(spec.getColor()));
 		newVariation.setQuantity(spec.getQuantity() + increaseQuantity);
+		newVariation.setImg(img);
 		newVariation.setProduct(product);
 		product.getVariations().add(newVariation);
 	}
@@ -599,7 +606,7 @@ public class ProductServiceImpl implements ProductService {
 			} else {
 				// Create new variation
 				// Assuming the quantity to subtract will always be negative
-				newProductVariation(product, spec, quantityToSubtract);
+				newProductVariation(product, spec, quantityToSubtract, null);
 			}
 		}
 

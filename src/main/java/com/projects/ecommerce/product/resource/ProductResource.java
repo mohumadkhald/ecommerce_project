@@ -1,6 +1,8 @@
 package com.projects.ecommerce.product.resource;
 
 
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.projects.ecommerce.product.dto.AllDetailsProductDto;
 import com.projects.ecommerce.product.dto.ProductDto;
 import com.projects.ecommerce.product.dto.ProductRequestDto;
@@ -178,13 +180,16 @@ public class ProductResource {
 	}
 
 
-
 	@PutMapping("/{productId}/stock")
 	public ResponseEntity<Map<String, String>> updateProductVariations(
 			@PathVariable Integer productId,
-			@RequestBody List<Spec> specs) {
+			@RequestParam("specs") String specsJson,
+			@RequestParam Map<String, MultipartFile> images) throws IOException {
 
 		Map<String, String> response = new HashMap<>();
+
+		// Parse specsJson to List<Spec>
+		List<Spec> specs = parseSpecs(specsJson);
 
 		if (specs == null || specs.isEmpty()) {
 			response.put("message", "Specs list cannot be empty.");
@@ -204,11 +209,36 @@ public class ProductResource {
 			return ResponseEntity.badRequest().body(errors);
 		}
 
-		productService.updateProductVariation(productId, specs);
+		// Handle image uploads and update variations
+		List<String> imageUrls = new ArrayList<>();
+		if (images != null) {
+			for (int i = 0; i < specs.size(); i++) {
+				MultipartFile img = images.get("images[" + i + "]");
+				if (img != null && !img.isEmpty()) {
+					// Assuming fileStorageService is available and handles file storage
+					String imageUrl = fileStorageService.storeFile(img, "product_variations/" + productId);
+					imageUrls.add(imageUrl);
+				}
+			}
+		}
 
-		response.put("message", "Product Set Variations successfully");
+		// Update the product variations
+		productService.updateProductVariation(productId, specs, imageUrls);
+
+		response.put("message", "Product variations updated successfully");
 		return ResponseEntity.ok(response);
 	}
+
+	private List<Spec> parseSpecs(String specsJson) {
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			JavaType type = mapper.getTypeFactory().constructCollectionType(List.class, Spec.class);
+			return mapper.readValue(specsJson, type);
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to parse specs JSON", e);
+		}
+	}
+
 
 
 	@PostMapping("/{productId}/stock")

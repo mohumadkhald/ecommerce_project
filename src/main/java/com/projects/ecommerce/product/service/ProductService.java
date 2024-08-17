@@ -33,8 +33,9 @@ public interface ProductService {
 
 	Map<String, Map<String, Map<String, Integer>>> getProductVariations(String productName);
 
+
 	@Transactional
-	void updateProductVariation(Integer productId, List<Spec> spec);
+	void updateProductVariation(Integer productId, List<Spec> specs, List<String> imageUrls);
 
 	@Transactional
 	void updateProductStocks(Integer productId, List<Spec> specs, boolean increaseQuantity);
