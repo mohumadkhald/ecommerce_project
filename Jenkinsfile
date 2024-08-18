@@ -2,6 +2,7 @@ pipeline {
     agent any
     environment {
         DOCKER_CREDENTIALS_ID = 'mohumadkhald'  // Replace with your Docker Hub credentials ID
+        VERSSION = "1.0.3"
         //AWS_CREDENTIALS_ID = 'aws-credentials-id' // If pushing to ECR
     }
     stages {
@@ -19,7 +20,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('', DOCKER_CREDENTIALS_ID) {
-                        def image = docker.build("mohumadkhald/ecommerce:${env.BUILD_ID}")
+                        def image = docker.build("mohumadkhald/ecommerce:${VERSSION}")
                         image.push()
                     }
                 }
