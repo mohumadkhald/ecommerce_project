@@ -5,6 +5,7 @@ package com.projects.ecommerce.order;
 import com.projects.ecommerce.product.domain.Color;
 import com.projects.ecommerce.product.domain.ProductVariation;
 import com.projects.ecommerce.product.domain.Size;
+import com.projects.ecommerce.user.dto.UserDto;
 import com.projects.ecommerce.user.model.User;
 
 import java.util.Collections;
@@ -205,6 +206,66 @@ public interface OrderMappingHelper {
 		return ProductVariationDto.builder()
 				.color(String.valueOf(productVariation.getColor()))
 				.size(String.valueOf(productVariation.getSize()))
+				.build();
+	}
+
+	static OrderDtoAdmin map1(final Order order) {
+		if (order == null) {
+			return null;
+		}
+
+		// Group order items by product title
+		Map<String, List<OrderItem>> groupedItems = order.getOrderItems().stream()
+				.collect(Collectors.groupingBy(item -> item.getProductVariation().getProduct().getProductTitle()));
+
+		// Map each group to an OrderItemDto with multiple ProductVariationDto objects
+		List<OrderItemDto> orderItemDtos = groupedItems.entrySet().stream()
+				.map(entry -> {
+					List<ProductVariationDto> variations = entry.getValue().stream()
+							.map(orderItem -> ProductVariationDto.builder()
+									.color(String.valueOf(orderItem.getProductVariation().getColor()))
+									.size(String.valueOf(orderItem.getProductVariation().getSize()))
+									.quantity(orderItem.getQuantity())
+									.build())
+							.collect(Collectors.toList());
+
+					OrderItem firstItem = entry.getValue().get(0);
+
+					return OrderItemDto.builder()
+							.productVariations(variations)
+							.productName(firstItem.getProductVariation().getProduct().getProductTitle())
+							.img(firstItem.getProductVariation().getProduct().getImageUrl())
+							.price(firstItem.getProductVariation().getProduct().getPrice())
+							.build();
+				})
+				.collect(Collectors.toList());
+
+		return OrderDtoAdmin.builder()
+				.id(order.getId())
+				.user(map(order.getUser()))
+				.orderItems(orderItemDtos)
+				.totalPrice(order.getTotalPrice())
+				.status(order.getStatus().name())
+				.paymentInfo(map(order.getPaymentInfo()))
+				.shippingAddress(map(order.getShippingAddress()))
+				.orderDate(order.getOrderDate())
+				.deliveryDate(order.getDeliveryDate())
+				.build();
+	}
+
+	static UserDto map(User user) {
+		if (user == null) {
+			return null;
+		}
+		return  UserDto.builder()
+				.userId(user.getId())
+				.email(user.getEmail())
+				.firstName(user.getFirstname())
+				.lastName(user.getLastname())
+				.gender(user.getGender())
+				.imageUrl(user.getImgUrl())
+				.emailVerified(user.getEmailVerification().isEmailVerified())
+				.role(user.getRole().toString())
 				.build();
 	}
 

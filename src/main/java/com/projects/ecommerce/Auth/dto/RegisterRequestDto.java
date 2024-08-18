@@ -2,6 +2,7 @@ package com.projects.ecommerce.Auth.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.projects.ecommerce.user.dto.AddressDto;
+import com.projects.ecommerce.user.model.Role;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -47,5 +48,7 @@ public class RegisterRequestDto {
         private String passwordOauth2;
         private boolean isO2Auth;
         private String img;
+
+        private Role role;
 
 }

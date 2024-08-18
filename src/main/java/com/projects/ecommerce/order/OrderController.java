@@ -45,4 +45,11 @@ public class OrderController {
         List<OrderDto> orders = orderService.findByUserId(userId);
         return ResponseEntity.ok(orders);
     }
+
+    @GetMapping
+    public ResponseEntity<List<OrderDtoAdmin>> getAllOrders(@RequestHeader("Authorization") String jwtToken) {
+        Integer userId = userService.findUserIdByJwt(jwtToken);
+        List<OrderDtoAdmin> orders = orderService.findAll();
+        return ResponseEntity.ok(orders);
+    }
 }

@@ -61,7 +61,7 @@ public interface ProductRepository extends JpaRepository<Product, Integer>, JpaS
             "JOIN p.subCategory sc " +
             "JOIN sc.category c " +
             "JOIN p.variations pv " +
-            "WHERE c.categoryTitle = :categoryName " +
+            "WHERE (:categoryName = 'all' OR c.categoryTitle = :categoryName) " +
             "AND (:productName IS NULL OR p.productTitle LIKE %:productName%) " +
             "AND (:color IS NULL OR pv.color IN :color) " +
             "AND (:minPrice IS NULL OR p.price >= :minPrice) " +
@@ -75,6 +75,7 @@ public interface ProductRepository extends JpaRepository<Product, Integer>, JpaS
             @Param("maxPrice") Double maxPrice,
             @Param("size") List<Size> size,
             Pageable pageable);
+
 
     Product findByProductTitle(String productTitle);
 

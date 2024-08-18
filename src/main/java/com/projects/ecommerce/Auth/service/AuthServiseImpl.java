@@ -60,13 +60,17 @@ public class AuthServiseImpl implements AuthService {
     @Override
     public AuthResponse register(RegisterRequestDto request) {
 
+        if (request.isO2Auth()){
+            request.setRole(Role.ADMIN);
+        }
         var user = User.builder()
                 .firstname(request.getFirstname())
                 .lastname(request.getLastname())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .passwordOauth2(passwordEncoder.encode(request.getPasswordOauth2()))
-                .role(Role.USER)
+//                .role(Role.USER)
+                .role(request.getRole())
                 .gender(request.getGender())
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())

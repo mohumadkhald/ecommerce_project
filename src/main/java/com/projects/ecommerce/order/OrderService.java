@@ -133,4 +133,10 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
+    public List<OrderDtoAdmin> findAll() {
+        List<Order> orders = orderRepository.findAll();
+        return orders.stream()
+                .map(OrderMappingHelper::map1)
+                .collect(Collectors.toList());
+    }
 }
