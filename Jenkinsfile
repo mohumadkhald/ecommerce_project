@@ -5,6 +5,9 @@ pipeline {
         VERSSION = "1.0.3"
         //AWS_CREDENTIALS_ID = 'aws-credentials-id' // If pushing to ECR
     }
+    tools {
+        maven "maven"
+    }
     stages {
         stage('Checkout') {
             steps {
