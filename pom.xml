@@ -11,7 +11,7 @@
 </parent>
 <groupId>com.projects</groupId>
 <artifactId>ecommerce</artifactId>
-<version>6.0.1</version>
+<version>1.0</version>
 <name>ecommerce</name>
 <description>ecommerce</description>
 <properties>
