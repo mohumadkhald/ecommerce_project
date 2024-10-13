@@ -36,18 +36,50 @@ pipeline
                   }
               }
           }
-          stage('build image') {
-              steps {
-                  script {
-                      echo "building the docker image..."
-                      withCredentials([usernamePassword(credentialsId: 'Dockerhub', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-                          sh "docker build -t mohumadkhald/${IMAGE_NAME}:${IMAGE_TAG} ."
-                          sh "echo $PASS | docker login -u $USER --password-stdin"
-                          sh "docker push mohumadkhald/${IMAGE_NAME}:${IMAGE_TAG}"
-                      }
-                  }
-              }
-          }
+
+        stage('build image') {
+            steps {
+                script {
+                    echo "Building the Docker image..."
+                    withCredentials([usernamePassword(credentialsId: 'Dockerhub', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                        // Build the image
+                        sh "docker build -t mohumadkhald/${IMAGE_NAME}:${IMAGE_TAG} ."
+
+                        // Tag the image as 'latest'
+                        sh "docker tag mohumadkhald/${IMAGE_NAME}:${IMAGE_TAG} mohumadkhald/${IMAGE_NAME}:latest"
+
+                        // Log in to Docker Hub
+                        sh "echo $PASS | docker login -u $USER --password-stdin"
+
+                        // Push the 'latest' image
+                        sh "docker push mohumadkhald/${IMAGE_NAME}:latest"
+
+                        // Push the versioned image
+                        sh "docker push mohumadkhald/${IMAGE_NAME}:${IMAGE_TAG}"
+
+                    }
+                }
+            }
+        }
+
+        stage('clean image') {
+            steps {
+                script {
+
+                        // Clean up local images and dangling (<none>:<none>) images
+                        echo "Cleaning up Docker images..."
+                        sh """
+                            docker rmi -f mohumadkhald/${IMAGE_NAME}:${IMAGE_TAG} || true
+                            docker rmi -f mohumadkhald/${IMAGE_NAME}:latest || true
+                            docker image prune -f --filter dangling=true || true
+                            docker logout
+                        """
+                    }
+                }
+            }
+        }
+
+
 
         stage("Trigger CD Pipeline") {
             steps {
