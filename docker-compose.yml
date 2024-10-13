@@ -3,9 +3,9 @@ version: '3.8'
 services:
     app-java:
         build: .
-        image: mohumadkhald/ecommerc-angular:3.0.0
+        image: mohumadkhald/ecommerce:6.0.1
         ports:
-            - "8080:8080"
+            - "8085:8080"
         environment:
             SPRING_DATASOURCE_URL: ${DB_URL}
             SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
