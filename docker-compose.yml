@@ -3,15 +3,15 @@ version: '3.8'
 services:
     app-java:
         build: .
-        image: mohumadkhald/ecommerce:6.0.1
+        image: mohumadkhald/ecommerce:10.0
         ports:
-            - "8085:8080"
+            - "8443:8443"
         environment:
             SPRING_DATASOURCE_URL: ${DB_URL}
             SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
             SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
-#            SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.MySQLDialect
-            SPRING_JPA_HIBERNATE_DDL_AUTO: update
+            SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.MySQLDialect
+            SPRING_JPA_HIBERNATE_DDL_AUTO: none
         volumes:
             - ./uploads:/usr/app/uploads
 
