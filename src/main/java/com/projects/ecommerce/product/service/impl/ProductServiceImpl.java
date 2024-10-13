@@ -671,7 +671,7 @@ public class ProductServiceImpl implements ProductService {
 	public AllDetailsProductDto findByProductId(String email, int productId) throws AccessDeniedException {
 		// Find the product by its ID
 		Product product = productRepository.findById(productId)
-				.orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
+				.orElseThrow(() -> new NotFoundException("product", "Product not found with id: " + productId));
 
 		boolean isAdmin = userRepository.findAllByRole(Role.ADMIN)
 				.stream()
@@ -680,7 +680,7 @@ public class ProductServiceImpl implements ProductService {
 		if (isAdmin || product.getCreatedBy().equals(email)) {
 			return productRepository.findById(productId)
 					.map(ProductMappingHelper::map2)
-					.orElseThrow(() -> new ProductNotFoundException(String.format("Product with id: %d not found", productId)));
+					.orElseThrow(() -> new NotFoundException("product", "Product not found with id: " + productId));
 		} else {
 			throw new AccessDeniedException("You do not have permission to access this product.");
 		}
@@ -691,7 +691,7 @@ public class ProductServiceImpl implements ProductService {
 		Map<String, String> response = new HashMap<>();
 		// Find the product by its ID
 		Product product = productRepository.findById(productId)
-				.orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
+				.orElseThrow(() -> new NotFoundException("product", "Product not found with id: " + productId));
 
 		boolean isAdmin = userRepository.findAllByRole(Role.ADMIN)
 				.stream()

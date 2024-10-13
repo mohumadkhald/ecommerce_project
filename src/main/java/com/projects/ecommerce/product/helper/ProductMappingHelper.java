@@ -172,6 +172,7 @@ public interface ProductMappingHelper {
 					variationDto.setColor(String.valueOf(variation.getColor()));
 					variationDto.setSize(String.valueOf(variation.getSize()));
 					variationDto.setQuantity(variation.getQuantity());
+					variationDto.setImg(variation.getImg());
 					return variationDto;
 				})
 				.collect(Collectors.toList());
