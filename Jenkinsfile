@@ -78,7 +78,7 @@ pipeline {
                         -X POST -H 'cache-control: no-cache' \
                         -H 'content-type: application/x-www-form-urlencoded' \
                         --data 'IMAGE_TAG=${IMAGE_TAG}' \
-                        'http://13.246.30.89:8080/job/gitops-complete-pipeline/buildWithParameters?token=gitops-token'
+                        'http://13.246.30.89/job/gitops-complete-pipeline/buildWithParameters?token=gitops-token'
                     """
                 }
             }
