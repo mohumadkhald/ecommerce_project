@@ -20,14 +20,6 @@ pipeline {
             }
         }
 
-        stage("Checkout from SCM") {
-            steps {
-                git branch: 'main',
-                    credentialsId: 'Github',
-                    url: 'https://github.com/mohumadkhald/ecommerce_project'
-            }
-        }
-
         stage('build app') {
             steps {
                 script {
