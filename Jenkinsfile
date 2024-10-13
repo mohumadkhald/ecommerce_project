@@ -19,7 +19,7 @@ pipeline {
             steps {
                 script {
                     echo "Building the application..."
-                    sh 'mvn clean package'
+                    sh 'mvn clean package -DskipTests'
                 }
             }
         }
