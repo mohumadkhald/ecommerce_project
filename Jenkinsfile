@@ -5,7 +5,7 @@ pipeline {
     }
     environment {
         APP_NAME = "ecommerce_ci_cd"
-        RELEASE = "1.0.0"
+        RELEASE = "1.0"
         DOCKER_USER = "mohumadkhald"
         DOCKER_PASS = 'Dockerhub'
         IMAGE_NAME = "${DOCKER_USER}/${APP_NAME}"
@@ -24,7 +24,7 @@ pipeline {
             steps {
                 git branch: 'main',
                     credentialsId: 'Github',
-                    url: 'https://github.com/mohumadkhald/e2e-CI_CD'
+                    url: 'https://github.com/mohumadkhald/ecommerce_project'
             }
         }
 

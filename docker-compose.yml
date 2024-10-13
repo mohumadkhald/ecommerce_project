@@ -3,7 +3,7 @@ version: '3.8'
 services:
     app-java:
         build: .
-        image: mohumadkhald/ecommerce:10.0
+        image: mohumadkhald/ecommerce_ci_cd:1.0.0-21
         ports:
             - "8443:8443"
         environment:
