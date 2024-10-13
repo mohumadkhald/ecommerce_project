@@ -14,11 +14,6 @@ pipeline {
     }
 
     stages {
-        stage("Cleanup Workspace") {
-            steps {
-                cleanWs()
-            }
-        }
 
         stage('build app') {
             steps {
