@@ -1,11 +1,6 @@
 version: '3.8'
 
 services:
-    app-angular:
-        image: mohumadkhald/angular-ecommerce:latest
-        ports:
-            - 4200:4200
-
     app-java:
         build: .
         image: mohumadkhald/ecommerc-angular:3.0.0
