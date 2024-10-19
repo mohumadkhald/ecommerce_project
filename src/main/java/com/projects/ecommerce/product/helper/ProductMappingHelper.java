@@ -14,7 +14,6 @@ public interface ProductMappingHelper {
 	public static ProductDto map(final Product product) {
 		// Determine if the product is in stock based on its total quantity
 		boolean inStock = product.getAllQuantity() > 0;
-
 		// Map the product variations to ProductVariationDto
 		List<ProductVariationDto> productVariationDtos = product.getVariations().stream()
 				.map(variation -> ProductVariationDto.builder()

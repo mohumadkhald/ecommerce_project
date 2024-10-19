@@ -18,7 +18,7 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<OrderDto> createOrder(@RequestHeader("Authorization") String jwtToken,
-                                             @Valid @RequestBody OrderRequest orderRequest,
+                                                @Valid @RequestBody OrderRequest orderRequest,
                                                 @RequestParam(required = false) boolean removeNotFoundStock
     ) {
         Integer userId = userService.findUserIdByJwt(jwtToken);

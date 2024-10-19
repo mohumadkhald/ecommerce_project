@@ -3,7 +3,10 @@ package com.projects.ecommerce.order;
 import com.projects.ecommerce.cart.Cart;
 import com.projects.ecommerce.cart.CartItem;
 import com.projects.ecommerce.cart.CartService;
+import com.projects.ecommerce.product.domain.Product;
 import com.projects.ecommerce.product.domain.ProductVariation;
+import com.projects.ecommerce.product.dto.Spec;
+import com.projects.ecommerce.product.service.ProductService;
 import com.projects.ecommerce.user.expetion.NotFoundException;
 import com.projects.ecommerce.user.service.UserService;
 import jakarta.transaction.Transactional;
@@ -27,6 +30,7 @@ public class OrderService {
     private OrderRepository orderRepository;
     private CartService cartService;
     private UserService userService;
+    private ProductService productService;
 
     @Transactional
     public OrderDto createOrder(Integer userId, PaymentInfo paymentInfo,
@@ -103,6 +107,36 @@ public class OrderService {
         // Save the order again with the orderItems
         order = orderRepository.save(order);
 
+        // Update product stocks for each ordered item
+        for (OrderItem orderItem : orderItems) {
+            ProductVariation productVariation = orderItem.getProductVariation();
+            int orderedQuantity = orderItem.getQuantity();
+
+            // Check if productVariation and its size are not null
+            if (productVariation == null) {
+                // Log error or handle appropriately
+                System.err.println("ProductVariation is null for order item: " + orderItem);
+                continue; // Skip this iteration
+            }
+
+            if (productVariation.getSize() == null) {
+                // Log error or handle appropriately
+                System.err.println("Size is null for ProductVariation: " + productVariation);
+                continue; // Skip this iteration
+            }
+
+            // Create a list of Specs based on the ordered item
+            List<Spec> specs = new ArrayList<>();
+            specs.add(new Spec(
+                    productVariation.getSize(),    // Size should not be null here
+                    productVariation.getColor(),   // Assuming getColor() returns the color
+                    orderedQuantity,               // Quantity to be decremented
+                    productVariation.getImg()      // Assuming getImg() returns the image URL or path
+            ));
+
+            // Call the service method to update stocks
+            productService.updateProductStock(productVariation.getProduct().getId(), specs, orderedQuantity);
+        }
         if (removeNotFoundStock) {
             // Remove only the items included in the order from the cart
             validCartItems.forEach(cartItem -> cartService.removeItemFromCart(userId, cartItem.getId()));
@@ -114,6 +148,8 @@ public class OrderService {
         // Return the mapped OrderDto
         return OrderMappingHelper.map(order);
     }
+
+
 
     public void updateOrderStatus(Integer orderId, OrderStatus status) {
         Order order = orderRepository.findById(orderId)
