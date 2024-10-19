@@ -67,6 +67,46 @@ public class ProductResource {
 		return ResponseEntity.ok(productPage);
 	}
 
+	@GetMapping("/product-category/{subCategoryName}")
+	public ResponseEntity<Page<ProductDto>> getProductsByCategoryNameAndFilters(
+			@PathVariable String subCategoryName,
+			@RequestParam(required = false) List<String> color,
+			@RequestParam(required = false) Double minPrice,
+			@RequestParam(required = false) Double maxPrice,
+			@RequestParam(required = false) List<String> size,
+			@RequestParam(required = false) Boolean available,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "20") int pageSize,
+			@RequestParam(defaultValue = "createdAt") String sortBy,
+			@RequestParam(defaultValue = "asc") String sortDirection) {
+
+		List<String> uppercaseSizes = size != null ? size.stream().map(String::toUpperCase).collect(Collectors.toList()) : null;
+		List<String> colors = color != null ? color.stream().map(String::toLowerCase).toList() : null;
+		Sort sort = Sort.by(sortDirection.equals("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, sortBy);
+		Page<ProductDto> products = productService.getProductsByCategoryNameAndFilters(subCategoryName, colors, minPrice, maxPrice, uppercaseSizes, available, page, pageSize, sort);
+		return ResponseEntity.ok(products);
+	}
+
+
+	@GetMapping("/{subCategoryName}/{productNmae}")
+	public ResponseEntity<Page<ProductDto>> getProductsByCategoryNameAndProductNameAndFilters(
+			@PathVariable String subCategoryName,
+			@PathVariable String productNmae,
+			@RequestParam(required = false) List<String> color,
+			@RequestParam(required = false) Double minPrice,
+			@RequestParam(required = false) Double maxPrice,
+			@RequestParam(required = false) List<String> size, // Change parameter type to String
+			@RequestParam(defaultValue = "1") int page,
+			@RequestParam(defaultValue = "5") int pageSize,
+			@RequestParam(defaultValue = "createdAt") String sortBy,
+			@RequestParam(defaultValue = "asc") String sortDirection) {
+
+		List<String> uppercaseSizes = size != null ? size.stream().map(String::toUpperCase).toList() : null;
+		List<String> colors = color != null ? color.stream().map(String::toLowerCase).toList() : null;
+		Sort sort = Sort.by(sortDirection.equals("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, sortBy);
+		Page<ProductDto> products = productService.getProductsByCategoryNameAndProdcutNameAndFilters(subCategoryName, productNmae, colors, minPrice, maxPrice, uppercaseSizes, page, pageSize, sort); // Convert size to uppercase
+		return ResponseEntity.ok(products);
+	}
 
 
 
@@ -130,46 +170,6 @@ public class ProductResource {
 		return ResponseEntity.ok(this.productService.update(Integer.parseInt(productId), productDto));
 	}
 
-	@GetMapping("/product-category/{subCategoryName}")
-	public ResponseEntity<Page<ProductDto>> getProductsByCategoryNameAndFilters(
-			@PathVariable String subCategoryName,
-			@RequestParam(required = false) List<String> color,
-			@RequestParam(required = false) Double minPrice,
-			@RequestParam(required = false) Double maxPrice,
-			@RequestParam(required = false) List<String> size,
-			@RequestParam(required = false) Boolean available,
-			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int pageSize,
-			@RequestParam(defaultValue = "createdAt") String sortBy,
-			@RequestParam(defaultValue = "asc") String sortDirection) {
-
-		List<String> uppercaseSizes = size != null ? size.stream().map(String::toUpperCase).collect(Collectors.toList()) : null;
-		List<String> colors = color != null ? color.stream().map(String::toLowerCase).toList() : null;
-		Sort sort = Sort.by(sortDirection.equals("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, sortBy);
-		Page<ProductDto> products = productService.getProductsByCategoryNameAndFilters(subCategoryName, colors, minPrice, maxPrice, uppercaseSizes, available, page, pageSize, sort);
-		return ResponseEntity.ok(products);
-	}
-
-
-	@GetMapping("/{subCategoryName}/{productNmae}")
-	public ResponseEntity<Page<ProductDto>> getProductsByCategoryNameAndProductNameAndFilters(
-			@PathVariable String subCategoryName,
-			@PathVariable String productNmae,
-			@RequestParam(required = false) List<String> color,
-			@RequestParam(required = false) Double minPrice,
-			@RequestParam(required = false) Double maxPrice,
-			@RequestParam(required = false) List<String> size, // Change parameter type to String
-			@RequestParam(defaultValue = "1") int page,
-			@RequestParam(defaultValue = "5") int pageSize,
-			@RequestParam(defaultValue = "createdAt") String sortBy,
-			@RequestParam(defaultValue = "asc") String sortDirection) {
-
-		List<String> uppercaseSizes = size != null ? size.stream().map(String::toUpperCase).toList() : null;
-		List<String> colors = color != null ? color.stream().map(String::toLowerCase).toList() : null;
-		Sort sort = Sort.by(sortDirection.equals("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, sortBy);
-		Page<ProductDto> products = productService.getProductsByCategoryNameAndProdcutNameAndFilters(subCategoryName, productNmae, colors, minPrice, maxPrice, uppercaseSizes, page, pageSize, sort); // Convert size to uppercase
-		return ResponseEntity.ok(products);
-	}
 
 	@GetMapping("/stock")
 	public ResponseEntity<Map<String, Map<String, Map<String, Integer>>>> getProductVariations(

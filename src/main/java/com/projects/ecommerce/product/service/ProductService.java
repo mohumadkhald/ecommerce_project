@@ -21,7 +21,11 @@ public interface ProductService {
 //	Page<ProductDto> findAll(Pageable pageable);
 
 
-	Page<AllDetailsProductDto> findAll(Pageable pageable, Double minPrice, Double maxPrice,List<String> color, List<String> size, Boolean available, String email, String productTitle);
+	Page<ProductDto> getProductsByCategoryNameAndFilters(String subCategoryName, List<String> colors, Double minPrice, Double maxPrice, List<String> sizes, Boolean available, int page, int pageSize, Sort sort);
+
+	Page<ProductDto> getProductsByCategoryNameAndProdcutNameAndFilters(String subCategoryName, String productName, List<String> colors, Double minPrice, Double maxPrice, List<String> sizes, int page, int pageSize, Sort sort);
+
+	Page<AllDetailsProductDto> findAll(Pageable pageable, Double minPrice, Double maxPrice, List<String> colors, List<String> sizes, Boolean available, String email, String productTitle);
 
 	ProductDto findById(final Integer productId);
 	ProductDto create(final ProductRequestDto productDto);
@@ -41,16 +45,11 @@ public interface ProductService {
 	void updateProductStocks(Integer productId, List<Spec> specs, boolean increaseQuantity);
 
 
-
 	Product findProductById(Integer productId);
 
 
 	@Transactional
 	void updateProductStock(Integer productId, List<Spec> specs, Integer quantityToSubtract);
-
-	Page<ProductDto> getProductsByCategoryNameAndFilters(String categoryName, List<String> colors, Double minPrice, Double maxPrice, List<String> sizes, Boolean available, int page, int pageSize, Sort sort);
-
-	Page<ProductDto> getProductsByCategoryNameAndProdcutNameAndFilters(String subCategoryName, String productNmae, List<String> color, Double minPrice, Double maxPrice, List<String> size, int page, int pageSize, Sort sort);
 
 	List<ProductDto> findAllByCreatedBy(String email);
 

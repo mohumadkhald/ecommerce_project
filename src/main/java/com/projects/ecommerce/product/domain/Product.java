@@ -43,7 +43,7 @@ public final class Product extends Base {
 	@JoinColumn(name = "sub_category_id")
 	private SubCategory subCategory;
 
-	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<ProductVariation> variations;
 
 	public double getDiscountedPrice() {
