@@ -50,7 +50,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     .map(t -> !t.isExpired() && !t.isRevoked())
                     .orElse(false);
 
-            if (jwtService.isTokenValid(jwt, userDetails) && isTokenValid) {
+            if (jwtService.isTokenValid(jwt, userDetails) && isTokenValid
+            && userDetails.isEnabled() && userDetails.isAccountNonLocked() && userDetails.isCredentialsNonExpired()
+            && userDetails.isAccountNonExpired()) {
                 UsernamePasswordAuthenticationToken authenticationToken =
                         new UsernamePasswordAuthenticationToken(
                                 userDetails,
@@ -65,7 +67,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 log.info("JWT Token not valid");
                 response.setContentType("application/json");
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("{\"message\":\"Token not valid\"}");
+                response.getWriter().write("{\"message\":\"Token not valid or user disabled/locked\"}");
                 return; // Stop the filter chain when the token is invalid
             }
         }

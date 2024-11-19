@@ -15,7 +15,7 @@
 <name>ecommerce</name>
 <description>ecommerce</description>
 <properties>
-    <java.version>17</java.version>
+<version>1.8</version>
 </properties>
 
     <dependencies>

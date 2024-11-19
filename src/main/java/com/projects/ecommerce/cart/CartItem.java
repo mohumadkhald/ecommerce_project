@@ -34,6 +34,10 @@ public class CartItem implements Serializable {
     @JoinColumn(name = "product_variation_id")
     private ProductVariation productVariation;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "order_variation_id")
+    private ProductVariation orderVariation;
+
     @Column(name = "quantity")
     private int quantity;
 

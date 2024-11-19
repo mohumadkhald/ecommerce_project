@@ -8,12 +8,14 @@ import com.projects.ecommerce.product.helper.CategoryMappingHelper;
 import com.projects.ecommerce.product.repository.CategoryRepository;
 import com.projects.ecommerce.product.service.CategoryService;
 import com.projects.ecommerce.user.expetion.AlreadyExistsException;
+import com.projects.ecommerce.user.expetion.NotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -42,6 +44,11 @@ public class CategoryServiceImpl implements CategoryService {
 	}
 
 	@Override
+	public boolean findByName(String categoryName) {
+		return categoryRepository.existsByCategoryTitle(categoryName);
+	}
+
+	@Override
 	public CategoryDto save(final CategoryDto categoryRequestDto) {
 		log.info("*** CategoryDto, service; save category *");
 		if (categoryRepository.existsByCategoryTitle(categoryRequestDto.getCategoryTitle())) {
@@ -61,35 +68,21 @@ public class CategoryServiceImpl implements CategoryService {
 	@Override
 	public CategoryDto update(final Integer categoryId, final CategoryDto categoryDto) {
 		log.info("*** CategoryDto, service; update category with categoryId ***");
-
-		try {
-			// Retrieve the category by id
-			Category category = categoryRepository.findById(categoryId)
-					.orElseThrow(() -> new CategoryNotFoundException("Category not found with id: " + categoryId));
-
-			// Check if the category title is being updated
-			if (!category.getCategoryTitle().equals(categoryDto.getCategoryTitle())) {
-				// If the category title is being updated, check if the new title already exists
-				Category existingCategoryByTitle = categoryRepository.findByCategoryTitle(categoryDto.getCategoryTitle());
-				if (existingCategoryByTitle != null && !existingCategoryByTitle.getCategoryId().equals(categoryId)) {
-					// If the new title already exists and belongs to a different category, throw an exception
-					throw new AlreadyExistsException("Category", "Already Exists: " + categoryDto.getCategoryTitle());
-				}
+		Optional<Category> categoryOptional = categoryRepository.findById(categoryId);
+		if (categoryOptional.isPresent())
+		{
+			Category category = categoryOptional.get();
+			// Check if the category title already exists but ignore if it’s the same category being updated
+			if (!category.getCategoryTitle().equals(categoryDto.getCategoryTitle()) &&
+					categoryRepository.existsByCategoryTitle(categoryDto.getCategoryTitle())) {
+				throw new AlreadyExistsException("Category", "Already exists");
 			}
-
-			// Map and save the updated category
 			category.setCategoryTitle(categoryDto.getCategoryTitle());
+			category.setImg(categoryDto.getImg());
 			categoryRepository.save(category);
 			return CategoryMappingHelper.map(category);
-		} catch (CategoryNotFoundException e) {
-            log.error("CategoryNotFoundException: {}", e.getMessage());
-			throw new CategoryNotFoundException("Category not Found: " + categoryDto.getCategoryTitle());
-		} catch (AlreadyExistsException e) {
-            log.error("AlreadyExistsException: {}", e.getMessage());
-			throw new AlreadyExistsException("Category", "Already Exists: " + categoryDto.getCategoryTitle());
-		} catch (Exception e) {
-            log.error("An error occurred while updating the category with id {}: {}", categoryId, e.getMessage());
-			throw new RuntimeException("Failed to update category", e); // Wrap and re-throw the exception
+		} else {
+			throw new NotFoundException("Category", "Category Not " + categoryDto.getCategoryTitle() +  "Found");
 		}
 	}
 

@@ -15,9 +15,9 @@ public class CartRequest {
     private Integer productId;
     @NotNull
     private Integer quantity;
-    @NotNull
+//    @NotNull
     private String size;
-    @NotNull
+//    @NotNull
     private String color;
     private Double price;
 }

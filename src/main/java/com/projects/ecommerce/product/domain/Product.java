@@ -46,14 +46,6 @@ public final class Product extends Base {
 	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<ProductVariation> variations;
 
-	public double getDiscountedPrice() {
-		return discountedPrice;
-	}
-
-	private void setDiscountedPrice() {
-		this.discountedPrice = this.price - (this.price * this.discountPercent / 100);
-	}
-
 }
 
 

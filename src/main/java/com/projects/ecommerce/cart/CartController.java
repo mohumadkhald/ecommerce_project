@@ -3,7 +3,6 @@ package com.projects.ecommerce.cart;
 import com.projects.ecommerce.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,6 +29,11 @@ public class CartController {
         return cartService.addProductToCart(userId, cartRequest);
     }
 
+    @PatchMapping("/{itemId}")
+    public CartItemDto editQuantity(@PathVariable Integer itemId, @RequestParam State state) {
+        return cartService.editQuantity(itemId, String.valueOf(state));
+    }
+
     @DeleteMapping("/{itemId}")
     public ResponseEntity<Void> removeProductFromCart(@PathVariable Integer itemId, @RequestHeader("Authorization") String jwtToken) {
         Integer userId = userService.findUserIdByJwt(jwtToken);
@@ -43,6 +47,7 @@ public class CartController {
         cartService.removeAllItemsFromCart(userId); // Pass userId and itemId to the service method
         return ResponseEntity.ok().build();
     }
+
     @GetMapping("/total")
     public ResponseEntity<Double> calculateTotal(@RequestParam Integer userId) {
         Double total = cartService.calculateTotal(userId);

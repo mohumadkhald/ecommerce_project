@@ -90,10 +90,28 @@ public class SubCategoryResource {
 			@PathVariable("subCategoryId")
 			@NotBlank(message = "Input must not be blank")
 			@Valid final String subCategoryId,
-			@RequestBody
-			@NotNull(message = "Input must not be NULL")
-			@Valid final SubCategoryDto subCategoryDto) {
-		log.info("*** CategoryDto, resource; update category with categoryId *");
+			@ModelAttribute @Valid final SubCategoryDto subCategoryDto,
+			@RequestPart(value = "image", required = false) MultipartFile image,
+			BindingResult bindingResult
+	) throws IOException {
+
+		log.info("*** CategoryDto, resource; put category ***");
+
+		// Check if the image is null or empty and add a global error
+		if (image == null || image.isEmpty()) {
+			throw new IllegalStateException("Image file is required");
+		}
+
+		// Check for other validation errors
+		if (bindingResult.hasErrors()) {
+			return ResponseEntity.badRequest().body(null);
+		}
+
+		if (image != null && !image.isEmpty()) {
+			String imageUrl = fileStorageService.storeFile(image, "products/" + subCategoryDto.getName());
+			subCategoryDto.setImg(imageUrl);
+		}
+
 		return ResponseEntity.ok(this.subCategoryService.update(Integer.parseInt(subCategoryId), subCategoryDto));
 	}
 

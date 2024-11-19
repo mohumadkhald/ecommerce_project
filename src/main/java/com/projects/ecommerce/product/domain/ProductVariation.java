@@ -1,10 +1,13 @@
 package com.projects.ecommerce.product.domain;
 
+import com.projects.ecommerce.cart.CartItem;
+import com.projects.ecommerce.order.OrderItem;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 
 @Entity
 @Table(name = "product_variations")
@@ -39,4 +42,11 @@ public final class ProductVariation extends AbstractMappedEntity implements Seri
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "product_id")
     private Product product;
+
+    // Optional: Bidirectional relationship with OrderItem
+    @OneToMany(mappedBy = "productVariation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<OrderItem> orderItems;
+
+    @OneToMany(mappedBy = "productVariation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<CartItem> cartItems;
 }

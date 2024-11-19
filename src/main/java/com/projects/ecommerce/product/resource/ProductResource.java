@@ -3,10 +3,8 @@ package com.projects.ecommerce.product.resource;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.projects.ecommerce.product.dto.AllDetailsProductDto;
-import com.projects.ecommerce.product.dto.ProductDto;
-import com.projects.ecommerce.product.dto.ProductRequestDto;
-import com.projects.ecommerce.product.dto.Spec;
+import com.projects.ecommerce.product.domain.Product;
+import com.projects.ecommerce.product.dto.*;
 import com.projects.ecommerce.product.service.ProductService;
 import com.projects.ecommerce.user.service.UserService;
 import com.projects.ecommerce.utilts.FileStorageService;
@@ -55,6 +53,7 @@ public class ProductResource {
 			@RequestParam(required = false) Double minPrice,
 			@RequestParam(required = false) Double maxPrice,
 			@RequestParam(required = false) String email,
+			@RequestParam(required = false) String subCategory,
 			@RequestParam(required = false) String productTitle) {
 
 		List<String> uppercaseSizes = size != null ? size.stream().map(String::toUpperCase).collect(Collectors.toList()) : null;
@@ -63,13 +62,14 @@ public class ProductResource {
 		Pageable pageable = PageRequest.of(page, pageSize, sort);
 
 		log.info("*** ProductDto List, controller; fetch all products with filters ***");
-		Page<AllDetailsProductDto> productPage = productService.findAll(pageable, minPrice, maxPrice, colors,uppercaseSizes, available, email, productTitle);
+		Page<AllDetailsProductDto> productPage = productService.findAll(pageable, minPrice, maxPrice, colors,uppercaseSizes, available, email, subCategory, productTitle);
 		return ResponseEntity.ok(productPage);
 	}
 
 	@GetMapping("/product-category/{subCategoryName}")
 	public ResponseEntity<Page<ProductDto>> getProductsByCategoryNameAndFilters(
 			@PathVariable String subCategoryName,
+			@RequestParam(required = false) String email,
 			@RequestParam(required = false) List<String> color,
 			@RequestParam(required = false) Double minPrice,
 			@RequestParam(required = false) Double maxPrice,
@@ -83,14 +83,14 @@ public class ProductResource {
 		List<String> uppercaseSizes = size != null ? size.stream().map(String::toUpperCase).collect(Collectors.toList()) : null;
 		List<String> colors = color != null ? color.stream().map(String::toLowerCase).toList() : null;
 		Sort sort = Sort.by(sortDirection.equals("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, sortBy);
-		Page<ProductDto> products = productService.getProductsByCategoryNameAndFilters(subCategoryName, colors, minPrice, maxPrice, uppercaseSizes, available, page, pageSize, sort);
+		Page<ProductDto> products = productService.getProductsByCategoryNameAndFilters(subCategoryName, email, colors, minPrice, maxPrice, uppercaseSizes, available, page, pageSize, sort);
 		return ResponseEntity.ok(products);
 	}
 
 
-	@GetMapping("/{subCategoryName}/{productNmae}")
+	@GetMapping("/{category}/{productNmae}")
 	public ResponseEntity<Page<ProductDto>> getProductsByCategoryNameAndProductNameAndFilters(
-			@PathVariable String subCategoryName,
+			@PathVariable String category,
 			@PathVariable String productNmae,
 			@RequestParam(required = false) List<String> color,
 			@RequestParam(required = false) Double minPrice,
@@ -104,7 +104,7 @@ public class ProductResource {
 		List<String> uppercaseSizes = size != null ? size.stream().map(String::toUpperCase).toList() : null;
 		List<String> colors = color != null ? color.stream().map(String::toLowerCase).toList() : null;
 		Sort sort = Sort.by(sortDirection.equals("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, sortBy);
-		Page<ProductDto> products = productService.getProductsByCategoryNameAndProdcutNameAndFilters(subCategoryName, productNmae, colors, minPrice, maxPrice, uppercaseSizes, page, pageSize, sort); // Convert size to uppercase
+		Page<ProductDto> products = productService.getProductsByCategoryNameAndProdcutNameAndFilters(category, productNmae, colors, minPrice, maxPrice, uppercaseSizes, page, pageSize, sort); // Convert size to uppercase
 		return ResponseEntity.ok(products);
 	}
 
@@ -139,6 +139,7 @@ public class ProductResource {
 			productDto.setImageUrl(imageUrl);
 			productDto.setImgSpec(imageSpec);
 		}
+
 		productService.create(productDto);
 		Map<String, String> response = new HashMap<>();
 		response.put("message", "Product created successfully");
@@ -150,7 +151,7 @@ public class ProductResource {
 			@RequestBody
 			@NotNull(message = "Input must not be NULL!")
 			@Valid final List<ProductRequestDto> productDtos, @RequestHeader("Authorization") String jwtToken
-	) throws IOException {
+	) {
 		Integer userId = userService.findUserIdByJwt(jwtToken);
 		String email = userService.findById(userId).getEmail();
 		log.info("*** ProductDto, resource; save products batch ***");
@@ -165,8 +166,20 @@ public class ProductResource {
 	@PutMapping("/{productId}")
 	public ResponseEntity<ProductDto> update(
 			@PathVariable("productId") String productId,
-			@Valid @RequestBody final ProductRequestDto productDto) {
-		log.info("*** ProductDto, resource; update product with productId *");
+			@ModelAttribute
+			@Valid final ProductEditDto productDto,
+			@RequestPart(value = "image", required = false) MultipartFile image,
+			@RequestHeader("Authorization") String jwtToken
+	) throws IOException {
+		Integer userId = userService.findUserIdByJwt(jwtToken);
+		String email = userService.findById(userId).getEmail();
+		productDto.setEmail(email);
+		if (image != null)
+		{
+			String imageUrl = fileStorageService.storeFile(image, "products" + "/"+ productDto.getProductTitle());
+			productDto.setImageUrl(imageUrl);
+		}
+
 		return ResponseEntity.ok(this.productService.update(Integer.parseInt(productId), productDto));
 	}
 
@@ -216,7 +229,8 @@ public class ProductResource {
 				MultipartFile img = images.get("images[" + i + "]");
 				if (img != null && !img.isEmpty()) {
 					// Assuming fileStorageService is available and handles file storage
-					String imageUrl = fileStorageService.storeFile(img, "product_variations/" + productId);
+					Product product = productService.findProductById(productId);
+					String imageUrl = fileStorageService.storeFile(img, "products/" + product.getProductTitle());
 					imageUrls.add(imageUrl);
 				}
 			}
@@ -264,18 +278,6 @@ public class ProductResource {
 		String message = decrease ? "Product variations decreased successfully." : "Product variations increased successfully.";
 		return ResponseEntity.ok(message);
 	}
-
-//	@PostMapping("/{productId}/stock/decrease")
-//	public ResponseEntity<String> updateProductVariationsDecrease(
-//			@PathVariable Integer productId,
-//			@RequestParam(required = false) boolean decrease,
-//			@RequestBody List<Spec> specs) {
-//
-//
-//		productService.updateProductStocksDecrease(productId, specs, decrease);
-//
-//		return ResponseEntity.ok("Product variations updated successfully.");
-//	}
 
 
 	@GetMapping("/created-by")
@@ -338,6 +340,12 @@ public class ProductResource {
 		Integer id = userService.findUserIdByJwt(jwtToken);
 		String email = userService.findByUserId(id).getEmail();
 		return this.productService.setDiscounts(email, productIds, discount);
+	}
+
+
+	@GetMapping("/{subId}/emails")
+	public List<String> getAllEmailSellers(@PathVariable Integer subId) {
+		return productService.getAllEmailSellers(subId);
 	}
 
 }
