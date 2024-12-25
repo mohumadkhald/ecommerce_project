@@ -152,6 +152,15 @@ public class AuthController {
 
     }
 
+    @PatchMapping("/changePwd")
+    public ResponseEntity<?> updateProfile(@RequestHeader("Authorization") String jwtToken,@Valid @RequestBody ChangePasswordDto changePasswordDto)
+    {
+
+        Integer id = userService.findUserIdByJwt(jwtToken);
+        return userService.changePassword(id, changePasswordDto);
+
+    }
+
 
     @PatchMapping("setFirstPwd")
     public ResponseEntity<?> setFirstPwd(@RequestHeader("Authorization") String jwtToken,@Valid @RequestBody FirstPasswordDto firstPasswordDto)

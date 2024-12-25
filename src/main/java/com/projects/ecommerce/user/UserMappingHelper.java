@@ -32,6 +32,7 @@ public interface UserMappingHelper {
 				.gender(user.getGender())
 				.imageUrl(user.getImgUrl())
 				.email(user.getEmail())
+				.needPassword(user.isNeedsToSetPassword())
 				.role(user.getRole().toString())
 				.phone(user.getPhone())
 				.emailVerified(user.getEmailVerification().isEmailVerified())

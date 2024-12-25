@@ -813,7 +813,13 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	public List<String> getAllEmailSellers(Integer subId) {
-		List<Product> products = productRepository.findBySubcategoryId(subId); // Fetch by subcategory ID
+		List<Product> products = null;
+		if (subId != 0)
+		{
+			products = productRepository.findBySubcategoryId(subId); // Fetch by subcategory ID
+		} else {
+			products = productRepository.findAll(); // Fetch by subcategory ID
+		}
 		return products.stream()
 				.map(Product::getCreatedBy)
 				.distinct() // Optional: to avoid duplicates

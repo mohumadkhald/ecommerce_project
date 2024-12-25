@@ -16,4 +16,6 @@ class OrderItemDto {
     private String productName;
     private String img;
     private Double price;
+    private Double discount;
+    private Double totalPrice;
 }

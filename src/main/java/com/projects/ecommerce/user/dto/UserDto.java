@@ -36,6 +36,8 @@ public class UserDto implements Serializable {
 
 	private boolean emailVerified;
 
+	private boolean needPassword;
+
 	@JsonProperty("address")
 	@JsonInclude(value = Include.NON_NULL)
 	private Set<AddressDto> addressDtos;

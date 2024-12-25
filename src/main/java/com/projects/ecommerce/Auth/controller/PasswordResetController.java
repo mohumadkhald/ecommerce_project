@@ -69,6 +69,7 @@ public class PasswordResetController {
 
             // Save or update the password reset entry
             user.setPasswordReset(passwordReset);
+            user.setNeedsToSetPassword(false);
             userRepo.save(user);
 
             Map<String, String> response = new HashMap<>();

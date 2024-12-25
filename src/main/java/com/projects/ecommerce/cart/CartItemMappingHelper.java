@@ -18,6 +18,7 @@ public interface CartItemMappingHelper {
 				.imageUrl(cartItem.getProductVariation().getProduct().getImageUrl())
 				.productTitle(cartItem.getProductVariation().getProduct().getProductTitle())
 				.price(cartItem.getProductVariation().getProduct().getPrice())
+				.discount(cartItem.getProductVariation().getProduct().getDiscountPercent())
 				.discountedPrice(cartItem.getProductVariation().getProduct().getDiscountedPrice())
 				.quantity(cartItem.getQuantity())
 				.size(String.valueOf(cartItem.getProductVariation().getSize()))

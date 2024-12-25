@@ -43,9 +43,6 @@ public final class ProductVariation extends AbstractMappedEntity implements Seri
     @JoinColumn(name = "product_id")
     private Product product;
 
-    // Optional: Bidirectional relationship with OrderItem
-    @OneToMany(mappedBy = "productVariation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<OrderItem> orderItems;
 
     @OneToMany(mappedBy = "productVariation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<CartItem> cartItems;

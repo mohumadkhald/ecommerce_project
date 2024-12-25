@@ -1,10 +1,12 @@
 package com.projects.ecommerce.user.service;
 
+import com.projects.ecommerce.Auth.dto.ChangePasswordDto;
 import com.projects.ecommerce.Auth.dto.RegisterRequestDto;
 import com.projects.ecommerce.Auth.dto.UpdateUserRequestDto;
 import com.projects.ecommerce.user.dto.UserDto;
 import com.projects.ecommerce.user.dto.UserResponseDto;
 import com.projects.ecommerce.user.model.User;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
@@ -40,4 +42,6 @@ public interface UserService {
     User findByUserId(Integer userID);
 
     void updateUserPhoto(Integer userId, String imageUrl);
+
+    ResponseEntity<?> changePassword(Integer id, @Valid ChangePasswordDto changePasswordDto);
 }

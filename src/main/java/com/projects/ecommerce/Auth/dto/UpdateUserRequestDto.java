@@ -35,12 +35,12 @@ public class UpdateUserRequestDto {
         @NotBlank(message = "Gender cannot be empty or start space")
         private String gender;
 
-        @NotBlank(message = "oldPassword cannot be empty or start space")
-        private String oldPassword;
-
-        @NotBlank(message = "Password cannot be empty or start space")
-        @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}$", message = "Password must contain at least one digit, one lowercase and one uppercase letter, and be at least 8 characters")
-        @NotNull
-        private String password;
+//        @NotBlank(message = "oldPassword cannot be empty or start space")
+//        private String oldPassword;
+//
+//        @NotBlank(message = "Password cannot be empty or start space")
+//        @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}$", message = "Password must contain at least one digit, one lowercase and one uppercase letter, and be at least 8 characters")
+//        @NotNull
+//        private String password;
 
 }

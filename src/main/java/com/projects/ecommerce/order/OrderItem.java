@@ -22,13 +22,14 @@ public class OrderItem implements Serializable {
     @Column(name = "order_item_id", unique = true, nullable = false, updatable = false)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
+
+    @ManyToOne
+    @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "product_variation_id")
-    private ProductVariation productVariation;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "order_variation_id", nullable = false)
+    private OrderVariation orderVariation;
 
     @Column(name = "quantity")
     private int quantity;
