@@ -114,7 +114,7 @@ public class ProductServiceImpl implements ProductService {
 			}
 
 			// Size and color filters
-			fiterSizeAndColor(colors, sizes, root, query, criteriaBuilder, predicates);
+			filterSizeAndColor(colors, sizes, root, query, criteriaBuilder, predicates);
 
 			query.distinct(true);
 			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
@@ -166,7 +166,7 @@ public class ProductServiceImpl implements ProductService {
 			}
 
 			// Size and color filters
-			fiterSizeAndColor(colors, sizes, root, query, criteriaBuilder, predicates);
+			filterSizeAndColor(colors, sizes, root, query, criteriaBuilder, predicates);
 
 			query.distinct(true);
 			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
@@ -220,7 +220,7 @@ public class ProductServiceImpl implements ProductService {
 			}
 
 			// Size and color filters
-			fiterSizeAndColor(colors, sizes, root, query, criteriaBuilder, predicates);
+			filterSizeAndColor(colors, sizes, root, query, criteriaBuilder, predicates);
 
 			query.distinct(true);
 			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
@@ -229,7 +229,7 @@ public class ProductServiceImpl implements ProductService {
 		return productRepository.findAll(spec, pageable).map(ProductMappingHelper::map);
 	}
 
-	private static void fiterSizeAndColor(List<String> colors, List<String> sizes, Root<Product> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder, List<Predicate> predicates) {
+	private static void filterSizeAndColor(List<String> colors, List<String> sizes, Root<Product> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder, List<Predicate> predicates) {
 		// Color Filter
 		if (colors != null && !colors.isEmpty()) {
 			List<Color> colorEnums = colors.stream()
@@ -825,6 +825,25 @@ public class ProductServiceImpl implements ProductService {
 				.distinct() // Optional: to avoid duplicates
 				.collect(Collectors.toList());
 	}
+
+	@Override
+	public List<ProductDto> getSuggestionProductsBySubCategory(Integer subId) {
+		List<Product> products = productRepository.findBySubcategoryId(subId);
+
+		if (products.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		// Shuffle the list to get randomness
+		Collections.shuffle(products);
+
+		// Limit to 5 random products
+		return products.stream()
+				.limit(10)
+				.map(ProductMappingHelper::map) // convert to DTO
+				.collect(Collectors.toList());
+	}
+
 
 
 }

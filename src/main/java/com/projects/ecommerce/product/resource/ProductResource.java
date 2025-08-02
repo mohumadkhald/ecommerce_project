@@ -348,6 +348,12 @@ public class ProductResource {
 		return productService.getAllEmailSellers(subId);
 	}
 
+	@GetMapping("/{subId}/suggestion")
+	public List<ProductDto> getSuggestionProductsBySubCategory(@PathVariable Integer subId) {
+		return productService.getSuggestionProductsBySubCategory(subId);
+	}
+
+
 }
 
 

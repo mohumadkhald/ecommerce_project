@@ -66,4 +66,5 @@ public interface ProductService {
 
 	List<String> getAllEmailSellers(Integer subId);
 
+	List<ProductDto> getSuggestionProductsBySubCategory(Integer subId);
 }
