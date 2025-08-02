@@ -57,6 +57,10 @@ public class ProductRequestDto implements Serializable {
 	private Integer subCategoryId;
 
 	private String email;
+
+	public void setDiscountedPrice() {
+		this.discountedPrice = this.price - (this.price * this.discountPercent / 100);
+	}
 }
 
 

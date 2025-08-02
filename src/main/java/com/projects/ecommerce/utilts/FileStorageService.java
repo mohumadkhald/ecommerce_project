@@ -87,7 +87,7 @@ public class FileStorageService {
 //        return "https://ec2-13-247-87-159.af-south-1.compute.amazonaws.com:8443/public/images/" + newFolder + "/" + fileName;
 //        return "http://localhost:8080/public/images/" + newFolder + "/" + fileName;
 //        return "http://ec2-13-247-87-159.af-south-1.compute.amazonaws.com:8082/" + folder + "/" + fileName;
-        return baseUrl + folder + "/" + fileName;
+        return baseUrl + normalizedFolderName + "/" + fileName;
 
     }
 

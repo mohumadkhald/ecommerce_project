@@ -2,6 +2,7 @@ package com.projects.ecommerce.product.service.impl;
 
 
 import com.projects.ecommerce.product.domain.Category;
+import com.projects.ecommerce.product.domain.SubCategory;
 import com.projects.ecommerce.product.dto.SubCategoryDto;
 import com.projects.ecommerce.product.helper.SubCategoryMappingHelper;
 import com.projects.ecommerce.product.repository.CategoryRepository;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -24,6 +26,7 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 	
 	private final SubCategoryRepository subcategoryRepository;
 	private final CategoryRepository categoryRepository;
+	private final SubCategoryRepository subCategoryRepository;
 
 	@Override
 	public List<SubCategoryDto> findAll() {
@@ -78,8 +81,22 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 	@Override
 	public SubCategoryDto update(final Integer subCategoryId, final SubCategoryDto subCategoryDto) {
 		log.info("*** CategoryDto, service; update category with categoryId *");
-		return SubCategoryMappingHelper.map(this.subcategoryRepository
-				.save(SubCategoryMappingHelper.map(this.findById(subCategoryId))));
+		Optional<SubCategory> subCategoryOptional = subCategoryRepository.findById(subCategoryId);
+		if (subCategoryOptional.isPresent())
+		{
+			SubCategory subCategory = subCategoryOptional.get();
+			if (!subCategory.getName().equals(subCategoryDto.getName()) &&
+					subCategoryRepository.existsByName(subCategoryDto.getName())) {
+				throw new AlreadyExistsException("Sub_Category", "Already exists");
+			}
+			subCategory.setCategory(Category.builder().categoryId(subCategoryDto.getCategoryId()).build());
+			subCategory.setImg(subCategoryDto.getImg());
+			subCategory.setName(subCategoryDto.getName());
+			subCategoryRepository.save(subCategory);
+			return SubCategoryMappingHelper.map(subCategory);
+		} else {
+			throw new NotFoundException("Sub_Category", "Not Found");
+		}
 	}
 	
 	@Override

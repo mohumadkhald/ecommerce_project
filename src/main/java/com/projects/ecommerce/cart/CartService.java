@@ -6,6 +6,7 @@ import com.projects.ecommerce.product.domain.ProductVariation;
 import com.projects.ecommerce.product.domain.Size;
 import com.projects.ecommerce.product.service.impl.ProdcutVariationService;
 import com.projects.ecommerce.product.service.impl.ProductServiceImpl;
+import com.projects.ecommerce.user.expetion.NotFoundException;
 import com.projects.ecommerce.user.model.User;
 import com.projects.ecommerce.user.repository.UserRepo;
 import lombok.AllArgsConstructor;
@@ -177,4 +178,22 @@ public class CartService {
         }
     }
 
+    public CartItemDto editQuantity(Integer itemId, String state) {
+        Optional <CartItem> cartItemOptional = cartItemRepository.findById(itemId);
+        if (cartItemOptional.isPresent()) {
+            CartItem cartItem = cartItemOptional.get();
+            if (state == "INCREASE") {
+                cartItem.setQuantity(cartItem.getQuantity() + 1);
+                cartItem.setPrice(cartItem.getQuantity() * cartItem.getProductVariation().getProduct().getPrice());
+            } else {
+                cartItem.setQuantity(cartItem.getQuantity() - 1);
+                cartItem.setPrice(cartItem.getQuantity() * cartItem.getProductVariation().getProduct().getPrice());
+            }
+
+            return CartItemMappingHelper.map(cartItemRepository.save(cartItem));
+
+        } else {
+            throw new NotFoundException("Item", "Not Found");
+        }
+    }
 }

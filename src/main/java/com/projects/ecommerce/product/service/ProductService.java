@@ -2,11 +2,9 @@ package com.projects.ecommerce.product.service;
 
 
 import com.projects.ecommerce.product.domain.Product;
-import com.projects.ecommerce.product.dto.AllDetailsProductDto;
-import com.projects.ecommerce.product.dto.ProductDto;
-import com.projects.ecommerce.product.dto.ProductRequestDto;
-import com.projects.ecommerce.product.dto.Spec;
+import com.projects.ecommerce.product.dto.*;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -21,13 +19,17 @@ public interface ProductService {
 //	Page<ProductDto> findAll(Pageable pageable);
 
 
-	Page<AllDetailsProductDto> findAll(Pageable pageable, Double minPrice, Double maxPrice,List<String> color, List<String> size, Boolean available, String email, String productTitle);
+	Page<ProductDto> getProductsByCategoryNameAndFilters(String  subCategoryName, String email, List<String> colors, Double minPrice, Double maxPrice, List<String> sizes, Boolean available, int page, int pageSize, Sort sort);
+
+	Page<ProductDto> getProductsByCategoryNameAndProdcutNameAndFilters(String category, String productName, List<String> colors, Double minPrice, Double maxPrice, List<String> sizes, int page, int pageSize, Sort sort);
+
+	Page<AllDetailsProductDto> findAll(Pageable pageable, Double minPrice, Double maxPrice, List<String> colors, List<String> sizes, Boolean available, String email, String subCat, String productTitle);
 
 	ProductDto findById(final Integer productId);
 	ProductDto create(final ProductRequestDto productDto);
 	List<ProductDto> saveAll(List<ProductRequestDto> productDtos, String email);
 	ProductDto update(final ProductDto productDto);
-	ProductDto update(final Integer productId, final ProductRequestDto productDto);
+	ProductDto update(final Integer productId, final @Valid ProductEditDto productDto);
 	void deleteById(final Integer productId);
 
 
@@ -41,16 +43,11 @@ public interface ProductService {
 	void updateProductStocks(Integer productId, List<Spec> specs, boolean increaseQuantity);
 
 
-
 	Product findProductById(Integer productId);
 
 
 	@Transactional
 	void updateProductStock(Integer productId, List<Spec> specs, Integer quantityToSubtract);
-
-	Page<ProductDto> getProductsByCategoryNameAndFilters(String categoryName, List<String> colors, Double minPrice, Double maxPrice, List<String> sizes, Boolean available, int page, int pageSize, Sort sort);
-
-	Page<ProductDto> getProductsByCategoryNameAndProdcutNameAndFilters(String subCategoryName, String productNmae, List<String> color, Double minPrice, Double maxPrice, List<String> size, int page, int pageSize, Sort sort);
 
 	List<ProductDto> findAllByCreatedBy(String email);
 
@@ -58,6 +55,7 @@ public interface ProductService {
 
     ResponseEntity<?> removeProductByCreatedBy(String email, Integer productId);
 
+	@Transactional
 	ResponseEntity<?> removeProductsByCreatedBy(String email, List<Integer> productIds);
 
 	AllDetailsProductDto findByProductId(String email, int i) throws AccessDeniedException;
@@ -65,4 +63,8 @@ public interface ProductService {
 	ResponseEntity<?> setDiscount(String email, Integer productId, Double discount) throws AccessDeniedException;
 
 	ResponseEntity<?> setDiscounts(String email, List<Integer> productIds, Double discount) throws AccessDeniedException;
+
+	List<String> getAllEmailSellers(Integer subId);
+
+	List<ProductDto> getSuggestionProductsBySubCategory(Integer subId);
 }

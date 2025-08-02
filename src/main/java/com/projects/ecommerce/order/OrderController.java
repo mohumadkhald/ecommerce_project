@@ -18,11 +18,12 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<OrderDto> createOrder(@RequestHeader("Authorization") String jwtToken,
-                                             @Valid @RequestBody OrderRequest orderRequest,
-                                                @RequestParam(required = false) boolean removeNotFoundStock
+                                                @Valid @RequestBody OrderRequest orderRequest,
+                                                @RequestParam(required = false) boolean removeNotFoundStock,
+                                                @RequestParam(required = false) boolean take
     ) {
         Integer userId = userService.findUserIdByJwt(jwtToken);
-        OrderDto order = orderService.createOrder(userId, orderRequest.getPaymentInfo(), orderRequest.getAddress(), removeNotFoundStock);
+        OrderDto order = orderService.createOrder(userId, orderRequest.getPaymentInfo(), orderRequest.getAddress(), removeNotFoundStock, take);
         return ResponseEntity.ok(order);
     }
 
@@ -37,6 +38,12 @@ public class OrderController {
     public ResponseEntity<OrderDto> getOrder(@PathVariable Integer orderId) {
         OrderDto order = orderService.findById(orderId);
         return ResponseEntity.ok(order);
+    }
+
+    @DeleteMapping("/{orderId}")
+    public ResponseEntity<String> deleteOrder(@PathVariable Integer orderId) {
+        orderService.deleteById(orderId);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("user")

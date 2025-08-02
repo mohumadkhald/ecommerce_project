@@ -1,5 +1,6 @@
 package com.projects.ecommerce.user.service;
 
+import com.projects.ecommerce.Auth.dto.ChangePasswordDto;
 import com.projects.ecommerce.Auth.dto.RegisterRequestDto;
 import com.projects.ecommerce.Auth.dto.UpdateUserRequestDto;
 import com.projects.ecommerce.Config.JwtService;
@@ -247,10 +248,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public ResponseEntity<?> updateUser(Integer id, UpdateUserRequestDto dto) {
         try {
-            // Validate DTO using @Valid annotation and handle validation errors
-            if (dto.getOldPassword() == null || dto.getOldPassword().trim().isEmpty()) {
-                throw new IllegalArgumentException("Old password cannot be empty");
-            }
 
             // Retrieve the user by id
             User user = userRepo.findById(id)
@@ -266,22 +263,11 @@ public class UserServiceImpl implements UserService {
                 }
             }
 
-            // Check if the provided old password matches the user's current password
-            if (!passwordEncoder.matches(dto.getOldPassword(), user.getPassword())) {
-                throw new RuntimeException("Wrong password");
-            }
-
             // Update user fields
             user.setFirstname(dto.getFirstName());
             user.setLastname(dto.getLastName());
             user.setGender(dto.getGender());
             user.setEmail(dto.getEmail());
-
-            // Check if password is being updated
-            if (dto.getPassword() != null && !dto.getPassword().isEmpty()) {
-                // Encode and update password
-                user.setPassword(passwordEncoder.encode(dto.getPassword()));
-            }
 
             // Save the updated user
             userRepo.save(user);
@@ -327,6 +313,54 @@ public class UserServiceImpl implements UserService {
         User user = userRepo.findUserById(userId);
         user.setImgUrl(imageUrl);
         userRepo.save(user);
+    }
+
+    @Override
+    public ResponseEntity<?> changePassword(Integer id, ChangePasswordDto dto) {
+        try {
+            // Validate DTO using @Valid annotation and handle validation errors
+            if (dto.getOldPassword() == null || dto.getOldPassword().trim().isEmpty()) {
+                throw new IllegalArgumentException("Old password cannot be empty");
+            }
+
+            // Retrieve the user by id
+            User user = userRepo.findById(id)
+                    .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
+
+
+
+            // Check if the provided old password matches the user's current password
+            if (!passwordEncoder.matches(dto.getOldPassword(), user.getPassword())) {
+                throw new RuntimeException("Wrong password");
+            }
+
+            // Check if password is being updated
+            if (dto.getPassword() != null && !dto.getPassword().isEmpty()) {
+                // Encode and update password
+                user.setPassword(passwordEncoder.encode(dto.getPassword()));
+            }
+
+            // Save the updated user
+            userRepo.save(user);
+
+            // Return success response
+            return ApiTrait.successMessage("User updated successfully", HttpStatus.OK);
+        } catch (UserNotFoundException e) {
+            // Return error response for user not found
+            throw new UserNotFoundException("User not found with id: " + id);
+        } catch (AlreadyExistsException e) {
+            // Return error response for email already exists
+            return ApiTrait.errorMessage(null, e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (IllegalArgumentException e) {
+            // Return error response for validation errors
+            return ApiTrait.errorMessage(null, e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (RuntimeException e) {
+            // Return error response for incorrect old password
+            return ApiTrait.errorMessage(null, e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            // Return error response for unexpected errors
+            return ApiTrait.errorMessage(null, "An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     /*|--------------------------------------------------------------------------

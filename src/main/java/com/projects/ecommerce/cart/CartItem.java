@@ -1,5 +1,6 @@
 package com.projects.ecommerce.cart;
 
+import com.projects.ecommerce.order.OrderVariation;
 import com.projects.ecommerce.product.domain.ProductVariation;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -34,9 +35,14 @@ public class CartItem implements Serializable {
     @JoinColumn(name = "product_variation_id")
     private ProductVariation productVariation;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "order_variation_id")
+    private OrderVariation orderVariation;
+
     @Column(name = "quantity")
     private int quantity;
 
     @Column(name = "price")
     private Double price;
+
 }

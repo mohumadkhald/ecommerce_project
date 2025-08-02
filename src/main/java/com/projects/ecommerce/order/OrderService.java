@@ -3,7 +3,10 @@ package com.projects.ecommerce.order;
 import com.projects.ecommerce.cart.Cart;
 import com.projects.ecommerce.cart.CartItem;
 import com.projects.ecommerce.cart.CartService;
+import com.projects.ecommerce.product.domain.Product;
 import com.projects.ecommerce.product.domain.ProductVariation;
+import com.projects.ecommerce.product.dto.Spec;
+import com.projects.ecommerce.product.service.ProductService;
 import com.projects.ecommerce.user.expetion.NotFoundException;
 import com.projects.ecommerce.user.service.UserService;
 import jakarta.transaction.Transactional;
@@ -27,10 +30,11 @@ public class OrderService {
     private OrderRepository orderRepository;
     private CartService cartService;
     private UserService userService;
+    private ProductService productService;
 
     @Transactional
     public OrderDto createOrder(Integer userId, PaymentInfo paymentInfo,
-                                Address address, boolean removeNotFoundStock) {
+                                Address address, boolean removeNotFoundStock, boolean take) {
         // Retrieve the user's cart
         Cart cart = cartService.getCartByUserId(userId);
 
@@ -43,32 +47,45 @@ public class OrderService {
             ProductVariation productVariation = cartItem.getProductVariation();
             int availableQuantity = productVariation.getQuantity();
             int orderQuantity = cartItem.getQuantity();
+
             if (orderQuantity > availableQuantity) {
-                String itemTitle = cartItem.getProductVariation().getProduct().getProductTitle();
+                String itemTitle = productVariation.getProduct().getProductTitle();
                 Map<String, Object> errorDetails = new HashMap<>();
                 errorDetails.put("message", "Quantity is greater than available");
                 errorDetails.put("availableQuantity", availableQuantity);
                 errorDetails.put("requestedQuantity", orderQuantity);
                 errors.put(itemTitle, errorDetails);
 
-                if (removeNotFoundStock) {
-                    // If removing out-of-stock items, skip them
+                if (take) {
+                    // If `take` is true, adjust the quantity to the available stock
+                    cartItem.setQuantity(availableQuantity);
+                    validCartItems.add(cartItem); // Add the adjusted item
+                } else if (removeNotFoundStock) {
+                    // If `removeNotFoundStock` is true, skip the item
+                    continue;
+                } else {
+                    // Collect errors but do not proceed with this item
                     continue;
                 }
+            } else {
+                validCartItems.add(cartItem); // Add item with sufficient stock
             }
-            validCartItems.add(cartItem);
         }
 
-        if (!errors.isEmpty() && !removeNotFoundStock) {
+        if (!errors.isEmpty() && !removeNotFoundStock && !take) {
             throw new StockNotFoundException(errors, "Stock issues detected");
         }
 
         // Calculate the total price based on valid items only
-        double totalPrice = validCartItems.stream()
-                .mapToDouble(CartItem::getPrice)
+        double totalPrice = 20 + validCartItems.stream()
+                .mapToDouble(cartItem -> {
+                    ProductVariation variation = cartItem.getProductVariation();
+                    double discountedPrice = variation.getProduct().getDiscountedPrice();
+                    return discountedPrice * cartItem.getQuantity();
+                })
                 .sum();
 
-        if (totalPrice == 0) {
+        if (totalPrice <= 20) {
             throw new NotFoundException("Cart", "Cart is empty or all items are out of stock");
         }
 
@@ -90,7 +107,19 @@ public class OrderService {
         Order finalOrder = order;
         List<OrderItem> orderItems = validCartItems.stream()
                 .map(cartItem -> OrderItem.builder()
-                        .productVariation(cartItem.getProductVariation())
+                        .orderVariation(
+                                OrderVariation.builder()
+                                        .size(cartItem.getProductVariation().getSize().toString())
+                                        .color(cartItem.getProductVariation().getColor().toString())
+                                        .discountedPrice(cartItem.getProductVariation().getProduct().getDiscountedPrice())
+                                        .img(cartItem.getProductVariation().getProduct().getImageUrl())
+                                        .productTitle(cartItem.getProductVariation().getProduct().getProductTitle())
+                                        .productId(cartItem.getProductVariation().getProduct().getId())
+                                        .price(cartItem.getProductVariation().getProduct().getPrice())
+                                        .discountPercent(cartItem.getProductVariation().getProduct().getDiscountPercent())
+                                        .quantity(cartItem.getQuantity())
+                                        .build()
+                        )
                         .quantity(cartItem.getQuantity())
                         .price(cartItem.getPrice())
                         .order(finalOrder) // Associate the saved order with each OrderItem
@@ -102,6 +131,24 @@ public class OrderService {
 
         // Save the order again with the orderItems
         order = orderRepository.save(order);
+
+        // Update product stocks for each ordered item
+        for (OrderItem orderItem : orderItems) {
+            OrderVariation productVariation = orderItem.getOrderVariation();
+            int orderedQuantity = orderItem.getQuantity();
+
+            // Create a list of Specs based on the ordered item
+            List<Spec> specs = new ArrayList<>();
+            specs.add(new Spec(
+                    productVariation.getSize(),    // Size should not be null here
+                    productVariation.getColor(),   // Assuming getColor() returns the color
+                    orderedQuantity,               // Quantity to be decremented
+                    productVariation.getImg()      // Assuming getImg() returns the image URL or path
+            ));
+
+            // Call the service method to update stocks
+            productService.updateProductStock(productVariation.getProductId(), specs, orderedQuantity);
+        }
 
         if (removeNotFoundStock) {
             // Remove only the items included in the order from the cart
@@ -115,6 +162,7 @@ public class OrderService {
         return OrderMappingHelper.map(order);
     }
 
+
     public void updateOrderStatus(Integer orderId, OrderStatus status) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
@@ -124,6 +172,12 @@ public class OrderService {
 
     public OrderDto findById(Integer orderId) {
         return OrderMappingHelper.map(orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found")));
+    }
+
+    public String deleteById(Integer orderId) {
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+        orderRepository.delete(order);
+        return "Order successfully deleted";
     }
 
     public List<OrderDto> findByUserId(Integer userId) {
@@ -139,4 +193,6 @@ public class OrderService {
                 .map(OrderMappingHelper::map1)
                 .collect(Collectors.toList());
     }
+
+
 }

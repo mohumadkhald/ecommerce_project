@@ -22,15 +22,15 @@ public interface OrderMappingHelper {
 
 		// Group order items by product title
 		Map<String, List<OrderItem>> groupedItems = order.getOrderItems().stream()
-				.collect(Collectors.groupingBy(item -> item.getProductVariation().getProduct().getProductTitle()));
+				.collect(Collectors.groupingBy(item -> item.getOrderVariation().getProductTitle()));
 
 		// Map each group to an OrderItemDto with multiple ProductVariationDto objects
 		List<OrderItemDto> orderItemDtos = groupedItems.entrySet().stream()
 				.map(entry -> {
 					List<ProductVariationDto> variations = entry.getValue().stream()
 							.map(orderItem -> ProductVariationDto.builder()
-									.color(String.valueOf(orderItem.getProductVariation().getColor()))
-									.size(String.valueOf(orderItem.getProductVariation().getSize()))
+									.color(String.valueOf(orderItem.getOrderVariation().getColor()))
+									.size(String.valueOf(orderItem.getOrderVariation().getSize()))
 									.quantity(orderItem.getQuantity())
 									.build())
 							.collect(Collectors.toList());
@@ -39,9 +39,11 @@ public interface OrderMappingHelper {
 
 					return OrderItemDto.builder()
 							.productVariations(variations)
-							.productName(firstItem.getProductVariation().getProduct().getProductTitle())
-							.img(firstItem.getProductVariation().getProduct().getImageUrl())
-							.price(firstItem.getProductVariation().getProduct().getPrice())
+							.productName(firstItem.getOrderVariation().getProductTitle())
+							.img(firstItem.getOrderVariation().getImg())
+							.price(firstItem.getOrderVariation().getPrice())
+							.discount(firstItem.getOrderVariation().getDiscountPercent())
+							.totalPrice(firstItem.getOrderVariation().getDiscountedPrice())
 							.build();
 				})
 				.collect(Collectors.toList());
@@ -95,15 +97,15 @@ public interface OrderMappingHelper {
 		}
 
 		// Extract product name and image from the first item (assuming they are the same for all variations)
-		String productName = orderItems.get(0).getProductVariation().getProduct().getProductTitle();
-		String img = orderItems.get(0).getProductVariation().getProduct().getImageUrl();
-		Double price = orderItems.get(0).getProductVariation().getProduct().getPrice();
+		String productName = orderItems.get(0).getOrderVariation().getProductTitle();
+		String img = orderItems.get(0).getOrderVariation().getImageUrl();
+		Double price = orderItems.get(0).getOrderVariation().getPrice();
 
 		// Map each order item to a ProductVariationDto
 		List<ProductVariationDto> variations = orderItems.stream()
 				.map(orderItem -> ProductVariationDto.builder()
-						.color(String.valueOf(orderItem.getProductVariation().getColor()))
-						.size(String.valueOf(orderItem.getProductVariation().getSize()))
+						.color(String.valueOf(orderItem.getOrderVariation().getColor()))
+						.size(String.valueOf(orderItem.getOrderVariation().getSize()))
 						.quantity(orderItem.getQuantity())
 						.build())
 				.collect(Collectors.toList());
@@ -124,9 +126,9 @@ public interface OrderMappingHelper {
 
 		return orderItemDto.getProductVariations().stream()
 				.map(variation -> OrderItem.builder()
-						.productVariation(ProductVariation.builder()
-								.size(Size.valueOf(variation.getSize()))
-								.color(Color.valueOf(variation.getColor()))
+						.orderVariation(OrderVariation.builder()
+								.size(variation.getSize())
+								.color(variation.getColor())
 								.quantity(variation.getQuantity())
 								.build())
 						.price(orderItemDto.getPrice())
@@ -216,15 +218,15 @@ public interface OrderMappingHelper {
 
 		// Group order items by product title
 		Map<String, List<OrderItem>> groupedItems = order.getOrderItems().stream()
-				.collect(Collectors.groupingBy(item -> item.getProductVariation().getProduct().getProductTitle()));
+				.collect(Collectors.groupingBy(item -> item.getOrderVariation().getProductTitle()));
 
 		// Map each group to an OrderItemDto with multiple ProductVariationDto objects
 		List<OrderItemDto> orderItemDtos = groupedItems.entrySet().stream()
 				.map(entry -> {
 					List<ProductVariationDto> variations = entry.getValue().stream()
 							.map(orderItem -> ProductVariationDto.builder()
-									.color(String.valueOf(orderItem.getProductVariation().getColor()))
-									.size(String.valueOf(orderItem.getProductVariation().getSize()))
+									.color(String.valueOf(orderItem.getOrderVariation().getColor()))
+									.size(String.valueOf(orderItem.getOrderVariation().getSize()))
 									.quantity(orderItem.getQuantity())
 									.build())
 							.collect(Collectors.toList());
@@ -233,9 +235,11 @@ public interface OrderMappingHelper {
 
 					return OrderItemDto.builder()
 							.productVariations(variations)
-							.productName(firstItem.getProductVariation().getProduct().getProductTitle())
-							.img(firstItem.getProductVariation().getProduct().getImageUrl())
-							.price(firstItem.getProductVariation().getProduct().getPrice())
+							.productName(firstItem.getOrderVariation().getProductTitle())
+							.img(firstItem.getOrderVariation().getImg())
+							.price(firstItem.getOrderVariation().getPrice())
+							.discount(firstItem.getOrderVariation().getDiscountPercent())
+							.totalPrice(firstItem.getOrderVariation().getDiscountedPrice() * firstItem.getQuantity())
 							.build();
 				})
 				.collect(Collectors.toList());

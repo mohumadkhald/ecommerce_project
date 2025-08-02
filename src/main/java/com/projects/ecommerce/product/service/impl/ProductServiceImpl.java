@@ -2,14 +2,12 @@ package com.projects.ecommerce.product.service.impl;
 
 
 import com.projects.ecommerce.product.domain.*;
-import com.projects.ecommerce.product.dto.AllDetailsProductDto;
-import com.projects.ecommerce.product.dto.ProductDto;
-import com.projects.ecommerce.product.dto.ProductRequestDto;
-import com.projects.ecommerce.product.dto.Spec;
+import com.projects.ecommerce.product.dto.*;
 import com.projects.ecommerce.product.exception.wrapper.CategoryNotFoundException;
 import com.projects.ecommerce.product.exception.wrapper.ProductNotFoundException;
 import com.projects.ecommerce.product.helper.ProductMappingHelper;
 import com.projects.ecommerce.product.repository.ProductRepository;
+import com.projects.ecommerce.product.service.CategoryService;
 import com.projects.ecommerce.product.service.ProductService;
 import com.projects.ecommerce.product.service.SubCategoryService;
 import com.projects.ecommerce.user.expetion.AlreadyExistsException;
@@ -17,11 +15,9 @@ import com.projects.ecommerce.user.expetion.NotFoundException;
 import com.projects.ecommerce.user.model.Role;
 import com.projects.ecommerce.user.repository.UserRepo;
 import com.projects.ecommerce.utilts.traits.ApiTrait;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
-import jakarta.persistence.criteria.Subquery;
+import jakarta.persistence.criteria.*;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -33,9 +29,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.io.File;
+
+import java.nio.file.Path;
+import java.util.Comparator;
 
 @Service
 @Transactional
@@ -45,178 +48,127 @@ public class ProductServiceImpl implements ProductService {
 	
 	private final ProductRepository productRepository;
 	private final UserRepo userRepository;
+	private final CategoryService categoryService;
 	private final SubCategoryService subCategoryService;
 
-	@Override
-//	public Page<AllDetailsProductDto> findAll(Pageable pageable, Double minPrice, Double maxPrice, List<String> color, List<String> size, Boolean available, String email, String productTitle) {
-//		log.info("*** ProductDto List, service; fetch all products with filters ***");
-//
-//		Specification<Product> spec = (root, query, criteriaBuilder) -> {
-//			List<Predicate> predicates = new ArrayList<>();
-//
-//			if (minPrice != null) {
-//				predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("price"), minPrice));
-//			}
-//			if (maxPrice != null) {
-//				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("price"), maxPrice));
-//			}
-//			if (email != null && !email.isEmpty()) {
-//				predicates.add(criteriaBuilder.equal(root.get("createdBy"), email));
-//			}
-//			if (productTitle != null && !productTitle.isEmpty()) {
-//				predicates.add(criteriaBuilder.like(root.get("productTitle"), "%" + productTitle + "%"));
-//			}
-//
-//			if (color != null && !color.isEmpty()) {
-//				Join<Product, ProductVariation> variationJoin = root.join("variations");
-//				List<Color> colorEnums = color.stream()
-//						.map(Color::valueOf)
-//						.collect(Collectors.toList());
-//				predicates.add(variationJoin.get("color").in(colorEnums));
-//			}
-//			if (size != null && !size.isEmpty()) {
-//				Join<Product, ProductVariation> variationJoin = root.join("variations");
-//				List<Size> sizeEnums = size.stream()
-//						.map(Size::valueOf)
-//						.collect(Collectors.toList());
-//				predicates.add(variationJoin.get("size").in(sizeEnums));
-//			}
-//			if (available != null) {
-//				if (available) {
-//					predicates.add(criteriaBuilder.greaterThan(root.get("allQuantity"), 0));
-//				} else {
-//					predicates.add(criteriaBuilder.equal(root.get("allQuantity"), 0));
-//				}
-//			}
-//
-//			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
-//		};
-//
-//		return productRepository.findAll(spec, pageable).map(ProductMappingHelper::map2);
-//	}
-	public Page<AllDetailsProductDto> findAll(Pageable pageable, Double minPrice, Double maxPrice, List<String> colors, List<String> sizes, Boolean available, String email, String productTitle) {
-		log.info("*** ProductDto List, service; fetch all products with filters ***");
 
-		Specification<Product> spec = (root, query, criteriaBuilder) -> {
+	@Override
+	public Page<ProductDto> getProductsByCategoryNameAndFilters(String subCategoryName, String email, List<String> colors, Double minPrice, Double maxPrice, List<String> sizes, Boolean available, int page, int pageSize, Sort sort) {
+		return getFilteredProducts(subCategoryName, email, null, colors, minPrice, maxPrice, sizes, available, page, pageSize, sort);
+	}
+
+	@Override
+	public Page<ProductDto> getProductsByCategoryNameAndProdcutNameAndFilters(String category, String productName, List<String> colors, Double minPrice, Double maxPrice, List<String> sizes, int page, int pageSize, Sort sort) {
+		return getFilteredProductsByName(category, null, productName, colors, minPrice, maxPrice, sizes, null, page, pageSize, sort);
+	}
+
+	private Page<ProductDto> getFilteredProductsByName(String categoryName, String email, String productName, List<String> colors, Double minPrice, Double maxPrice, List<String> sizes, Boolean available, int page, int pageSize, Sort sort) {
+		Pageable pageable = PageRequest.of(page, pageSize, sort);
+		Integer categoryId;
+
+		// Check if we are filtering by a specific category or all categories
+		if (!"all".equalsIgnoreCase(categoryName)) {
+			Category opCat = categoryService.findByCategoryName(categoryName);
+			if (opCat == null) {
+                categoryId = null;
+                throw new NotFoundException("Category", "Category " + categoryName + " Not found");
+			} else {
+				categoryId = opCat.getCategoryId();
+			}
+		} else {
+            categoryId = null;
+        }
+
+        Specification<Product> spec = (root, query, criteriaBuilder) -> {
 			List<Predicate> predicates = new ArrayList<>();
 
-			// Basic predicates
+			// Filter by categoryId through subCategory -> category -> categoryId if categoryId is specified
+			if (categoryId != null) {
+				predicates.add(criteriaBuilder.equal(root.get("subCategory").get("category").get("categoryId"), categoryId));
+			}
+
+			if (email != null && !email.isEmpty()) {
+				predicates.add(criteriaBuilder.equal(root.get("createdBy"), email));
+			}
+
+			// Product name predicate
+			if (productName != null && !productName.isEmpty()) {
+				predicates.add(criteriaBuilder.like(root.get("productTitle"), "%" + productName + "%"));
+			}
+
+			// Price predicates
 			if (minPrice != null) {
 				predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("price"), minPrice));
 			}
 			if (maxPrice != null) {
 				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("price"), maxPrice));
 			}
+
+			// Availability predicate
+			if (available != null) {
+				if (available) {
+					predicates.add(criteriaBuilder.greaterThan(root.get("allQuantity"), 0));
+				} else {
+					predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("allQuantity"), 0));
+				}
+			}
+
+			// Size and color filters
+			filterSizeAndColor(colors, sizes, root, query, criteriaBuilder, predicates);
+
+			query.distinct(true);
+			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+		};
+
+		return productRepository.findAll(spec, pageable).map(ProductMappingHelper::map);
+	}
+
+	@Override
+	public Page<AllDetailsProductDto> findAll(Pageable pageable, Double minPrice, Double maxPrice, List<String> colors, List<String> sizes, Boolean available, String email, String subCat,String productTitle) {
+		return getFilteredProductsAll(subCat, email, productTitle, colors, minPrice, maxPrice, sizes, available, pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
+
+	}
+
+	private Page<AllDetailsProductDto> getFilteredProductsAll(String categoryName, String email, String productName, List<String> colors, Double minPrice, Double maxPrice, List<String> sizes, Boolean available, int page, int pageSize, Sort sort) {
+		Pageable pageable = PageRequest.of(page, pageSize, sort);
+
+		Specification<Product> spec = (root, query, criteriaBuilder) -> {
+			List<Predicate> predicates = new ArrayList<>();
+
+			// Category predicate
+			if (categoryName != null && !categoryName.isEmpty()) {
+				predicates.add(criteriaBuilder.equal(root.get("subCategory").get("name"), categoryName));
+			}
 			if (email != null && !email.isEmpty()) {
 				predicates.add(criteriaBuilder.equal(root.get("createdBy"), email));
 			}
-			if (productTitle != null && !productTitle.isEmpty()) {
-				predicates.add(criteriaBuilder.like(root.get("productTitle"), "%" + productTitle + "%"));
+
+			// Product name predicate
+			if (productName != null && !productName.isEmpty()) {
+				predicates.add(criteriaBuilder.like(root.get("productTitle"), "%" + productName + "%"));
 			}
 
-			// Join with ProductVariation
-			Join<Product, ProductVariation> variationJoin = root.join("variations");
-
-			// Color Filter
-			if (colors != null && !colors.isEmpty()) {
-				List<Color> colorEnums = colors.stream()
-						.map(Color::valueOf)
-						.toList();
-
-				// Ensure product has all specified colors
-				Subquery<Long> colorSubquery = query.subquery(Long.class);
-				Root<ProductVariation> colorRoot = colorSubquery.from(ProductVariation.class);
-				colorSubquery.select(colorRoot.get("product").get("id"))
-						.where(
-								criteriaBuilder.and(
-										colorRoot.get("color").in(colorEnums),
-										criteriaBuilder.equal(colorRoot.get("product").get("id"), root.get("id")),
-										criteriaBuilder.greaterThan(colorRoot.get("quantity"), 0)  // Ensure quantity > 0
-								)
-						)
-						.groupBy(colorRoot.get("product").get("id"))
-						.having(
-								criteriaBuilder.equal(
-										criteriaBuilder.countDistinct(colorRoot.get("color")),
-										(long) colorEnums.size()
-								)
-						);
-
-				Predicate hasAllColors = criteriaBuilder.exists(colorSubquery);
-				predicates.add(hasAllColors);
+			// Price predicates
+			if (minPrice != null) {
+				predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("price"), minPrice));
+			}
+			if (maxPrice != null) {
+				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("price"), maxPrice));
 			}
 
-			// Size Filter
-			if (sizes != null && !sizes.isEmpty()) {
-				List<Size> sizeEnums = sizes.stream()
-						.map(Size::valueOf)
-						.toList();
-
-				// Ensure product has all specified sizes
-				Subquery<Long> sizeSubquery = query.subquery(Long.class);
-				Root<ProductVariation> sizeRoot = sizeSubquery.from(ProductVariation.class);
-				sizeSubquery.select(sizeRoot.get("product").get("id"))
-						.where(
-								criteriaBuilder.and(
-										sizeRoot.get("size").in(sizeEnums),
-										criteriaBuilder.equal(sizeRoot.get("product").get("id"), root.get("id")),
-										criteriaBuilder.greaterThan(sizeRoot.get("quantity"), 0)  // Ensure quantity > 0
-								)
-						)
-						.groupBy(sizeRoot.get("product").get("id"))
-						.having(
-								criteriaBuilder.equal(
-										criteriaBuilder.countDistinct(sizeRoot.get("size")),
-										(long) sizeEnums.size()
-								)
-						);
-
-				Predicate hasAllSizes = criteriaBuilder.exists(sizeSubquery);
-				predicates.add(hasAllSizes);
-			}
-
-			// Color and Size Combination
-			if ((colors != null && !colors.isEmpty()) && (sizes != null && !sizes.isEmpty())) {
-				Subquery<Long> combinedSubquery = query.subquery(Long.class);
-				Root<ProductVariation> combinedRoot = combinedSubquery.from(ProductVariation.class);
-
-				List<Predicate> colorSizePredicates = new ArrayList<>();
-				if (!colors.isEmpty()) {
-					List<Color> colorEnums = colors.stream()
-							.map(Color::valueOf)
-							.toList();
-					colorSizePredicates.add(combinedRoot.get("color").in(colorEnums));
+			// Availability predicate
+			if (available != null) {
+				if (available) {
+					predicates.add(criteriaBuilder.greaterThan(root.get("allQuantity"), 0));
+				} else {
+					predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("allQuantity"), 0));
 				}
-				if (!sizes.isEmpty()) {
-					List<Size> sizeEnums = sizes.stream()
-							.map(Size::valueOf)
-							.toList();
-					colorSizePredicates.add(combinedRoot.get("size").in(sizeEnums));
-				}
-
-				combinedSubquery.select(combinedRoot.get("product").get("id"))
-						.where(
-								criteriaBuilder.and(
-										criteriaBuilder.equal(combinedRoot.get("product").get("id"), root.get("id")),
-										criteriaBuilder.and(colorSizePredicates.toArray(new Predicate[0])),
-										criteriaBuilder.greaterThan(combinedRoot.get("quantity"), 0)  // Ensure quantity > 0
-								)
-						)
-						.groupBy(combinedRoot.get("product").get("id"))
-						.having(
-								criteriaBuilder.equal(
-										criteriaBuilder.countDistinct(combinedRoot.get("id")),
-										((long) colors.size() * sizes.size())
-								)
-						);
-
-				Predicate hasAllColorSizeCombinations = criteriaBuilder.exists(combinedSubquery);
-				predicates.add(hasAllColorSizeCombinations);
 			}
 
-			// Ensure distinct products
+			// Size and color filters
+			filterSizeAndColor(colors, sizes, root, query, criteriaBuilder, predicates);
+
 			query.distinct(true);
-
 			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
 		};
 
@@ -224,6 +176,157 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 
+	private Page<ProductDto> getFilteredProducts(String categoryName, String email, String productName, List<String> colors, Double minPrice, Double maxPrice, List<String> sizes, Boolean available, int page, int pageSize, Sort sort) {
+		Pageable pageable = PageRequest.of(page, pageSize, sort);
+
+		// Check if the category exists
+		boolean opSub = subCategoryService.findByName(categoryName);
+		if (!opSub) {
+			throw new NotFoundException("Category", "Category " + categoryName + " Not found");
+		}
+
+		Specification<Product> spec = (root, query, criteriaBuilder) -> {
+			List<Predicate> predicates = new ArrayList<>();
+
+			if (categoryName != null && !categoryName.isEmpty()) {
+				predicates.add(criteriaBuilder.like(root.get("subCategory").get("name"), "%" + categoryName + "%"));
+//				predicates.add(criteriaBuilder.like(root.get("category").get("categoryTitle"), "%" + categoryName + "%"));
+			}
+
+			if (email != null && !email.isEmpty()) {
+				predicates.add(criteriaBuilder.equal(root.get("createdBy"), email));
+			}
+
+			// Product name predicate
+			if (productName != null && !productName.isEmpty()) {
+				predicates.add(criteriaBuilder.like(root.get("productTitle"), "%" + productName + "%"));
+			}
+
+			// Price predicates
+			if (minPrice != null) {
+				predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("price"), minPrice));
+			}
+			if (maxPrice != null) {
+				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("price"), maxPrice));
+			}
+
+			// Availability predicate
+			if (available != null) {
+				if (available) {
+					predicates.add(criteriaBuilder.greaterThan(root.get("allQuantity"), 0));
+				} else {
+					predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("allQuantity"), 0));
+				}
+			}
+
+			// Size and color filters
+			filterSizeAndColor(colors, sizes, root, query, criteriaBuilder, predicates);
+
+			query.distinct(true);
+			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+		};
+
+		return productRepository.findAll(spec, pageable).map(ProductMappingHelper::map);
+	}
+
+	private static void filterSizeAndColor(List<String> colors, List<String> sizes, Root<Product> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder, List<Predicate> predicates) {
+		// Color Filter
+		if (colors != null && !colors.isEmpty()) {
+			List<Color> colorEnums = colors.stream()
+					.map(Color::valueOf)
+					.toList();
+
+			// Ensure product has all specified colors
+			Subquery<Long> colorSubquery = query.subquery(Long.class);
+			Root<ProductVariation> colorRoot = colorSubquery.from(ProductVariation.class);
+			colorSubquery.select(colorRoot.get("product").get("id"))
+					.where(
+							criteriaBuilder.and(
+									colorRoot.get("color").in(colorEnums),
+									criteriaBuilder.equal(colorRoot.get("product").get("id"), root.get("id")),
+									criteriaBuilder.greaterThan(colorRoot.get("quantity"), 0)  // Ensure quantity > 0
+							)
+					)
+					.groupBy(colorRoot.get("product").get("id"))
+					.having(
+							criteriaBuilder.equal(
+									criteriaBuilder.countDistinct(colorRoot.get("color")),
+									(long) colorEnums.size()
+							)
+					);
+
+			Predicate hasAllColors = criteriaBuilder.exists(colorSubquery);
+			predicates.add(hasAllColors);
+		}
+
+		// Size Filter
+		if (sizes != null && !sizes.isEmpty()) {
+			List<Size> sizeEnums = sizes.stream()
+					.map(Size::valueOf)
+					.toList();
+
+			// Ensure product has all specified sizes
+			Subquery<Long> sizeSubquery = query.subquery(Long.class);
+			Root<ProductVariation> sizeRoot = sizeSubquery.from(ProductVariation.class);
+			sizeSubquery.select(sizeRoot.get("product").get("id"))
+					.where(
+							criteriaBuilder.and(
+									sizeRoot.get("size").in(sizeEnums),
+									criteriaBuilder.equal(sizeRoot.get("product").get("id"), root.get("id")),
+									criteriaBuilder.greaterThan(sizeRoot.get("quantity"), 0)  // Ensure quantity > 0
+							)
+					)
+					.groupBy(sizeRoot.get("product").get("id"))
+					.having(
+							criteriaBuilder.equal(
+									criteriaBuilder.countDistinct(sizeRoot.get("size")),
+									(long) sizeEnums.size()
+							)
+					);
+
+			Predicate hasAllSizes = criteriaBuilder.exists(sizeSubquery);
+			predicates.add(hasAllSizes);
+		}
+
+		// Color and Size Combination
+		if ((colors != null && !colors.isEmpty()) && (sizes != null && !sizes.isEmpty())) {
+			Subquery<Long> combinedSubquery = query.subquery(Long.class);
+			Root<ProductVariation> combinedRoot = combinedSubquery.from(ProductVariation.class);
+
+			List<Predicate> colorSizePredicates = new ArrayList<>();
+			if (!colors.isEmpty()) {
+				List<Color> colorEnums = colors.stream()
+						.map(Color::valueOf)
+						.toList();
+				colorSizePredicates.add(combinedRoot.get("color").in(colorEnums));
+			}
+			if (!sizes.isEmpty()) {
+				List<Size> sizeEnums = sizes.stream()
+						.map(Size::valueOf)
+						.toList();
+				colorSizePredicates.add(combinedRoot.get("size").in(sizeEnums));
+			}
+
+			combinedSubquery.select(combinedRoot.get("product").get("id"))
+					.where(
+							criteriaBuilder.and(
+									criteriaBuilder.equal(combinedRoot.get("product").get("id"), root.get("id")),
+									criteriaBuilder.and(colorSizePredicates.toArray(new Predicate[0])),
+									criteriaBuilder.greaterThan(combinedRoot.get("quantity"), 0)  // Ensure quantity > 0
+							)
+					)
+					.groupBy(combinedRoot.get("product").get("id"))
+					.having(
+							criteriaBuilder.equal(
+									criteriaBuilder.countDistinct(combinedRoot.get("id")),
+									((long) colors.size() * sizes.size())
+							)
+					);
+
+			Predicate hasAllColorSizeCombinations = criteriaBuilder.exists(combinedSubquery);
+			predicates.add(hasAllColorSizeCombinations);
+		}
+	}
 
 	@Override
 	public ProductDto findById(final Integer productId) {
@@ -236,7 +339,10 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	public ProductDto create(final ProductRequestDto productDto) {
 		log.info("*** ProductDto, service; save product ***");
-
+		if (productDto.getDiscountPercent() != null)
+		{
+			productDto.setDiscountedPrice();
+		}
 		// Retrieve existing products from the repository
 		List<Product> existingProducts = this.productRepository.findAll();
 
@@ -260,6 +366,10 @@ public class ProductServiceImpl implements ProductService {
 		}
 
 		for (ProductRequestDto productDto : productDtos) {
+			if (productDto.getDiscountPercent() != null)
+			{
+				productDto.setDiscountedPrice();
+			}
 			String productName = productDto.getProductTitle();
 			Product existingProduct = productMap.get(productName);
 			log.info(String.valueOf(existingProduct));
@@ -279,19 +389,18 @@ public class ProductServiceImpl implements ProductService {
 		// Save all products in the map to the repository
 		List<ProductDto> savedProductDtos = new ArrayList<>();
 		for (Product product : productMap.values()) {
-			Product savedProduct = this.productRepository.save(product);
-			savedProductDtos.add(ProductMappingHelper.map(savedProduct));
+			ProductMappingHelper.map(this.productRepository.save(product));
 		}
 
 		return savedProductDtos;
 	}
-
 
 	private void updateProduct(Product product, ProductRequestDto productDto) {
 		// Implement the logic to update the existing product based on the new productDto
 		// Check if a variation with the same size and color already exists
 		getExistingVariation(product, productDto);
 	}
+
 
 	public static void getExistingVariation(Product product, ProductRequestDto productDto) {
 		Optional<ProductVariation> existingVariation = product.getVariations().stream()
@@ -320,7 +429,6 @@ public class ProductServiceImpl implements ProductService {
 		product.setAllQuantity(totalQuantity);
 	}
 
-
 	@Override
 	public ProductDto update(final ProductDto productDto) {
 		log.info("*** ProductDto, service; update product *");
@@ -329,12 +437,12 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
-	public ProductDto update(final Integer productId, final ProductRequestDto productDto) {
+	public ProductDto update(final Integer productId, final @Valid ProductEditDto productDto) {
 		log.info("*** ProductDto, service; update product with productId *");
 		try {
 			// Retrieve the category by id
 			Product product = productRepository.findById(productId)
-					.orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
+					.orElseThrow(() -> new NotFoundException("Product", "not found with id: " + productId));
 
 			// Check if the category title is being updated
 			if (!product.getProductTitle().equals(productDto.getProductTitle())) {
@@ -379,43 +487,6 @@ public class ProductServiceImpl implements ProductService {
 				.map(this.findById(productId)));
 	}
 
-
-	@Override
-	public Page<ProductDto> getProductsByCategoryNameAndFilters(String categoryName, List<String> colors, Double minPrice, Double maxPrice, List<String> sizes, Boolean available, int page, int pageSize, Sort sort) {
-		Pageable pageable = PageRequest.of(page, pageSize, sort);
-		List<Size> sizeEnums = sizes != null ? sizes.stream().map(size -> Size.valueOf(size.toUpperCase())).toList() : null;
-		List<Color> colorEnums = colors != null ? colors.stream().map(color -> Color.valueOf(color.toLowerCase())).toList() : null;
-		boolean subCategory = subCategoryService.findByName(categoryName);
-		if (!subCategory) {
-			throw new NotFoundException("Category", "Category " + categoryName + " Notfound");
-		}
-		Page<Product> productPage = productRepository.findByCategoryNameAndFilters(categoryName, colorEnums, minPrice, maxPrice, sizeEnums, available, pageable);
-
-		return productPage.map(ProductMappingHelper::map);
-	}
-
-	@Override
-	public Page<ProductDto> getProductsByCategoryNameAndProdcutNameAndFilters
-			(String subCategoryName, String productNmae,
-			 List<String> colors, Double minPrice, Double maxPrice,
-			 List<String> sizes, int page, int pageSize, Sort sort) {
-		Pageable pageable = PageRequest.of(page, pageSize, sort);
-		List<Size> sizeEnums = sizes != null ? sizes.stream()
-				.map(size -> Size.valueOf(size.toUpperCase())).toList() : null;
-		List<Color> colorEnums = colors != null ? colors.stream()
-				.map(color -> Color.valueOf(color.toLowerCase())).toList() : null;
-		Page<Product> productPage;
-		if (colors == null) {
-			productPage = productRepository.findByCategoryNameAndProductTitleAndFilters
-					(subCategoryName, productNmae,null, minPrice,
-							maxPrice, sizeEnums, pageable); // Convert size to uppercase
-		} else {
-			productPage = productRepository.findByCategoryNameAndProductTitleAndFilters
-					(subCategoryName, productNmae, colorEnums, minPrice,
-							maxPrice, sizeEnums, pageable); // Convert size to uppercase
-		}
-		return productPage.map(ProductMappingHelper::map);
-	}
 
 	@Override
 	public List<ProductDto> findAllByCreatedBy(String email) {
@@ -494,34 +565,6 @@ public class ProductServiceImpl implements ProductService {
 		product.setAllQuantity(totalQuantity);
 	}
 
-
-
-//	public void updateProductVariation(Integer productId, Spec spec) {
-//		Product product = productRepository.findById(productId)
-//				.orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
-//
-//		// Find the existing variation by size and color or create a new one if not found
-//		Optional<ProductVariation> existingVariation = product.getVariations().stream()
-//				.filter(variation -> variation.getSize().equals(Size.valueOf(spec.size())) && variation.getColor().equals(Color.valueOf(spec.color())))
-//				.findFirst();
-//
-//		if (existingVariation.isPresent()) {
-//			// Update existing variation
-//			ProductVariation variationToUpdate = existingVariation.get();
-//			variationToUpdate.setQuantity(spec.quantity());
-//		} else {
-//			// Create new variation
-//			newProductVariation(product, spec, 0);
-//		}
-//
-//		productRepository.save(product);
-//		int totalQuantity = product.getVariations().stream()
-//				.mapToInt(ProductVariation::getQuantity)
-//				.sum();
-//		product.setAllQuantity(totalQuantity);
-//	}
-
-
 	@Override
 	@Transactional
 	public void updateProductStocks(Integer productId, List<Spec> specs, boolean increaseQuantity) {
@@ -553,8 +596,6 @@ public class ProductServiceImpl implements ProductService {
 		product.setAllQuantity(totalQuantity);
 	}
 
-
-
 	private void newProductVariation(Product product, Spec spec, Integer increaseQuantity, String img) {
 		ProductVariation newVariation = new ProductVariation();
 		newVariation.setSize(Size.valueOf(spec.getSize()));
@@ -569,20 +610,6 @@ public class ProductServiceImpl implements ProductService {
 	public Product findProductById(Integer productId) {
 		return productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 	@Override
 	@Transactional
@@ -617,8 +644,6 @@ public class ProductServiceImpl implements ProductService {
 		product.setAllQuantity(totalQuantity);
 	}
 
-
-
 	@Override
 	public ResponseEntity<?> removeProductByCreatedBy(String email, Integer productId) {
 		// Find the product by its ID
@@ -632,7 +657,32 @@ public class ProductServiceImpl implements ProductService {
 
 		// If the user is an admin or is the creator of the product, delete it
 		if (isAdmin || product.getCreatedBy().equals(email)) {
+			// Replace spaces with underscores in the product title
+			String productTitleFormatted = product.getProductTitle().replaceAll(" ", "_");
+
+			// Define the directory to be removed
+			String productFolderPath = "uploads/products/" + productTitleFormatted;
+
+			// Remove the product folder
+			try {
+				Path productFolder = Paths.get(productFolderPath);
+				if (Files.exists(productFolder)) {
+					// Recursively delete the directory and its contents
+					Files.walk(productFolder)
+							.sorted(Comparator.reverseOrder())
+							.map(Path::toFile)
+							.forEach(File::delete);
+				}
+			} catch (IOException e) {
+				// Handle the exception (e.g., log the error)
+				e.printStackTrace();
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+						.body("Failed to delete product images folder: " + e.getMessage());
+			}
+
+			// Delete the product from the repository
 			productRepository.deleteById(productId);
+
 			return ApiTrait.successMessage("Product Deleted", HttpStatus.OK);
 		} else {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -662,10 +712,37 @@ public class ProductServiceImpl implements ProductService {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
 
+		// Delete the product folders and their contents
+		for (Product product : productsToDelete) {
+			// Replace spaces with underscores in the product title
+			String productTitleFormatted = product.getProductTitle().replaceAll(" ", "_");
+
+			// Define the directory to be removed
+			String productFolderPath = "uploads/products/" + productTitleFormatted;
+
+			// Remove the product folder
+			try {
+				Path productFolder = Paths.get(productFolderPath);
+				if (Files.exists(productFolder)) {
+					// Recursively delete the directory and its contents
+					Files.walk(productFolder)
+							.sorted(Comparator.reverseOrder())
+							.map(Path::toFile)
+							.forEach(File::delete);
+				}
+			} catch (IOException e) {
+				// Handle the exception (e.g., log the error)
+				e.printStackTrace();
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+						.body("Failed to delete product images folder for product ID " + product.getId() + ": " + e.getMessage());
+			}
+		}
+
+		// Delete the products from the repository
 		productRepository.deleteAll(productsToDelete);
+
 		return ApiTrait.successMessage("Products Deleted", HttpStatus.OK);
 	}
-
 
 	@Override
 	public AllDetailsProductDto findByProductId(String email, int productId) throws AccessDeniedException {
@@ -733,6 +810,40 @@ public class ProductServiceImpl implements ProductService {
 		response.put("message", "The Discount has been set for the specified products");
 		return ResponseEntity.ok(response);
 	}
+
+	@Override
+	public List<String> getAllEmailSellers(Integer subId) {
+		List<Product> products = null;
+		if (subId != 0)
+		{
+			products = productRepository.findBySubcategoryId(subId); // Fetch by subcategory ID
+		} else {
+			products = productRepository.findAll(); // Fetch by subcategory ID
+		}
+		return products.stream()
+				.map(Product::getCreatedBy)
+				.distinct() // Optional: to avoid duplicates
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	public List<ProductDto> getSuggestionProductsBySubCategory(Integer subId) {
+		List<Product> products = productRepository.findBySubcategoryId(subId);
+
+		if (products.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		// Shuffle the list to get randomness
+		Collections.shuffle(products);
+
+		// Limit to 5 random products
+		return products.stream()
+				.limit(10)
+				.map(ProductMappingHelper::map) // convert to DTO
+				.collect(Collectors.toList());
+	}
+
 
 
 }

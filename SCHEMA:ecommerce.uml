@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>DATABASE</ID>
+  <OriginalElement>812e3887-13df-48dc-a78e-825bf263634a.SCHEMA:ecommerce</OriginalElement>
+  <nodes>
+    <node x="-1702.5175435836245" y="-567.220666775173">812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.orders</node>
+    <node x="-681.1148687970176" y="2129.447757523147">812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.order_items</node>
+    <node x="221.86097592954457" y="484.0383246527772">812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.address</node>
+    <node x="-1183.3891131365754" y="-765.9688006365734">812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.sub_categories</node>
+    <node x="-301.0954225441242" y="-315.22066677517296">812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.cart_items</node>
+    <node x="892.824294704862" y="525.293569155092">812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.email_verification</node>
+    <node x="-1334.8891131365754" y="2129.447757523147">812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.product_variations</node>
+    <node x="1167.3585452835669" y="231.29143269856786">812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.password_reset</node>
+    <node x="-1196.3891131365754" y="-1139.6504050925919">812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.categories</node>
+    <node x="-1192.3891131365754" y="-483.22066677517296">812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.products</node>
+    <node x="61.50236933955466" y="1230.9998227719911">812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.carts</node>
+    <node x="-739.8648687970176" y="-765.9688006365734">812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.order_variations</node>
+    <node x="604.8510265209072" y="259.29143269856786">812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.account_status</node>
+    <node x="-100.49763066044534" y="-932.8317925347217">812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.users</node>
+    <node x="1484.2911821831613" y="483.293569155092">812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.tokens</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.cart_items" target="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.order_variations" relationship="REFERENCES">
+      <point x="0.0" y="-107.5" />
+      <point x="-180.59542254412418" y="1639.0" />
+      <point x="-624.8648687970176" y="1639.0" />
+      <point x="0.0" y="205.5" />
+    </edge>
+    <edge source="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.email_verification" target="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.users" relationship="REFERENCES">
+      <point x="0.0" y="-93.5" />
+      <point x="1050.324294704862" y="960.0" />
+      <point x="133.50236933955466" y="960.0" />
+      <point x="0.0" y="247.5" />
+    </edge>
+    <edge source="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.products" target="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.sub_categories" relationship="REFERENCES">
+      <point x="0.0" y="-191.5" />
+      <point x="-1077.3891131365754" y="386.8962962962963" />
+      <point x="-1077.3891131365754" y="386.8962962962963" />
+      <point x="0.0" y="107.5" />
+    </edge>
+    <edge source="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.tokens" target="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.users" relationship="REFERENCES">
+      <point x="0.0" y="-135.5" />
+      <point x="1606.2911821831613" y="960.0" />
+      <point x="133.50236933955466" y="960.0" />
+      <point x="0.0" y="247.5" />
+    </edge>
+    <edge source="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.cart_items" target="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.carts" relationship="REFERENCES">
+      <point x="80.33333333333334" y="-107.5" />
+      <point x="-100.26208921079083" y="1706.5496296296299" />
+      <point x="133.50236933955466" y="1706.5496296296299" />
+      <point x="0.0" y="51.5" />
+    </edge>
+    <edge source="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.cart_items" target="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.product_variations" relationship="REFERENCES">
+      <point x="-80.33333333333334" y="-107.5" />
+      <point x="-260.92875587745755" y="1820.0" />
+      <point x="-1077.3891131365754" y="1820.0" />
+      <point x="0.0" y="135.5" />
+    </edge>
+    <edge source="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.carts" target="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.users" relationship="REFERENCES">
+      <point x="0.0" y="-51.5" />
+      <point x="0.0" y="247.5" />
+    </edge>
+    <edge source="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.account_status" target="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.users" relationship="REFERENCES">
+      <point x="0.0" y="-93.5" />
+      <point x="736.8510265209072" y="960.0" />
+      <point x="133.50236933955466" y="960.0" />
+      <point x="0.0" y="247.5" />
+    </edge>
+    <edge source="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.password_reset" target="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.users" relationship="REFERENCES">
+      <point x="0.0" y="-107.5" />
+      <point x="1299.3585452835669" y="960.0" />
+      <point x="133.50236933955466" y="960.0" />
+      <point x="0.0" y="247.5" />
+    </edge>
+    <edge source="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.order_items" target="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.order_variations" relationship="REFERENCES">
+      <point x="-56.25" y="-93.5" />
+      <point x="0.0" y="205.5" />
+    </edge>
+    <edge source="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.order_items" target="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.orders" relationship="REFERENCES">
+      <point x="56.25" y="-93.5" />
+      <point x="-512.3648687970176" y="1840.0" />
+      <point x="-1485.0175435836245" y="1840.0" />
+      <point x="0.0" y="233.5" />
+    </edge>
+    <edge source="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.sub_categories" target="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.categories" relationship="REFERENCES">
+      <point x="0.0" y="-107.5" />
+      <point x="-1077.3891131365754" y="20.0" />
+      <point x="-1077.3891131365754" y="20.0" />
+      <point x="0.0" y="107.5" />
+    </edge>
+    <edge source="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.product_variations" target="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.products" relationship="REFERENCES">
+      <point x="0.0" y="-135.5" />
+      <point x="0.0" y="191.5" />
+    </edge>
+    <edge source="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.address" target="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.users" relationship="REFERENCES">
+      <point x="0.0" y="-93.5" />
+      <point x="335.36097592954457" y="960.0" />
+      <point x="133.50236933955466" y="960.0" />
+      <point x="0.0" y="247.5" />
+    </edge>
+    <edge source="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.order_variations" target="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.products" relationship="REFERENCES">
+      <point x="0.0" y="-205.5" />
+      <point x="-624.8648687970176" y="490.26365740740744" />
+      <point x="-669.2348842592578" y="490.26365740740744" />
+      <point x="-669.2348842592578" y="1158.0" />
+      <point x="-1077.3891131365754" y="1158.0" />
+      <point x="0.0" y="191.5" />
+    </edge>
+    <edge source="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.orders" target="812e3887-13df-48dc-a78e-825bf263634a.TABLE:ecommerce.users" relationship="REFERENCES">
+      <point x="0.0" y="-233.5" />
+      <point x="-1485.0175435836245" y="711.1866666666666" />
+      <point x="133.50236933955466" y="711.1866666666666" />
+      <point x="0.0" y="247.5" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Compact" zoom="0.4623287671232889" showDependencies="false" x="-141.45925925926326" y="-1029.6000000000026" />
+  <SelectedNodes />
+  <Categories>
+    <Category>Columns</Category>
+    <Category>Comments</Category>
+    <Category>Key columns</Category>
+    <Category>Virtual foreign keys</Category>
+  </Categories>
+</Diagram>
+

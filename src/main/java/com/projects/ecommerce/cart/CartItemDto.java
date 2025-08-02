@@ -25,9 +25,14 @@ public class CartItemDto implements Serializable {
 	private Integer itemID;
 	private Integer ProductId;
 	private String productTitle;
+	private Double price;
+	private Double discount;
+	private Double discountedPrice;
 	private String imageUrl;
 	private Integer quantity;
 	private String size;
 	private String color;
 	private Double totalPrice;
+	private Double totalPriceDiscounted;
+
 }

@@ -88,4 +88,7 @@ public interface ProductRepository extends JpaRepository<Product, Integer>, JpaS
     Page<Product> findByPriceGreaterThanEqual(Double minPrice, Pageable pageable);
 
     Page<Product> findByPriceLessThanEqual(Double maxPrice, Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE p.subCategory.subId = :subId")
+    List<Product> findBySubcategoryId(@Param("subId") Integer subId);
 }

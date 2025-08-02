@@ -6,9 +6,7 @@ import com.projects.ecommerce.Auth.dto.RegisterRequestDto;
 import com.projects.ecommerce.Auth.service.AuthService;
 import com.projects.ecommerce.user.model.User;
 import com.projects.ecommerce.user.service.UserService;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,13 +17,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @Slf4j
-public class Auth1Controller {
+public class AuthGoogleProviderController {
     private final UserService userService;
     private final AuthService authService;
     private final PasswordEncoder passwordEncoder;
@@ -33,7 +30,7 @@ public class Auth1Controller {
     @Value("${base-url}")
     private String baseUrl;
 
-    public Auth1Controller(UserService userService, AuthService authService, PasswordEncoder passwordEncoder) {
+    public AuthGoogleProviderController(UserService userService, AuthService authService, PasswordEncoder passwordEncoder) {
         this.userService = userService;
         this.authService = authService;
         this.passwordEncoder = passwordEncoder;
@@ -111,7 +108,7 @@ public class Auth1Controller {
             registerRequestDto.setImg(pictureUrl);
             AuthResponse authResponse = authService.register(registerRequestDto);
             modelAndView.addObject("token", authResponse.getToken());
-            modelAndView.addObject("message", "Login Success");
+            modelAndView.addObject("message", "Register Success");
             modelAndView.addObject("role", authResponse.getRole());
         } else {
             log.info("user already exists");

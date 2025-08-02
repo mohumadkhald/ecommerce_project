@@ -26,7 +26,7 @@ public final class SubCategory extends AbstractMappedEntity implements Serializa
 	@Column(name = "sub_id", unique = true, nullable = false, updatable = false)
 	private Integer subId;
 
-	@Column(unique = true, nullable = false, updatable = false)
+	@Column(unique = true, nullable = false, updatable = true)
 	private String name;
 
 	private String img;

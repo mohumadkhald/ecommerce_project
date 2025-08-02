@@ -13,9 +13,13 @@ public interface CartItemMappingHelper {
 		return CartItemDto.builder()
 				.itemID(cartItem.getId())
 				.totalPrice(cartItem.getPrice())
+				.totalPriceDiscounted(cartItem.getQuantity()*cartItem.getProductVariation().getProduct().getDiscountedPrice())
 				.ProductId(cartItem.getProductVariation().getProduct().getId())
 				.imageUrl(cartItem.getProductVariation().getProduct().getImageUrl())
 				.productTitle(cartItem.getProductVariation().getProduct().getProductTitle())
+				.price(cartItem.getProductVariation().getProduct().getPrice())
+				.discount(cartItem.getProductVariation().getProduct().getDiscountPercent())
+				.discountedPrice(cartItem.getProductVariation().getProduct().getDiscountedPrice())
 				.quantity(cartItem.getQuantity())
 				.size(String.valueOf(cartItem.getProductVariation().getSize()))
 				.color(String.valueOf(cartItem.getProductVariation().getColor()))
@@ -23,7 +27,7 @@ public interface CartItemMappingHelper {
 	}
 	public static CartItem map(final CartItemDto cartItemDto) {
 		return CartItem.builder()
-				.price(cartItemDto.getTotalPrice())
+				.price(cartItemDto.getDiscountedPrice())
 				.quantity(cartItemDto.getQuantity())
 				.productVariation(ProductVariation.builder()
 						.color(Color.valueOf(cartItemDto.getColor()))
