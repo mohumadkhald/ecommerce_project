@@ -1,6 +1,6 @@
 package com.projects.ecommerce.cart;
 
-import com.projects.ecommerce.order.OrderVariation;
+import com.projects.ecommerce.order.model.OrderVariation;
 import com.projects.ecommerce.product.domain.ProductVariation;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

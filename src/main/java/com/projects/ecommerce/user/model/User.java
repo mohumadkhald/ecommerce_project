@@ -4,7 +4,7 @@ package com.projects.ecommerce.user.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.projects.ecommerce.Auth.token.Token;
 import com.projects.ecommerce.cart.Cart;
-import com.projects.ecommerce.order.Order;
+import com.projects.ecommerce.order.model.Order;
 import com.projects.ecommerce.utilts.Base;
 import jakarta.persistence.*;
 import lombok.*;

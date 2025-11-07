@@ -30,4 +30,6 @@ public class PasswordReset {
     private Integer timeTry;
     private LocalDateTime resetCodeExpiry;
     private Integer timesSend;
+    private LocalDateTime lastSentAt;
+
 }

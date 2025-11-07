@@ -1,7 +1,7 @@
 package com.projects.ecommerce.user.expetion;
 
 import com.projects.ecommerce.Auth.expetion.AuthenticationnException;
-import com.projects.ecommerce.order.StockNotFoundException;
+import com.projects.ecommerce.order.exception.StockNotFoundException;
 import com.projects.ecommerce.utilts.traits.ApiTrait;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

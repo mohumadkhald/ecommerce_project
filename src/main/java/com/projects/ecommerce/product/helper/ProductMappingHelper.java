@@ -3,7 +3,7 @@ package com.projects.ecommerce.product.helper;
 
 import com.projects.ecommerce.product.domain.*;
 import com.projects.ecommerce.product.dto.*;
-import com.projects.ecommerce.product.service.impl.ProductServiceImpl;
+import com.projects.ecommerce.product.service.impl.ProductVariationServiceImpl;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -116,7 +116,7 @@ public interface ProductMappingHelper {
 			product.setAllQuantity(existingQuantity + productDto.getQuantity());
 
 			// Check if a variation with the same size and color already exists
-			ProductServiceImpl.getExistingVariation(product, productDto);
+			ProductVariationServiceImpl.getExistingVariation(product, productDto);
 
 			return product;
 		} else {

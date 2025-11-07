@@ -4,8 +4,8 @@ import com.projects.ecommerce.product.domain.Color;
 import com.projects.ecommerce.product.domain.Product;
 import com.projects.ecommerce.product.domain.ProductVariation;
 import com.projects.ecommerce.product.domain.Size;
+import com.projects.ecommerce.product.service.ProductCommandService;
 import com.projects.ecommerce.product.service.impl.ProdcutVariationService;
-import com.projects.ecommerce.product.service.impl.ProductServiceImpl;
 import com.projects.ecommerce.user.expetion.NotFoundException;
 import com.projects.ecommerce.user.model.User;
 import com.projects.ecommerce.user.repository.UserRepo;
@@ -31,7 +31,7 @@ public class CartService {
     @Autowired
     private UserRepo userRepository;
     @Autowired
-    private ProductServiceImpl productServiceImpl;
+    private ProductCommandService productServiceImpl;
 
     public Cart getCartByUserId(Integer userId) {
         return cartRepository.findByUserId(userId)

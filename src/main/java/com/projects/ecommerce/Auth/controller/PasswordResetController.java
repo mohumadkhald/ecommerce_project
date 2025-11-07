@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,118 +38,156 @@ public class PasswordResetController {
     private EntityManager entityManager;
 
     @PostMapping("/send-reset")
+    @Transactional
     public ResponseEntity<Map<String, String>> requestResetPassword(
             @RequestParam("email") @NotNull @Email String email) {
 
-        // Find the user by email
-        User user = userRepo.findByEmail(email);
-
-        if (user != null) {
-            // Check if the user already has a password reset entry
-            PasswordReset passwordReset = user.getPasswordReset();
-
-            if (passwordReset == null) {
-                // If no password reset entry exists, create a new one
-                passwordReset = new PasswordReset();
-                passwordReset.setUser(user);
-            }
-
-            // Generate and set the reset code
-            String resetCode = UUID.randomUUID().toString().replace("-", "").substring(0, 6);
-            passwordReset.setResetCode(resetCode);
-            passwordReset.setTimeTry(0);
-
-            // Set the reset code expiry time
-            passwordReset.setResetCodeExpiry(LocalDateTime.now().plusHours(24)); // Expiry time 1 day
-
-            // Send reset password email with the token
-            emailService.sendResetPasswordEmail(email, resetCode);
-
-            // Set How Many Times Send code
-            passwordReset.setTimesSend(1);
-
-            // Save or update the password reset entry
-            user.setPasswordReset(passwordReset);
-            user.setNeedsToSetPassword(false);
-            userRepo.save(user);
-
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Code created successfully");
-            return ResponseEntity.ok(response);
-
-        } else {
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Email " + email + " does not exist");
-            return ResponseEntity.badRequest().body(response);
-        }
-    }
-
-
-    @PostMapping("/reset")
-    @Transactional
-    public ResponseEntity<Map<String, String>> resetPassword(@RequestParam("email") String email, @Valid @RequestBody PasswordDto passwordDto) {
+        Map<String, String> response = new HashMap<>();
         User user = userRepo.findByEmail(email);
 
         if (user == null) {
-            // Handle case when user is not found
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Email " + email + "Not Exist");
+            response.put("message", "Email " + email + " does not exist");
             return ResponseEntity.badRequest().body(response);
         }
 
         PasswordReset passwordReset = resetRepo.findByUser(user);
-        if (passwordReset == null || !passwordReset.getResetCode().equals(passwordDto.getCode())) {
-            // If no PasswordReset exists for the user or code is incorrect, handle it
-            if (passwordReset == null) {
-                // Create a new PasswordReset entity for the user
-                passwordReset = PasswordReset.builder()
-                        .user(user)
-                        .resetCode(passwordDto.getCode())
-                        .timeTry(1) // Initialize try_time to 1
-                        .timesSend(1) // Initialize try_time-send to 1
-                        .build();
-            } else {
-                // Increment try_time and check if it's 5
-                int tries = passwordReset.getTimeTry() + 1;
-                if (tries >= 3) {
-                    String resetCode = UUID.randomUUID().toString().replace("-", "").substring(0, 6);
-                    // Generate a new reset code and reset try_time
-                    passwordReset.setResetCode(resetCode);
-                    passwordReset.setTimeTry(0);
+        LocalDateTime now = LocalDateTime.now();
 
-                    // Send reset password email with the token
-                    emailService.sendResetPasswordEmail(email, resetCode);
-                    // Set How Many Times Send code
-                    passwordReset.setTimesSend(passwordReset.getTimesSend()+1);
-                    // Return appropriate response
-                    Map<String, String> response = new HashMap<>();
-                    response.put("message", "Incorrect code. Another Code Sent Check Email Address.");
+        // If user already has a password reset entry
+        if (passwordReset != null) {
+            // Check if reached max send limit (3 times)
+            if (passwordReset.getTimesSend() >= 3) {
+                LocalDateTime lastSent = passwordReset.getLastSentAt();
+                if (lastSent != null && lastSent.plusHours(1).isAfter(now)) {
+                    long minutesLeft = Duration.between(now, lastSent.plusHours(1)).toMinutes();
+                    response.put("message", "You have reached the maximum reset code requests. Try again after " + minutesLeft + " minutes.");
                     return ResponseEntity.badRequest().body(response);
                 } else {
-                    passwordReset.setTimeTry(tries);
+                    // Cooldown passed → reset counters
+                    passwordReset.setTimesSend(0);
+                    passwordReset.setTimeTry(0);
                 }
             }
+        } else {
+            // No existing reset record
+            passwordReset = new PasswordReset();
+            passwordReset.setUser(user);
+        }
 
-            // Save the PasswordReset entity
+        // Generate new reset code
+        String resetCode = UUID.randomUUID().toString().replace("-", "").substring(0, 6);
+        passwordReset.setResetCode(resetCode);
+        passwordReset.setTimeTry(0);
+        passwordReset.setTimesSend(0);
+        passwordReset.setResetCodeExpiry(LocalDateTime.now().plusHours(24)); // 1-day expiry
+
+        // Increment send counter
+        passwordReset.setTimesSend(passwordReset.getTimesSend() + 1);
+        passwordReset.setLastSentAt(now);
+
+        // Send email
+        emailService.sendResetPasswordEmail(email, resetCode);
+
+        // Save to DB
+        resetRepo.save(passwordReset);
+
+        response.put("message", "Reset code sent successfully. Check your email.");
+        return ResponseEntity.ok(response);
+    }
+
+
+
+    @PostMapping("/reset")
+    @Transactional
+    public ResponseEntity<Map<String, String>> resetPassword(
+            @RequestParam("email") String email,
+            @Valid @RequestBody PasswordDto passwordDto) {
+
+        Map<String, String> response = new HashMap<>();
+        User user = userRepo.findByEmail(email);
+
+        if (user == null) {
+            response.put("message", "Email " + email + " not exist");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        PasswordReset passwordReset = resetRepo.findByUser(user);
+        LocalDateTime now = LocalDateTime.now();
+
+        // If user has a reset record
+        if (passwordReset != null) {
+            // Check if user reached max code sends (3 times)
+            if (passwordReset.getTimesSend() >= 3) {
+                LocalDateTime lastSent = passwordReset.getLastSentAt();
+                if (lastSent != null && lastSent.plusHours(1).isAfter(now)) {
+                    long minutesLeft = Duration.between(now, lastSent.plusHours(1)).toMinutes();
+                    response.put("message", "You have reached the maximum reset attempts. Try again after " + minutesLeft + " minutes.");
+                    return ResponseEntity.badRequest().body(response);
+                } else {
+                    // If cooldown passed, reset counters
+                    passwordReset.setTimesSend(0);
+                    passwordReset.setTimeTry(0);
+                    resetRepo.save(passwordReset);
+                }
+            }
+        }
+
+        // If no existing record, create one
+        if (passwordReset == null) {
+            passwordReset = PasswordReset.builder()
+                    .user(user)
+                    .resetCode(passwordDto.getCode())
+                    .timeTry(1)
+                    .timesSend(1)
+                    .lastSentAt(now)
+                    .build();
             resetRepo.save(passwordReset);
-
-            // Return appropriate response
-            Map<String, String> response = new HashMap<>();
             response.put("message", "Incorrect code. Please try again.");
             return ResponseEntity.badRequest().body(response);
         }
 
-        // If code is correct, reset try_time and proceed with password reset
+        // Handle incorrect code
+        if (!passwordReset.getResetCode().equals(passwordDto.getCode())) {
+            int tries = passwordReset.getTimeTry() + 1;
+            passwordReset.setTimeTry(tries);
+
+            if (tries >= 3) {
+                if (passwordReset.getTimesSend() >= 3) {
+                    response.put("message", "You have reached the maximum reset attempts. Try again after 1 hour.");
+                    return ResponseEntity.badRequest().body(response);
+                }
+
+                // Generate a new code
+                String resetCode = UUID.randomUUID().toString().replace("-", "").substring(0, 6);
+                passwordReset.setResetCode(resetCode);
+                passwordReset.setTimeTry(0);
+                passwordReset.setTimesSend(passwordReset.getTimesSend() + 1);
+                passwordReset.setLastSentAt(now);
+
+                // Send the email
+                emailService.sendResetPasswordEmail(email, resetCode);
+
+                resetRepo.save(passwordReset);
+                response.put("message", "Incorrect code. Another code has been sent. Check your email.");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            resetRepo.save(passwordReset);
+            response.put("message", "Incorrect code. Please try again.");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        // If code correct, reset password
         passwordReset.setTimeTry(0);
-        // Proceed with password reset logic
+        resetRepo.save(passwordReset);
 
         user.setPassword(passwordEncoder.encode(passwordDto.getPassword()));
         userRepo.save(user);
         resetRepo.deleteByUserId(user.getId());
-        // Return success response
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "The password has been reset");
+
+        response.put("message", "Password has been reset successfully.");
         return ResponseEntity.ok(response);
     }
+
 
 }

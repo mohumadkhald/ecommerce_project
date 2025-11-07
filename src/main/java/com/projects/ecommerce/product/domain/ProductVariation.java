@@ -1,7 +1,6 @@
 package com.projects.ecommerce.product.domain;
 
 import com.projects.ecommerce.cart.CartItem;
-import com.projects.ecommerce.order.OrderItem;
 import jakarta.persistence.*;
 import lombok.*;
 

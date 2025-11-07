@@ -254,20 +254,20 @@ public class UserServiceImpl implements UserService {
                     .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
 
             // Check if the email is being updated
-            if (!user.getEmail().equals(dto.getEmail())) {
-                // If the email is being updated, check if the new email already exists
-                User existingUserByEmail = userRepo.findByEmail(dto.getEmail());
-                if (existingUserByEmail != null && !existingUserByEmail.getId().equals(id)) {
-                    // If the new email already exists and belongs to a different user, throw an exception
-                    throw new AlreadyExistsException("Email", "Already Exists: " + dto.getEmail());
-                }
-            }
+//            if (!user.getEmail().equals(dto.getEmail())) {
+//                // If the email is being updated, check if the new email already exists
+//                User existingUserByEmail = userRepo.findByEmail(dto.getEmail());
+//                if (existingUserByEmail != null && !existingUserByEmail.getId().equals(id)) {
+//                    // If the new email already exists and belongs to a different user, throw an exception
+//                    throw new AlreadyExistsException("Email", "Already Exists: " + dto.getEmail());
+//                }
+//            }
 
             // Update user fields
             user.setFirstname(dto.getFirstName());
             user.setLastname(dto.getLastName());
             user.setGender(dto.getGender());
-            user.setEmail(dto.getEmail());
+//            user.setEmail(dto.getEmail());
 
             // Save the updated user
             userRepo.save(user);
