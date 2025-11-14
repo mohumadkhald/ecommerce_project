@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import org.springframework.cache.annotation.Cacheable;
 
 @Service
 @Component
@@ -60,6 +61,8 @@ public class JwtService {
         Claims claims = Jwts.parserBuilder().setSigningKey(SECRET_KEY).build().parseClaimsJws(jwt).getBody();
         return String.valueOf(claims.get("sub"));
     }
+
+
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
         String username = extractUsername(token);

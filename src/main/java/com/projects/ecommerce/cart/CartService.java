@@ -11,7 +11,10 @@ import com.projects.ecommerce.user.model.User;
 import com.projects.ecommerce.user.repository.UserRepo;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
+
+import org.springframework.cache.annotation.Cacheable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +53,8 @@ public class CartService {
         return cartRepository.save(cart);
     }
 
+
+    @CacheEvict(value = "cartByUser", key = "#userId")
     public CartItemDto addProductToCart(Integer userId, CartRequest cartRequest) {
         Cart cart = getCartByUserId(userId);
         CartItem cartItem = new CartItem();
@@ -93,6 +98,7 @@ public class CartService {
         return CartItemMappingHelper.map(cartItemRepository.save(cartItem));
     }
 
+    @CacheEvict(value = "cartByUser", key = "#userId")
     public void removeItemFromCart(Integer userId, Integer itemId) {
         Cart cart = getCartByUserId(userId);
 
@@ -110,6 +116,7 @@ public class CartService {
                 .sum();
     }
 
+    @Cacheable(value = "cartByUser", key = "#userId")
     public List<CartItemDto> getAllItem(Integer userId) {
         Cart cart = getCartByUserId(userId);
 
@@ -119,6 +126,7 @@ public class CartService {
     }
 
 
+    @CacheEvict(value = "cartByUser", key = "#userId")
     public void syncCart(Integer userId, List<CartRequest> cartItems) {
         // Retrieve user cart from the database
         Cart cart = getCartByUserId(userId);
@@ -163,6 +171,8 @@ public class CartService {
         cartItemRepository.saveAll(newCartItems);
     }
 
+
+    @CacheEvict(value = "cartByUser", key = "#userId")
     public void removeAllItemsFromCart(Integer userId) {
         // Retrieve the cart associated with the given user ID
         Cart cart = getCartByUserId(userId);
@@ -178,9 +188,10 @@ public class CartService {
         }
     }
 
-    public CartItemDto editQuantity(Integer itemId, String state) {
+    @CacheEvict(value = "cartByUser", key = "#userId")
+    public CartItemDto editQuantity(Integer userId, Integer itemId, String state) {
         Optional <CartItem> cartItemOptional = cartItemRepository.findById(itemId);
-        if (cartItemOptional.isPresent()) {
+        if (cartItemOptional.isPresent() && cartItemOptional.get().getCart().getUser().getId().equals(userId)) {
             CartItem cartItem = cartItemOptional.get();
             if (state == "INCREASE") {
                 cartItem.setQuantity(cartItem.getQuantity() + 1);

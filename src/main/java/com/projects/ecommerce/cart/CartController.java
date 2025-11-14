@@ -30,8 +30,9 @@ public class CartController {
     }
 
     @PatchMapping("/{itemId}")
-    public CartItemDto editQuantity(@PathVariable Integer itemId, @RequestParam State state) {
-        return cartService.editQuantity(itemId, String.valueOf(state));
+    public CartItemDto editQuantity(@PathVariable Integer itemId, @RequestParam State state, @RequestHeader("Authorization") String jwtToken) {
+        Integer userId = userService.findUserIdByJwt(jwtToken);
+        return cartService.editQuantity(userId, itemId, String.valueOf(state));
     }
 
     @DeleteMapping("/{itemId}")
