@@ -8,7 +8,7 @@ import com.projects.ecommerce.product.service.ProductOwnerService;
 import com.projects.ecommerce.product.service.ProductQueryService;
 import com.projects.ecommerce.product.service.ProductVariationService;
 import com.projects.ecommerce.user.service.UserService;
-import com.projects.ecommerce.utilts.FileStorageService;
+import com.projects.ecommerce.utilts.file.FileUploadStrategy;
 import com.projects.ecommerce.utilts.traits.ApiTrait;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
@@ -46,7 +46,9 @@ public class ProductResource {
     private final ProductVariationService productVariationService;
 
     private final UserService userService;
-    private final FileStorageService fileStorageService;
+//    private final FileStorageService fileStorageService;
+    private final FileUploadStrategy fileStorageService;
+
     private final Validator validator;
 
     // ✅ Fetch All Products With Filters

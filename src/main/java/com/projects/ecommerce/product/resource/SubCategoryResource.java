@@ -4,7 +4,7 @@ package com.projects.ecommerce.product.resource;
 import com.projects.ecommerce.product.dto.SubCategoryDto;
 import com.projects.ecommerce.product.dto.response.collection.DtoCollectionResponse;
 import com.projects.ecommerce.product.service.SubCategoryService;
-import com.projects.ecommerce.utilts.FileStorageService;
+import com.projects.ecommerce.utilts.file.FileUploadStrategy;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -24,7 +24,9 @@ import java.io.IOException;
 public class SubCategoryResource {
 
 	private final SubCategoryService subCategoryService;
-	private final FileStorageService fileStorageService;
+//	private final FileStorageService fileStorageService;
+	private final FileUploadStrategy fileStorageService;
+
 
 	@GetMapping
 	public ResponseEntity<DtoCollectionResponse<SubCategoryDto>> findAll() {

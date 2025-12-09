@@ -35,7 +35,6 @@ public class CategoryDto implements Serializable {
 	@JsonInclude(Include.NON_NULL)
 	private Set<SubCategoryDto> subCategoryDtos;
 
-
 }
 
 

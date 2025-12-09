@@ -114,11 +114,11 @@ public class SecurityConfig {
                 .httpBasic(withDefaults())
         ;
 
-        if (Arrays.asList(environment.getActiveProfiles()).contains("docker")) {
-            http.requiresChannel(channel ->
-                    channel.anyRequest().requiresSecure()
-            );
-        }
+//        if (Arrays.asList(environment.getActiveProfiles()).contains("docker")) {
+//            http.requiresChannel(channel ->
+//                    channel.anyRequest().requiresSecure()
+//            );
+//        }
 
         return http.build();
     }
