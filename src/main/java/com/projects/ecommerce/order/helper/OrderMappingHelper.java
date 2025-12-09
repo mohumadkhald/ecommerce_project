@@ -10,6 +10,7 @@ import com.projects.ecommerce.product.domain.Size;
 import com.projects.ecommerce.user.dto.UserDto;
 import com.projects.ecommerce.user.model.User;
 
+import java.time.YearMonth;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +43,7 @@ public interface OrderMappingHelper {
 					return OrderItemDto.builder()
 							.productVariations(variations)
 							.productName(firstItem.getOrderVariation().getProductTitle())
-							.img(firstItem.getOrderVariation().getImg())
+							.img(firstItem.getOrderVariation().getImageUrl())
 							.price(firstItem.getOrderVariation().getPrice())
 							.discount(firstItem.getOrderVariation().getDiscountPercent())
 							.totalPrice(firstItem.getOrderVariation().getDiscountedPrice())
@@ -146,7 +147,7 @@ public interface OrderMappingHelper {
 		return PaymentInfoDto.builder()
 				.cardHolderName(paymentInfo.getCardHolderName())
 				.cardNumber(paymentInfo.getCardNumber()) // Consider masking or handling securely
-				.expirationDate(paymentInfo.getExpirationDate())
+				.expirationDate(String.valueOf(paymentInfo.getExpirationDate()))
 				.cvv(paymentInfo.getCvv())
 				.build();
 	}
@@ -159,7 +160,7 @@ public interface OrderMappingHelper {
 		return PaymentInfo.builder()
 				.cardHolderName(paymentInfoDto.getCardHolderName())
 				.cardNumber(paymentInfoDto.getCardNumber()) // Ensure to handle securely
-				.expirationDate(paymentInfoDto.getExpirationDate())
+				.expirationDate(YearMonth.parse(paymentInfoDto.getExpirationDate()))
 				.cvv(paymentInfoDto.getCvv())
 				.build();
 	}
@@ -238,7 +239,7 @@ public interface OrderMappingHelper {
 					return OrderItemDto.builder()
 							.productVariations(variations)
 							.productName(firstItem.getOrderVariation().getProductTitle())
-							.img(firstItem.getOrderVariation().getImg())
+							.img(firstItem.getOrderVariation().getImageUrl())
 							.price(firstItem.getOrderVariation().getPrice())
 							.discount(firstItem.getOrderVariation().getDiscountPercent())
 							.totalPrice(firstItem.getOrderVariation().getDiscountedPrice() * firstItem.getQuantity())

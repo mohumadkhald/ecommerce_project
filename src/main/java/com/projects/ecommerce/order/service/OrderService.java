@@ -117,7 +117,7 @@ public class OrderService {
                                         .size(cartItem.getProductVariation().getSize().toString())
                                         .color(cartItem.getProductVariation().getColor().toString())
                                         .discountedPrice(cartItem.getProductVariation().getProduct().getDiscountedPrice())
-                                        .img(cartItem.getProductVariation().getProduct().getImageUrl())
+                                        .imageUrl(cartItem.getProductVariation().getProduct().getImages().get(0).getUrl())
                                         .productTitle(cartItem.getProductVariation().getProduct().getProductTitle())
                                         .productId(cartItem.getProductVariation().getProduct().getId())
                                         .price(cartItem.getProductVariation().getProduct().getPrice())
@@ -147,8 +147,7 @@ public class OrderService {
             specs.add(new Spec(
                     productVariation.getSize(),    // Size should not be null here
                     productVariation.getColor(),   // Assuming getColor() returns the color
-                    orderedQuantity,               // Quantity to be decremented
-                    productVariation.getImg()      // Assuming getImg() returns the image URL or path
+                    orderedQuantity               // Quantity to be decremented
             ));
 
             // Call the service method to update stocks

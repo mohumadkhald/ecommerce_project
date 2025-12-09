@@ -18,7 +18,7 @@ public interface SubCategoryRepository extends JpaRepository<SubCategory, Intege
     boolean existsByName(String name);
 
 
-    @Query("SELECT new com.projects.ecommerce.product.dto.SubCategoryDto(s.subId, s.name, s.category.categoryId, s.img) " +
+    @Query("SELECT new com.projects.ecommerce.product.dto.SubCategoryDto(s.subId, s.name, s.category.categoryId, s.img, s.category.categoryTitle) " +
             "FROM SubCategory s WHERE s.category = :category")
     List<SubCategoryDto> findByCategory(@Param("category") Category category);
 }

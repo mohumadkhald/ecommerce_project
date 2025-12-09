@@ -1,6 +1,11 @@
 package com.projects.ecommerce.Config;
 
 import com.projects.ecommerce.Config.JwtAuthFilter;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,8 +33,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -72,6 +79,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/categories/**", "/api/sub-categories", "/api/products/allDetails/**").permitAll()
 
                         .requestMatchers(
+                                "/status-stream",
                                 "/api/products/**",
                                 "/api/sub-categories/find/**",
                                 "/public/images/**",
@@ -181,5 +189,18 @@ public class SecurityConfig {
     public AuthenticationFailureHandler failureHandler() {
         return new CustomAuthenticationFailureHandler();
     }
+
+    @Bean
+    public Filter logPath() {
+        return new OncePerRequestFilter() {
+            @Override
+            protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
+                    throws ServletException, IOException {
+                System.out.println(">>> Incoming request: " + req.getRequestURI());
+                chain.doFilter(req, res);
+            }
+        };
+    }
+
 
 }

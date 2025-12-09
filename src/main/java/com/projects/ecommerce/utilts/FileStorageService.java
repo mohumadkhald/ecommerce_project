@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -90,5 +92,29 @@ public class FileStorageService {
         return baseUrl + normalizedFolderName + "/" + fileName;
 
     }
+
+    public String removeFile(String url) throws IOException {
+
+        // 1. Extract relative path after domain
+        //    Example input:
+        //    http://localhost:8080/public/images/users/1/image.jpg
+        String relativePath = url.replace("http://localhost:8080/public/images", "uploads");
+
+        // 2. Convert to your local file storage directory
+        Path filePath = Paths.get("").resolve(relativePath);
+
+        File file = filePath.toFile();
+
+        if (file.exists()) {
+            if (file.delete()) {
+                return "File removed successfully";
+            } else {
+                throw new IOException("Failed to delete file");
+            }
+        } else {
+            throw new FileNotFoundException("File not found: " + filePath);
+        }
+    }
+
 
 }

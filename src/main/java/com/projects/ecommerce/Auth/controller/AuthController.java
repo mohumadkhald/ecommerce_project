@@ -185,6 +185,7 @@ public class AuthController {
     @PatchMapping("photo")
     public ResponseEntity<?> changePhoto(
             @RequestPart(value = "image", required = false) MultipartFile image,
+            @RequestParam("url" ) String url,
             @RequestHeader("Authorization") String jwtToken)
             throws IOException {
 
@@ -196,8 +197,11 @@ public class AuthController {
             throw new IllegalStateException("Image file is required");
         }
 
+
         String imageUrl = fileStorageService.storeFile(image, "users/" + userId);
         userService.updateUserPhoto(userId, imageUrl);
+        log.info("the url is  {}", url);
+        fileStorageService.removeFile(url);
 
         return ApiTrait.successMessage(imageUrl, HttpStatus.OK);
     }

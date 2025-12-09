@@ -7,6 +7,6 @@ import java.util.Map;
 
 public interface ProductVariationService {
     Map<String, Map<String, Map<String, Integer>>> getProductVariations(String productName);
-    void updateProductVariation(Integer productId, List<Spec> specs, List<String> imageUrls);
+    void updateProductVariation(Integer productId, List<Spec> specs);
 
 }

@@ -1,14 +1,18 @@
 package com.projects.ecommerce.order.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.YearMonth;
 
 @Embeddable
 @Data
@@ -29,11 +33,16 @@ public class PaymentInfo {
     @Column(name = "card_number")
     private String cardNumber;
 
-    @NotBlank(message = "Expiration date is required")
-    @Pattern(regexp = "(0[1-9]|1[0-2])/\\d{4}", message = "Expiration date must be in MM/YY format")
-    @Column(name = "expiration_date")
-    @FutureOrPresent
-    private String expirationDate;
+//    @NotBlank(message = "Expiration date is required")
+//    @Pattern(regexp = "(0[1-9]|1[0-2])/\\d{4}", message = "Expiration date must be in MM/YY format")
+//    @Column(name = "expiration_date")
+//    @FutureOrPresent
+//    private String expirationDate;
+
+    @NotNull(message = "Expiration date is required")
+    @FutureOrPresent(message = "Expiration date must be in the future or present")
+    @JsonFormat(pattern = "MM/yy")
+    private YearMonth expirationDate;
 
     @NotBlank(message = "CVV is required")
     @Pattern(regexp = "\\d{3}", message = "CVV must be 3 digits")

@@ -3,11 +3,13 @@ package com.projects.ecommerce.cart;
 import com.projects.ecommerce.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/cart")
 @AllArgsConstructor
@@ -38,6 +40,7 @@ public class CartController {
     @DeleteMapping("/{itemId}")
     public ResponseEntity<Void> removeProductFromCart(@PathVariable Integer itemId, @RequestHeader("Authorization") String jwtToken) {
         Integer userId = userService.findUserIdByJwt(jwtToken);
+        log.info("Removing product from cart: " + itemId);
         cartService.removeItemFromCart(userId, itemId); // Pass userId and itemId to the service method
         return ResponseEntity.ok().build();
     }

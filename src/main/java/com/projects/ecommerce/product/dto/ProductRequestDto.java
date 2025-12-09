@@ -1,6 +1,7 @@
 package com.projects.ecommerce.product.dto;
 
 import com.projects.ecommerce.product.domain.Color;
+import com.projects.ecommerce.product.domain.ProductImage;
 import com.projects.ecommerce.product.domain.Size;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -14,6 +15,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,10 +29,7 @@ public class ProductRequestDto implements Serializable {
 
 	@NotBlank(message = "Product title cannot be blank")
 	private String productTitle;
-	private String imageUrl;
-
-	private String imgSpec;
-
+	private List<String> imageUrls;
 
 	@NotNull(message = "Color must not be null")
 	@Enumerated(EnumType.STRING)

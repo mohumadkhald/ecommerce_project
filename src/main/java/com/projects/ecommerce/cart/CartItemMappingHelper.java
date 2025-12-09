@@ -2,6 +2,7 @@ package com.projects.ecommerce.cart;
 
 
 import com.projects.ecommerce.product.domain.Color;
+import com.projects.ecommerce.product.domain.ProductImage;
 import com.projects.ecommerce.product.domain.ProductVariation;
 import com.projects.ecommerce.product.domain.Size;
 
@@ -15,8 +16,15 @@ public interface CartItemMappingHelper {
 				.totalPrice(cartItem.getPrice())
 				.totalPriceDiscounted(cartItem.getQuantity()*cartItem.getProductVariation().getProduct().getDiscountedPrice())
 				.ProductId(cartItem.getProductVariation().getProduct().getId())
-				.imageUrl(cartItem.getProductVariation().getProduct().getImageUrl())
-				.productTitle(cartItem.getProductVariation().getProduct().getProductTitle())
+				.imageUrl(
+						cartItem.getProductVariation()
+								.getProduct()
+								.getImages()
+								.stream()
+								.findFirst()
+								.map(ProductImage::getUrl)
+								.orElse(null)
+				)				.productTitle(cartItem.getProductVariation().getProduct().getProductTitle())
 				.price(cartItem.getProductVariation().getProduct().getPrice())
 				.discount(cartItem.getProductVariation().getProduct().getDiscountPercent())
 				.discountedPrice(cartItem.getProductVariation().getProduct().getDiscountedPrice())

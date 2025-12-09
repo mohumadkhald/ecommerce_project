@@ -81,10 +81,12 @@ public class ProductCommandServiceImpl implements ProductCommandService {
             if (existing != null && !existing.getId().equals(productId))
                 throw new AlreadyExistsException("Product", "Already Exists: " + productDto.getProductTitle());
         }
+        productDto.setDiscountedPrice();
         product.setProductTitle(productDto.getProductTitle());
         product.setPrice(productDto.getPrice());
-        product.setImageUrl(productDto.getImageUrl());
+//        product.setImages(productDto.getImageUrls());
         product.setDiscountPercent(productDto.getDiscountPercent());
+        product.setDiscountedPrice(productDto.getDiscountedPrice());
         product.setSubCategory(SubCategory.builder().subId(productDto.getSubCategoryId()).category(Category.builder().build()).build());
         productRepository.save(product);
         return ProductMappingHelper.map(product);
@@ -108,7 +110,7 @@ public class ProductCommandServiceImpl implements ProductCommandService {
                 int currentQuantity = variationToUpdate.getQuantity();
                 variationToUpdate.setQuantity(increaseQuantity ? currentQuantity + spec.getQuantity() : spec.getQuantity());
             } else {
-                newProductVariation(product, spec, spec.getQuantity(), null);
+                newProductVariation(product, spec, spec.getQuantity());
             }
         }
         productRepository.save(product);
@@ -134,7 +136,7 @@ public class ProductCommandServiceImpl implements ProductCommandService {
                 int newQuantity = currentQuantity - quantityToSubtract;
                 variationToUpdate.setQuantity(Math.max(newQuantity, 0));
             } else {
-                newProductVariation(product, spec, quantityToSubtract, null);
+                newProductVariation(product, spec, quantityToSubtract);
             }
         }
         productRepository.save(product);
@@ -142,12 +144,11 @@ public class ProductCommandServiceImpl implements ProductCommandService {
         product.setAllQuantity(totalQuantity);
     }
 
-    static void newProductVariation(Product product, Spec spec, Integer increaseQuantity, String img) {
+    static void newProductVariation(Product product, Spec spec, Integer increaseQuantity) {
         ProductVariation newVariation = new ProductVariation();
         newVariation.setSize(Size.valueOf(spec.getSize()));
         newVariation.setColor(Color.valueOf(spec.getColor()));
         newVariation.setQuantity(spec.getQuantity() + increaseQuantity);
-        newVariation.setImg(img);
         newVariation.setProduct(product);
         product.getVariations().add(newVariation);
     }
@@ -171,4 +172,39 @@ public class ProductCommandServiceImpl implements ProductCommandService {
         int totalQuantity = product.getVariations().stream().mapToInt(ProductVariation::getQuantity).sum();
         product.setAllQuantity(totalQuantity);
     }
+
+    @Override
+    public void updateProductPhoto(String name, String lastUrl, String newUrl) {
+        Product product = productRepository.findByProductTitle(name);
+
+        if (product == null) {
+            throw new RuntimeException("Product not found: " + name);
+        }
+
+        List<ProductImage> images = product.getImages();
+        if (images == null || images.isEmpty()) {
+            images = new ArrayList<>();
+            product.setImages(images);
+        }
+
+        // Find the ProductImage with lastUrl
+        Optional<ProductImage> existingImageOpt = images.stream()
+                .filter(img -> img.getUrl().equals(lastUrl))
+                .findFirst();
+
+        if (existingImageOpt.isPresent()) {
+            // Update existing image URL
+            existingImageOpt.get().setUrl(newUrl);
+        } else {
+            // If not found, create a new ProductImage
+            ProductImage newImage = new ProductImage();
+            newImage.setUrl(newUrl);
+            newImage.setProduct(product);
+            images.add(newImage);
+        }
+
+        // Save product (cascade ALL ensures images are saved)
+        productRepository.save(product);
+    }
+
 }

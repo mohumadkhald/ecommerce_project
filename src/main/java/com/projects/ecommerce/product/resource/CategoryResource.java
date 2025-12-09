@@ -61,7 +61,7 @@ public class CategoryResource {
 		}
 
 		if (image != null && !image.isEmpty()) {
-			String imageUrl = fileStorageService.storeFile(image, "products/" + categoryRequestDto.getCategoryTitle());
+			String imageUrl = fileStorageService.storeFile(image, "categories/" + categoryRequestDto.getCategoryTitle());
 			categoryRequestDto.setImg(imageUrl);
 		}
 		return ResponseEntity.ok(this.categoryService.save(categoryRequestDto));

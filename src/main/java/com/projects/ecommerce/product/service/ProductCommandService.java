@@ -18,4 +18,6 @@ public interface ProductCommandService {
     void updateProductStocks(Integer productId, List<Spec> specs, boolean increaseQuantity);
     Product findProductById(Integer productId);
     void updateProductStock(Integer productId, List<Spec> specs, Integer quantityToSubtract);
+
+    void updateProductPhoto(String name, String last, String imageUrl);
 }

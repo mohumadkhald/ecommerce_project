@@ -67,7 +67,7 @@ public class SubCategoryResource {
 		}
 
 		if (image != null && !image.isEmpty()) {
-			String imageUrl = fileStorageService.storeFile(image, "products/" + subCategoryDto.getName());
+			String imageUrl = fileStorageService.storeFile(image, "subcategories/" + subCategoryDto.getName());
 			subCategoryDto.setImg(imageUrl);
 		}
 

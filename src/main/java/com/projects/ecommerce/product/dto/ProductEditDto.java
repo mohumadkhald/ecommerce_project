@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,7 +24,7 @@ public class ProductEditDto implements Serializable {
 
 	@NotBlank(message = "Product title cannot be blank")
 	private String productTitle;
-	private String imageUrl;
+//	private List<String> imageUrls;
 
 	@NotNull(message = "Price cannot be null")
 	@PositiveOrZero(message = "Price must be a positive number or zero")

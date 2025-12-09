@@ -190,21 +190,34 @@ public class CartService {
 
     @CacheEvict(value = "cartByUser", key = "#userId")
     public CartItemDto editQuantity(Integer userId, Integer itemId, String state) {
-        Optional <CartItem> cartItemOptional = cartItemRepository.findById(itemId);
+        Optional<CartItem> cartItemOptional = cartItemRepository.findById(itemId);
+
         if (cartItemOptional.isPresent() && cartItemOptional.get().getCart().getUser().getId().equals(userId)) {
             CartItem cartItem = cartItemOptional.get();
-            if (state == "INCREASE") {
+
+            if ("INCREASE".equals(state)) {
                 cartItem.setQuantity(cartItem.getQuantity() + 1);
                 cartItem.setPrice(cartItem.getQuantity() * cartItem.getProductVariation().getProduct().getPrice());
+                cartItemRepository.save(cartItem);
+                return CartItemMappingHelper.map(cartItem);
+            } else if ("DECREASE".equals(state)) {
+                if (cartItem.getQuantity() > 1) {
+                    cartItem.setQuantity(cartItem.getQuantity() - 1);
+                    cartItem.setPrice(cartItem.getQuantity() * cartItem.getProductVariation().getProduct().getPrice());
+                    cartItemRepository.save(cartItem);
+                    return CartItemMappingHelper.map(cartItem);
+                } else {
+                    // Quantity is 1 → delete item
+                    cartItemRepository.delete(cartItem);
+                    return null; // or return some DTO indicating deletion
+                }
             } else {
-                cartItem.setQuantity(cartItem.getQuantity() - 1);
-                cartItem.setPrice(cartItem.getQuantity() * cartItem.getProductVariation().getProduct().getPrice());
+                throw new IllegalArgumentException("Invalid state: " + state);
             }
-
-            return CartItemMappingHelper.map(cartItemRepository.save(cartItem));
 
         } else {
             throw new NotFoundException("Item", "Not Found");
         }
     }
+
 }

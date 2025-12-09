@@ -53,8 +53,6 @@ public final class OrderVariation extends AbstractMappedEntity implements Serial
     @Column(name = "quantity")
     private int quantity;
 
-    private String img;
-
     @OneToMany(mappedBy = "orderVariation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<CartItem> cartItems;
 

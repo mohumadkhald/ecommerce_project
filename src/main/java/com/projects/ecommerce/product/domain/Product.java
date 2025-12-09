@@ -1,16 +1,13 @@
 package com.projects.ecommerce.product.domain;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.projects.ecommerce.utilts.Base;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-import java.io.Serial;
-import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Table(name = "products")
 @Entity
@@ -23,8 +20,12 @@ public final class Product extends Base {
 	@Column(name = "product_title")
 	private String productTitle;
 
-	@Column(name = "image_url")
-	private String imageUrl;
+//	@Column(name = "image_url")
+//	private String imageUrl;
+
+	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<ProductImage> images = new ArrayList<>();
+
 
 	@Column(name = "all_quantity")
 	private Integer allQuantity;

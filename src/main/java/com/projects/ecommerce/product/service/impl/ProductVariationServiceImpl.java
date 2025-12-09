@@ -39,7 +39,7 @@ public class ProductVariationServiceImpl implements ProductVariationService {
     }
 
     @Override
-    public void updateProductVariation(Integer productId, List<Spec> specs, List<String> imageUrls) {
+    public void updateProductVariation(Integer productId, List<Spec> specs) {
         Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
         for (int i = 0; i < specs.size(); i++) {
             Spec spec = specs.get(i);
@@ -49,15 +49,13 @@ public class ProductVariationServiceImpl implements ProductVariationService {
             if (existingVariation.isPresent()) {
                 ProductVariation variationToUpdate = existingVariation.get();
                 variationToUpdate.setQuantity(spec.getQuantity());
-                if (i < imageUrls.size()) variationToUpdate.setImg(imageUrls.get(i));
             } else {
-                String imageUrl = (i < imageUrls.size()) ? imageUrls.get(i) : null;
-                newProductVariation(product, spec, 0, imageUrl);
+                newProductVariation(product, spec, 0);
             }
         }
-        productRepository.save(product);
         int totalQuantity = product.getVariations().stream().mapToInt(ProductVariation::getQuantity).sum();
         product.setAllQuantity(totalQuantity);
+        productRepository.save(product);
     }
 
     	public static void getExistingVariation(Product product, ProductRequestDto productDto) {

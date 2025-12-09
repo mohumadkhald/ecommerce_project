@@ -14,13 +14,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Setter
 @Getter
-@AllArgsConstructor
 public class Spec {
     @NotBlank(message = "Color cannot be null or empty")
     private String color;
     @NotBlank(message = "Size cannot be null or empty")
     private String size;
-    private String img; // Image URL or path
     @NotNull(message = "Quantity cannot be null")
     @Positive(message = "Quantity must be a positive integer")
     private Integer quantity;
@@ -28,19 +26,16 @@ public class Spec {
     @JsonCreator
     public Spec(@JsonProperty("size") String size,
                 @JsonProperty("color") String color,
-                @JsonProperty("quantity") Integer quantity,
-                @JsonProperty("img") String img) {
+                @JsonProperty("quantity") Integer quantity) {
         this.size = size;
         this.color = color;
         this.quantity = quantity;
-        this.img = img;
     }
 
 
-    public Spec(Size size, Color color, int orderedQuantity, String img) {
+    public Spec(Size size, Color color, int orderedQuantity) {
         this.size = String.valueOf(size);
         this.color = String.valueOf(color);
         this.quantity = orderedQuantity;
-        this.img = img;
     }
 }

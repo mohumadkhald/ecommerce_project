@@ -3,15 +3,15 @@ version: '3.8'
 services:
     app-java:
         build: .
-        image: mohumadkhald/ecommerce_ci_cd:2.0
+        image: mohumadkhald/docker-myapp
         ports:
-            - "8443:8443"
+            - "8080:8080"
         environment:
             SPRING_DATASOURCE_URL: ${DB_URL}
             SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
             SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
             SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.MySQLDialect
-            SPRING_JPA_HIBERNATE_DDL_AUTO: none
+            SPRING_JPA_HIBERNATE_DDL_AUTO: update
         volumes:
             - ./uploads:/usr/app/uploads
 
@@ -44,3 +44,27 @@ services:
 volumes:
     maria-data:
         driver: local
+
+
+
+
+
+
+
+
+
+
+
+
+
+#    MYSQL_DATABASE="railway"
+#    MYSQL_USER="root"
+#    MYSQL_PASSWORD="WWHhDyKzVYquuWOzJNLliHmRUvQCOUnR"
+#    MYSQL_HOST="switchback.proxy.rlwy.net"
+#    MYSQL_PORT="13316"
+#    SPRING_DATASOURCE_URL="jdbc:mariadb://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}"
+#    SPRING_DATASOURCE_USERNAME="${MYSQL_USER}"
+#    SPRING_DATASOURCE_PASSWORD="${MYSQL_PASSWORD}"
+#    SPRING_DATASOURCE_DRIVER_CLASS_NAME="org.mariadb.jdbc.Driver"
+#    SPRING_JPA_DATABASE_PLATFORM="org.hibernate.dialect.MariaDBDialect"
+#    SPRING_JPA_HIBERNATE_DDL_AUTO="update"
