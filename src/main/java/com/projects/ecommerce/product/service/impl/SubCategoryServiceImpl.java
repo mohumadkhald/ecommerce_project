@@ -3,7 +3,9 @@ package com.projects.ecommerce.product.service.impl;
 
 import com.projects.ecommerce.product.domain.Category;
 import com.projects.ecommerce.product.domain.SubCategory;
+import com.projects.ecommerce.product.dto.CategoryDto;
 import com.projects.ecommerce.product.dto.SubCategoryDto;
+import com.projects.ecommerce.product.helper.CategoryMappingHelper;
 import com.projects.ecommerce.product.helper.SubCategoryMappingHelper;
 import com.projects.ecommerce.product.repository.CategoryRepository;
 import com.projects.ecommerce.product.repository.SubCategoryRepository;
@@ -39,13 +41,10 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 	}
 
 	@Override
-	public List<SubCategoryDto> findAllByCategoryTitle(String categoryTitle) {
+	public CategoryDto findAllByCategoryTitle(String categoryTitle) {
 		log.info("*** SubCategoryDto List, service; fetch all sub-categories by category title *");
 		Category category = categoryRepository.findByCategoryTitle(categoryTitle);
-		if (category == null) {
-			throw new NotFoundException("Category", "Category: " + categoryTitle.toUpperCase() + "Not Found");
-		}
-		return this.subcategoryRepository.findByCategory(category);
+		return CategoryMappingHelper.map(category);
 	}
 
 	@Override

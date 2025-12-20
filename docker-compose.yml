@@ -3,15 +3,17 @@ version: '3.8'
 services:
     app-java:
         build: .
-        image: mohumadkhald/docker-myapp
+        image: mohumadkhald/docker-myapp:10.0
         ports:
             - "8080:8080"
         environment:
-            SPRING_DATASOURCE_URL: ${DB_URL}
+            SPRING_DATASOURCE_URL: jdbc:mariadb://host.docker.internal:3306/ecommerce
             SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
             SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
             SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.MySQLDialect
             SPRING_JPA_HIBERNATE_DDL_AUTO: update
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
         volumes:
             - ./uploads:/usr/app/uploads
 

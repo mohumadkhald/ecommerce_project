@@ -29,8 +29,8 @@ public class AuthGoogleProviderController {
     private final AuthService authService;
     private final PasswordEncoder passwordEncoder;
 
-//    @Value("${base-url}")
-    @Value("http://localhost:4200/auth?state=login")
+    @Value("${base-url2}")
+//    @Value("http://localhost:4200/auth?state=login")
     private String baseUrl;
 
     public AuthGoogleProviderController(UserService userService, AuthService authService, PasswordEncoder passwordEncoder) {

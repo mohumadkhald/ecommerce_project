@@ -1,6 +1,7 @@
 package com.projects.ecommerce.product.service;
 
 
+import com.projects.ecommerce.product.dto.CategoryDto;
 import com.projects.ecommerce.product.dto.SubCategoryDto;
 
 import java.util.List;
@@ -14,7 +15,7 @@ public interface SubCategoryService {
 	SubCategoryDto update(final Integer subCategoryId, final SubCategoryDto subCategoryDto);
 	void deleteById(final Integer subCategoryId);
 
-    List<SubCategoryDto> findAllByCategoryTitle(String categoryTitle);
+    CategoryDto findAllByCategoryTitle(String categoryTitle);
 
 	boolean findByName(String categoryName);
 }

@@ -66,6 +66,8 @@ public class SecurityConfig {
 
     @Value("${facebook.client.client-secret}")
     private String facebookClientSecret;
+    @Value("${base-url}")
+    private String baseUrl;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -154,7 +156,7 @@ public class SecurityConfig {
                 .clientId(clientId)
                 .clientSecret(clientSecret)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                .redirectUri("{baseUrl}/login/oauth2/code/google")
+                .redirectUri(baseUrl + "/login/oauth2/code/google")
                 .scope("openid", "profile", "email")
                 .authorizationUri("https://accounts.google.com/o/oauth2/auth?prompt=consent") // Add this line
                 .tokenUri("https://oauth2.googleapis.com/token")

@@ -25,19 +25,23 @@ public class SubCategoryDto implements Serializable {
 	private String name;
 
 	private String img;
+	@NotBlank(message = "Description cannot be empty or start space")
+	private String description;
 
 	@NotNull
 	private Integer categoryId;
-	private String categoryName;
+//	private String categoryName;
+//	private String categoryImg;
 
 	@JsonInclude(Include.NON_NULL)
 	private Set<ProductDto> productDtos;
-	public SubCategoryDto(Integer id, String name, Integer categoryId, String img, String categoryName) {
+	public SubCategoryDto(Integer id, String name, String description, Integer categoryId, String img) {
 		this.id = id;
 		this.name = name;
+		this.description = description;
 		this.categoryId = categoryId;
 		this.img = img;
-        this.categoryName = categoryName;
+//        this.categoryName = categoryName;
 	}
 }
 

@@ -1,6 +1,7 @@
 package com.projects.ecommerce.product.resource;
 
 
+import com.projects.ecommerce.product.dto.CategoryDto;
 import com.projects.ecommerce.product.dto.SubCategoryDto;
 import com.projects.ecommerce.product.dto.response.collection.DtoCollectionResponse;
 import com.projects.ecommerce.product.service.SubCategoryService;
@@ -35,9 +36,9 @@ public class SubCategoryResource {
 	}
 
 	@GetMapping("/find/{categoryTitle}")
-	public ResponseEntity<DtoCollectionResponse<SubCategoryDto>> findSubByCategoryTitle(@PathVariable ("categoryTitle") String categoryTitle) {
+	public ResponseEntity<CategoryDto> findSubByCategoryTitle(@PathVariable ("categoryTitle") String categoryTitle) {
 		log.info("*** CategoryDto List, controller; fetch all categories by category title *");
-		return ResponseEntity.ok(new DtoCollectionResponse<>(this.subCategoryService.findAllByCategoryTitle(categoryTitle)));
+		return ResponseEntity.ok(this.subCategoryService.findAllByCategoryTitle(categoryTitle));
 	}
 
 	@GetMapping("/{subCategoryId}")

@@ -28,6 +28,9 @@ public class SubCategoryRequestDto implements Serializable {
 	private String subCategoryTitle;
 	private String imageUrl;
 
+	@NotBlank(message = "Description cannot be empty or start space")
+	private String description;
+
 	@JsonInclude(Include.NON_NULL)
 	private Set<SubCategoryRequestDto> subCategoriesDtos;
 

@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
 
 @NoArgsConstructor
@@ -33,7 +34,7 @@ public class CategoryDto implements Serializable {
 	private String img;
 
 	@JsonInclude(Include.NON_NULL)
-	private Set<SubCategoryDto> subCategoryDtos;
+	private List<SubCategoryDto> subCategoryDtos; // instead of Set
 
 }
 
