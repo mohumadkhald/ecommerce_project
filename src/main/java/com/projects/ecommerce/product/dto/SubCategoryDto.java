@@ -30,18 +30,18 @@ public class SubCategoryDto implements Serializable {
 
 	@NotNull
 	private Integer categoryId;
-//	private String categoryName;
+	private String categoryName;
 //	private String categoryImg;
 
 	@JsonInclude(Include.NON_NULL)
 	private Set<ProductDto> productDtos;
-	public SubCategoryDto(Integer id, String name, String description, Integer categoryId, String img) {
+	public SubCategoryDto(Integer id, String name, String description, Integer categoryId, String img,  String categoryName) {
 		this.id = id;
 		this.name = name;
 		this.description = description;
 		this.categoryId = categoryId;
 		this.img = img;
-//        this.categoryName = categoryName;
+        this.categoryName = categoryName;
 	}
 }
 

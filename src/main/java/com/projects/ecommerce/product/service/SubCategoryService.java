@@ -18,4 +18,6 @@ public interface SubCategoryService {
     CategoryDto findAllByCategoryTitle(String categoryTitle);
 
 	boolean findByName(String categoryName);
+
+	long getSubCategoriesCount();
 }

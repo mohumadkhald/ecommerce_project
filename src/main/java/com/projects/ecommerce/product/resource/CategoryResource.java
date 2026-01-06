@@ -5,11 +5,13 @@ import com.projects.ecommerce.product.dto.CategoryDto;
 import com.projects.ecommerce.product.dto.response.collection.DtoCollectionResponse;
 import com.projects.ecommerce.product.service.CategoryService;
 import com.projects.ecommerce.utilts.file.FileUploadStrategy;
+import com.projects.ecommerce.utilts.traits.ApiTrait;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -95,14 +97,14 @@ public class CategoryResource {
 			@NotBlank(message = "Input must not be blank")
 			@Valid final String categoryId,
 			@ModelAttribute @Valid final CategoryDto categoryRequestDto,
-			@RequestPart(value = "image", required = false) MultipartFile image,
+//			@RequestPart(value = "image", required = false) MultipartFile image,
 			BindingResult bindingResult
 	) throws IOException {
 		log.info("*** CategoryDto, resource; save category *");
 		// Check if the image is null or empty and add a global error
-		if (image == null || image.isEmpty()) {
-			throw new IllegalStateException("Image file is required");
-		}
+//		if (image == null || image.isEmpty()) {
+//			throw new IllegalStateException("Image file is required");
+//		}
 
 		// Check for other validation errors
 		if (bindingResult.hasErrors()) {
@@ -123,7 +125,29 @@ public class CategoryResource {
 		return ResponseEntity.ok(true);
 	}
 
+	@PatchMapping("photo")
+	public ResponseEntity<?> changePhoto(
+			@RequestPart(value = "image", required = false) MultipartFile image,
+			@RequestParam("url" ) String url,
+			@RequestParam("title")  String name,
+			@RequestHeader("Authorization") String jwtToken)
+			throws IOException {
 
+		log.info("*** Category, resource; save Category ***");
+
+		// Check if the image is null or empty and add a global error
+		if (image == null || image.isEmpty()) {
+			throw new IllegalStateException("Image file is required");
+		}
+
+
+		String imageUrl = fileStorageService.storeFile(image, "category/" + name);
+		categoryService.updateCategoryPhoto(name, url, imageUrl);
+		log.info("the url is  {}", url);
+//        fileStorageService.removeFile(url);
+
+		return ApiTrait.successMessage(imageUrl, HttpStatus.OK);
+	}
 
 }
 

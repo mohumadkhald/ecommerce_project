@@ -35,6 +35,12 @@ public class SubCategoryResource {
 		return ResponseEntity.ok(new DtoCollectionResponse<>(this.subCategoryService.findAll()));
 	}
 
+	@GetMapping("/count")
+	public ResponseEntity<Long> getSubCategoriesCount() {
+		log.info("*** CategoryDto List, controller; fetch count *");
+		return ResponseEntity.ok(subCategoryService.getSubCategoriesCount());
+	}
+
 	@GetMapping("/find/{categoryTitle}")
 	public ResponseEntity<CategoryDto> findSubByCategoryTitle(@PathVariable ("categoryTitle") String categoryTitle) {
 		log.info("*** CategoryDto List, controller; fetch all categories by category title *");

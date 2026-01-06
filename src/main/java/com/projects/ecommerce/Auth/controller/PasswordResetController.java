@@ -2,7 +2,8 @@ package com.projects.ecommerce.Auth.controller;
 
 
 import com.projects.ecommerce.Auth.dto.PasswordDto;
-import com.projects.ecommerce.Auth.service.EmailService;
+import com.projects.ecommerce.mail.EmailService;
+import com.projects.ecommerce.user.model.EmailVerification;
 import com.projects.ecommerce.user.model.PasswordReset;
 import com.projects.ecommerce.user.repository.ResetRepo;
 import com.projects.ecommerce.user.model.User;
@@ -23,6 +24,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -180,6 +182,9 @@ public class PasswordResetController {
         // If code correct, reset password
         passwordReset.setTimeTry(0);
         resetRepo.save(passwordReset);
+        Optional.ofNullable(user.getEmailVerification())
+                .filter(ev -> !ev.isEmailVerified())
+                .ifPresent(ev -> ev.setEmailVerified(true));
 
         user.setPassword(passwordEncoder.encode(passwordDto.getPassword()));
         userRepo.save(user);

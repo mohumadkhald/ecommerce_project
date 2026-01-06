@@ -44,4 +44,6 @@ public interface UserService {
     void updateUserPhoto(Integer userId, String imageUrl);
 
     ResponseEntity<?> changePassword(Integer id, @Valid ChangePasswordDto changePasswordDto);
+
+    Long getUsersCount();
 }

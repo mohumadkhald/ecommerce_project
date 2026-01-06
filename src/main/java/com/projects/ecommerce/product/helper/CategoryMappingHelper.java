@@ -6,6 +6,7 @@ import com.projects.ecommerce.product.domain.SubCategory;
 import com.projects.ecommerce.product.dto.CategoryDto;
 import com.projects.ecommerce.product.dto.SubCategoryDto;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -26,6 +27,7 @@ public interface CategoryMappingHelper {
 										.img(sub.getImg())
 										.description(sub.getDescription())
 										.categoryId(category.getCategoryId())
+										.categoryName(category.getCategoryTitle())
 										.build())
 								.collect(Collectors.toList()) // ✅ now it’s a List
 				)
@@ -39,16 +41,19 @@ public interface CategoryMappingHelper {
 				.description(categoryDto.getDescription())
 				.img(categoryDto.getImg())
 				.subCategories(
-						categoryDto.getSubCategoryDtos().stream()
-								.map(sub -> SubCategory.builder()  // <-- probably SubCategory, not SubCategoryDto
+						categoryDto.getSubCategoryDtos() == null
+								? Collections.emptySet()
+								: categoryDto.getSubCategoryDtos().stream()
+								.map(sub -> SubCategory.builder()
 										.subId(sub.getId())
 										.name(sub.getName())
 										.img(sub.getImg())
 										.build())
-								.collect(Collectors.toSet()) // <-- fix here
+								.collect(Collectors.toSet())
 				)
 				.build();
 	}
+
 }
 
 

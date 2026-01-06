@@ -29,6 +29,7 @@ public class CategoryDto implements Serializable {
     @NotBlank(message = "categoryTitle cannot be empty or start space")
     private String categoryTitle;
 
+	@NotBlank(message = "Description cannot be empty or start space")
 	private String description;
 
 	private String img;

@@ -378,8 +378,10 @@ public class UserServiceImpl implements UserService {
 
 
 
-
-
+    @Override
+    public Long getUsersCount() {
+        return userRepo.count();
+    }
 
 
 

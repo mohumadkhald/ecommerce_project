@@ -106,6 +106,12 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 
 
 
+	@Override
+	public long getSubCategoriesCount() {
+		return subCategoryRepository.count();
+	}
+
+
 
 }
 

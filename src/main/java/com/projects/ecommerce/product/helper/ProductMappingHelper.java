@@ -43,7 +43,9 @@ public interface ProductMappingHelper {
 								.id(product.getSubCategory().getSubId())
 								.name(product.getSubCategory().getName())
 								.categoryId(product.getSubCategory().getCategory().getCategoryId())
-//                                .categoryName(product.getSubCategory().getCategory().getCategoryTitle())
+                                .categoryName(product.getSubCategory().getCategory().getCategoryTitle())
+								.img(product.getSubCategory().getImg())
+								.description(product.getSubCategory().getDescription())
 								.build())
 				.productVariations(productVariationDtos);  // Set the product variations
 

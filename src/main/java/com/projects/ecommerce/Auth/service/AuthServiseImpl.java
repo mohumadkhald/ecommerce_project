@@ -9,6 +9,7 @@ import com.projects.ecommerce.Config.JwtService;
 import com.projects.ecommerce.Auth.token.Token;
 import com.projects.ecommerce.Auth.token.TokenRepo;
 import com.projects.ecommerce.Auth.token.TokenType;
+import com.projects.ecommerce.mail.EmailService;
 import com.projects.ecommerce.utilts.traits.ApiTrait;
 import com.projects.ecommerce.user.expetion.AlreadyExistsException;
 import com.projects.ecommerce.user.model.AccountStatus;
@@ -154,6 +155,8 @@ public class AuthServiseImpl implements AuthService {
             {
                 user.setO2Auth(true);
                 user.setUpdatedBy(request.getEmail());
+                EmailVerification emailVerification =  user.getEmailVerification();
+                emailVerification.setEmailVerified(true);
                 userRepo.save(user);
                 request.setPassword(request.getPasswordOauth2());
             }
@@ -187,7 +190,7 @@ public class AuthServiseImpl implements AuthService {
     private static String getString(AuthenticationException e) {
         String errorMessage = e.getMessage();
         if (Objects.equals(errorMessage, "UserDetailsService returned null, which is an interface contract violation")) {
-            errorMessage = "You Are Not Register Yet";
+            errorMessage = "please register to continue";
         } else if (Objects.equals(errorMessage, "User credentials have expired")) {
             errorMessage = "User credentials have expired Please Reset Your Password";
         } else if (Objects.equals(errorMessage, "User account has expired")) {

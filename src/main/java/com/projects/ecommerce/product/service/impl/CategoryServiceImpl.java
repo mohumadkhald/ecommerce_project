@@ -2,6 +2,8 @@ package com.projects.ecommerce.product.service.impl;
 
 
 import com.projects.ecommerce.product.domain.Category;
+import com.projects.ecommerce.product.domain.Product;
+import com.projects.ecommerce.product.domain.ProductImage;
 import com.projects.ecommerce.product.dto.CategoryDto;
 import com.projects.ecommerce.product.exception.wrapper.CategoryNotFoundException;
 import com.projects.ecommerce.product.helper.CategoryMappingHelper;
@@ -12,8 +14,10 @@ import com.projects.ecommerce.user.expetion.NotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.units.qual.C;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -72,15 +76,14 @@ public class CategoryServiceImpl implements CategoryService {
 		if (categoryOptional.isPresent())
 		{
 			Category category = categoryOptional.get();
+			categoryDto.setImg(category.getImg());
 			// Check if the category title already exists but ignore if it’s the same category being updated
 			if (!category.getCategoryTitle().equals(categoryDto.getCategoryTitle()) &&
 					categoryRepository.existsByCategoryTitle(categoryDto.getCategoryTitle())) {
 				throw new AlreadyExistsException("Category", "Already exists");
 			}
-			category.setCategoryTitle(categoryDto.getCategoryTitle());
-			category.setImg(categoryDto.getImg());
-			categoryRepository.save(category);
-			return CategoryMappingHelper.map(category);
+			return CategoryMappingHelper.map(this.categoryRepository
+					.save(CategoryMappingHelper.map(categoryDto)));
 		} else {
 			throw new NotFoundException("Category", "Category Not " + categoryDto.getCategoryTitle() +  "Found");
 		}
@@ -98,6 +101,20 @@ public class CategoryServiceImpl implements CategoryService {
 		return categoryRepository.findByCategoryTitle(categoryName);
 	}
 
+	@Override
+	public void updateCategoryPhoto(String name, String lastUrl, String newUrl) {
+		Category category = categoryRepository.findByCategoryTitle(name);
+
+		if (category == null) {
+			throw new RuntimeException("Category not found: " + name);
+		}
+
+//		String image = category.getImg();
+		category.setImg(newUrl);
+
+		// Save product (cascade ALL ensures images are saved)
+		categoryRepository.save(category);
+	}
 
 }
 

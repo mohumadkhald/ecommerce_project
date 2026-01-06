@@ -19,4 +19,6 @@ public interface CategoryService {
     Category findByCategoryName(String categoryName);
 
     boolean findByName(String categoryName);
+
+    void updateCategoryPhoto(String name, String url, String imageUrl);
 }

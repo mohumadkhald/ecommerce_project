@@ -54,7 +54,7 @@ class ProductServiceImplHelper {
             if (categoryId != null)
                 predicates.add(cb.equal(root.get("subCategory").get("category").get("categoryId"), categoryId));
             checkNull(email, productName, minPrice, maxPrice, available, root, cb, predicates);
-            filterSizeAndColor(null, sizes, root, query, cb, predicates); // colors handled above if needed in callers
+            filterSizeAndColor(colors, sizes, root, query, cb, predicates); // colors handled above if needed in callers
             query.distinct(true);
             return cb.and(predicates.toArray(new Predicate[0]));
         };
